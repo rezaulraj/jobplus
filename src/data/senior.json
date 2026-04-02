@@ -1,0 +1,479 @@
+[
+  {
+    "id": 2,
+    "title": "Senior Executive/Executive (Internal Audit)",
+    "company": "Haque Brothers Industries Ltd",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "experience": 2,
+    "category": "Accounting/Finance",
+    "type": "Full Time",
+    "gender": "Only Male",
+    "education": "Masters in Finance/Accounting. CA/ACCA/CMA preferred.",
+    "description": "Responsible for conducting internal audits, ensuring compliance with company policies, improving internal controls, and identifying financial risks. This role supports the organization by reviewing financial records, detecting control gaps, and preparing detailed audit reports.",
+    "requirements": [
+      "Execute audit plans and assess internal controls.",
+      "Review financial statements and records for accuracy.",
+      "Ensure compliance with internal policies and regulatory guidelines.",
+      "Identify risks and report control weaknesses.",
+      "Prepare audit reports with actionable recommendations.",
+      "Conduct special investigations when required."
+    ],
+    "benefits": ["Company standard benefits", "Policy-based incentives"],
+    "skills": [
+      "Internal Audit",
+      "Risk Management",
+      "Financial Review",
+      "Compliance",
+      "Reporting",
+      "Analytical thinking",
+      "Professional communication",
+      "Ethical decision-making"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "Not specified",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "/images/company/2-img.png"
+  },
+  {
+    "id": 62,
+    "title": "Senior Flutter / UI‑UX Developer",
+    "company": "Craft Digital Solutions",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "IT/Telecommunication",
+    "experience": [7, 10],
+    "subCategory": "App Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Hybrid",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "BSc in Graphic Design, Multimedia, Computer Science or related",
+    "description": "Lead the design and development of modern, user‑centric mobile applications for ChefOnline. Manage full mobile app lifecycle from concept and UI/UX design to deployment, ensuring quality, performance, responsiveness and brand compliance.",
+    "requirements": [
+      "Proven experience with Flutter and strong UI/UX portfolio",
+      "Advanced proficiency in Flutter, Dart, mobile architectures",
+      "Skilled with design tools like Figma or Adobe XD",
+      "Experience with REST APIs, Firebase or similar backend integrations",
+      "Strong understanding of mobile UX principles, prototyping, animations and responsive design",
+      "Good communication skills"
+    ],
+    "benefits": [
+      "Weekly 2 holidays",
+      "Yearly salary review",
+      "2 Festival Bonuses"
+    ],
+    "skills": [
+      "Flutter",
+      "Dart",
+      "Mobile App Development",
+      "UI/UX Design",
+      "Figma / Adobe XD",
+      "REST API Integration",
+      "Firebase (or similar)",
+      "Animations & Custom UI"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "21/A Navana Tower, 45 Gulshan South C/A, Circle‑1, Dhaka"
+    },
+    "clogo": "/images/company/60-img.png"
+  },
+  {
+    "id": 7,
+    "title": "Senior Engineer (I&C)",
+    "company": "ActioNova Engineering & Construction Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 1,
+    "experience": 7,
+    "category": "Engineering",
+    "type": "Full Time",
+    "gender": "All eligible",
+    "education": "B.Sc. in Electrical & Electronic Engineering",
+    "description": "Manage instrumentation and control systems for power plant operations. Oversee maintenance, ensure operational functionality of DCS, PLC, and SCADA systems, and supervise technicians.",
+    "requirements": [
+      "Plan and implement I&C maintenance activities.",
+      "Troubleshoot and repair control systems.",
+      "Ensure DCS, PLC, and SCADA systems are functional.",
+      "Supervise I&C technicians and contractors.",
+      "Maintain calibration records and compliance.",
+      "Support plant operations and safety systems."
+    ],
+    "benefits": [
+      "Mobile bill",
+      "Medical allowance",
+      "Performance bonus",
+      "Insurance",
+      "Gratuity",
+      "Festival Bonus: 2"
+    ],
+    "skills": [
+      "Instrumentation & Control",
+      "DCS/PLC/SCADA",
+      "Power Plant Systems",
+      "Maintenance Management",
+      "Team Supervision",
+      "Strong technical skills",
+      "Problem-solving ability",
+      "Leadership and teamwork"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "hr@doreenpower.com",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "/images/company/4-img.png"
+  },
+
+  {
+    "id": 13,
+    "title": "Senior Analyst - Internal Audit & Compliance",
+    "company": "ExpoLink Holdings Bangladesh Ltd.",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 30000,
+      "max": 30000,
+      "default": "Not specified"
+    },
+    "vacancy": 1,
+    "experience": 3,
+    "category": "Accounting/Finance",
+    "type": "Full Time",
+    "gender": "All eligible",
+    "education": "Graduate in finance/accounting/business or related field",
+    "description": "Support internal audit, compliance review and process improvement across assigned business units, ensuring regulatory and policy compliance and operational controls.",
+    "requirements": [
+      "Audit financial transactions of SBUs — validate vouchers and supporting documents",
+      "Verify compliance with internal controls, SOPs, and company policies",
+      "Perform accounting validation of transactions (including VAT, company law compliance)",
+      "Review procurement, payments, inventory movements and related controls",
+      "Perform sales audit: check sales transactions for compliance, verify receivables and overdue balances",
+      "Examine customer agreements, security instruments, and documentation",
+      "Audit operations: walk-throughs of freight, warehousing, CFS, shipment, distribution and related operational processes",
+      "Review shipment files, credit notes, proofs of delivery, bank NOCs, and operational documents",
+      "Identify process gaps or non-compliance issues and recommend improvements",
+      "Help strengthen governance across the group by supporting compliance & control enforcement"
+    ],
+    "benefits": [],
+    "skills": [
+      "Accounting & bookkeeping",
+      "Internal audit processes",
+      "Compliance & regulatory knowledge (VAT, Tax, Company Act)",
+      "ERP & accounting software use",
+      "Advanced MS Office (especially Excel)",
+      "Analytical skills",
+      "Attention to detail",
+      "Integrity",
+      "Strong sense of responsibility",
+      "Ability to work under supervision",
+      "Good communication"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "206/A (Level 2), Tejgaon Industrial Area, Dhaka-1208"
+    },
+    "clogo": "/images/company/13-img.png"
+  },
+  {
+    "id": 15,
+    "title": "Sr. Executive / Executive - Finance",
+    "company": "Galaxy Star Enterprises (BD) Ltd",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "experience": 5,
+    "category": "Banking/Financial Services",
+    "type": "Full Time",
+    "gender": "Male only",
+    "education": "BBA in Finance / Accounting & Information System or MBA in Finance / Accounting & Information System",
+    "description": "Handle finance operations including cash & bank management, revenue & invoice collections, reconciliations, corporate billing and supplier/vendor payments for Galaxy Bangladesh Group.",
+    "requirements": [
+      "Lead and supervise departmental finance activities.",
+      "Maintain communication with bank and other departments.",
+      "Collect invoices and cash from all outlets.",
+      "Encash foreign currency from money-exchange and deposit revenue into company bank account per policy.",
+      "Maintain and update cash vault records and perform withdrawals per policy.",
+      "Post credit-card revenue collections in Excel and reconcile; prepare bank-receipt vouchers.",
+      "Prepare daily fund-position reports for management review.",
+      "Handle IOU payments and adjustments (including at Uttara office).",
+      "Post petty-cash payment vouchers in the system.",
+      "Pay utility bills and properly file paid bill records.",
+      "Disburse monthly cash salary and service charges to employees.",
+      "Reconcile cash and invoices collected from all outlets; prepare daily revenue reconciliation report.",
+      "Coordinate VAT revenue input in EFD machines; prepare VAT challans for corporate customer billing.",
+      "Issue invoices and bills to corporate customers; collect cash/cheques from them and deposit to company bank account.",
+      "Prepare A/R ageing reports; follow up with corporate customers for overdue collections.",
+      "Perform supplier ageing analysis; prepare cheques for TDS/VDS and supplier payments; collect authorized signatures and disburse payments.",
+      "Deposit monthly TDS and VDS to government treasury.",
+      "Adjust employee mobile bills against salaries.",
+      "Conduct advance reconciliations, monthly bank reconciliation, post journal vouchers for bank charges/interest.",
+      "Perform inventory reconciliation and physical verification where applicable.",
+      "Post journal vouchers for monthly expenses and maintain monthly accounting checklist.",
+      "Prepare and circulate monthly MIS reports to management."
+    ],
+    "benefits": [],
+    "skills": [
+      "Cash & Bank Management",
+      "Revenue / Invoice Collection",
+      "Credit Card & Voucher Posting",
+      "Bank & Cash Reconciliation",
+      "VAT/TDS / Tax / Compliance",
+      "Accounts Receivable & Payable Management",
+      "Supplier Payments & Cheque Handling",
+      "MIS Reporting",
+      "Excel / Accounting Software",
+      "Detail oriented",
+      "Integrity",
+      "Good communication skills",
+      "Organized",
+      "Ability to coordinate with multiple departments"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Taj Marriott 5th floor, 25 Gulshan Avenue, Gulshan-1, Dhaka-1212, Bangladesh"
+    },
+    "clogo": "/images/company/15-img.png"
+  },
+  {
+    "id": 17,
+    "title": "Manager - Costing, Budgeting & MIS",
+    "company": "P&J Manufacturing Group Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": "Not Specified",
+    "experience": 7,
+    "category": "Business Development",
+    "type": "Full Time",
+    "gender": "All eligible",
+    "education": "M.Com or equivalent; professional qualification (e.g. Cost & Management Accountant) preferred",
+    "description": "Lead the costing, budgeting and MIS functions — including cost analysis, budget planning and financial reporting for the group’s factories and operations.",
+    "requirements": [
+      "Lead costing, budgeting and MIS activities to ensure accurate cost analysis and budget planning.",
+      "Monitor factory performance data and drive cost-optimization initiatives.",
+      "Support strategic decision-making through financial reporting and analysis.",
+      "Coordinate with cross-functional teams to ensure compliance with company SOPs.",
+      "Supervise team members involved in costing, budgeting and MIS.",
+      "Improve process efficiency across costing, budgeting and MIS operations."
+    ],
+    "benefits": [
+      "Mobile bill, weekly 2 holidays, medical allowance, transport/pick-drop, full subsidized lunch, performance bonus, festival bonus (2), yearly salary review, earned-leave encashment"
+    ],
+    "skills": [
+      "Costing & Budgeting Analysis",
+      "MIS & Financial Reporting",
+      "Cost Optimization",
+      "Analytical Skills",
+      "Team Supervision",
+      "Cross-functional Coordination",
+      "Strong analytical mindset",
+      "Detail oriented",
+      "Leadership & supervision ability",
+      "Integrity",
+      "Ability to work under pressure"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Red Crescent Concord Tower, 17 Mohakhali C/A, Dhaka-1212"
+    },
+    "clogo": "/images/company/17-img.png"
+  },
+  {
+    "id": 27,
+    "title": "Senior Officer, Inquiry",
+    "company": "BRACON Development Trust",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 3,
+    "category": "Law/Legal",
+    "experience": [3, 5],
+    "subCategory": "Law",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Master’s degree in Law or relevant discipline",
+    "description": "Handle and resolve complaints through fair and thorough inquiry processes ensuring adherence to organisational policies, legal standards, and safeguarding guidelines.",
+    "requirements": [
+      "Review assigned complaints and assess risks, identifying key issues for investigation.",
+      "Develop an inquiry plan — prepare checklists, questionnaires, identify interviewees and required documents/evidence.",
+      "Engage with concerned personnel to secure cooperation for investigation and evidence collection.",
+      "Conduct interviews of parties and witnesses, verify evidence and maintain proper records with signatures.",
+      "Prepare and submit inquiry reports (preliminary and final), issue show-cause or notice letters, support review hearings.",
+      "Present findings to the SGMC forum and/or Ombudsperson, ensuring fair hearing and informed decisions.",
+      "Ensure confidentiality, due process and procedural integrity throughout the inquiry.",
+      "Promote and uphold safeguarding standards, including prevention of harassment, exploitation, abuse (SEA), and awareness on PSHEA policies.",
+      "Follow safeguarding reporting procedures in case of reportable incidents, and support safeguarding implementation across teams."
+    ],
+    "benefits": [
+      "Festival Bonus",
+      "Contributory Provident Fund",
+      "Gratuity",
+      "Health & Life Insurance",
+      "Maternity/Paternity Leave",
+      "Wellness Centre",
+      "Day Care facility (as per policy)"
+    ],
+    "skills": [
+      "Verbal and written communication",
+      "MS Office proficiency",
+      "Typing / transcription (Bijoy/Avro)",
+      "Understanding of labour laws and safeguarding/PSHEA standards",
+      "Investigation skills",
+      "Report writing",
+      "Integrity",
+      "Confidentiality",
+      "Analytical thinking",
+      "Ability to travel as needed"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Mohakhali, Dhaka-1212, Bangladesh"
+    },
+    "clogo": "/images/company/27-img.png"
+  },
+  {
+    "id": 40,
+    "title": "Senior Counselor / Counselor (Tourist Visa)",
+    "company": "GlobalPass Bangladesh Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "experience": 3,
+    "category": "Hospitality/Travel/Tourism",
+    "type": "Full Time",
+    "gender": "All eligible",
+    "education": "Minimum bachelor’s degree in any discipline",
+    "description": "Provide visa consultation and travel-related services to clients; assist clients to plan travel itineraries, manage bookings, and handle visa/tour services end-to-end.",
+    "requirements": [
+      "Handle client inquiries professionally via phone, email and in-person.",
+      "Provide updated information on destinations, visa requirements and travel services.",
+      "Assist clients in planning domestic and international travel itineraries.",
+      "Process bookings for flights, hotels and tour packages.",
+      "Maintain client relationships through follow-ups and ongoing support.",
+      "Resolve travel and visa-related issues quickly and efficiently.",
+      "Work with team to achieve sales and service targets."
+    ],
+    "benefits": [
+      "Negotiable salary + incentives + 2 festival bonuses + annual leave & gov’t holidays"
+    ],
+    "skills": [
+      "Customer service",
+      "Communication (English & Bangla)",
+      "Travel booking platforms familiarity",
+      "Multitasking",
+      "Problem solving",
+      "Team work",
+      "Positive attitude",
+      "Helping mindset",
+      "Service-oriented",
+      "Ability to handle clients under pressure"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "info.hrvwb@gmail.com",
+      "phone": "",
+      "address": "Florida Castle, Level-3, House-7, Road 23/A, Gulshan-1, Dhaka-1212, Bangladesh"
+    },
+    "clogo": "/images/company/40-img.png"
+  },
+  {
+    "id": 70,
+    "title": "Senior Full Stack App & Web Developer",
+    "company": "NextOrigin Resources Ltd.",
+    "location": "Rajshahi",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "experience": 3,
+    "category": "IT/Telecommunication",
+    "type": "Full Time / On‑site",
+    "gender": "All eligible",
+    "education": "Bachelor in Computer Science / Software Engineering or equivalent",
+    "description": "Develop and maintain high-quality web and mobile applications, handle both backend and frontend tasks, ensure scalable and maintainable solutions, collaborate with designers and team members to deliver responsive and efficient software.",
+    "requirements": [
+      "Strong experience with PHP/Laravel or Node.js backend development",
+      "Proficiency in frontend technologies: HTML, CSS, JavaScript, React.js, Next.js, or similar",
+      "Experience with mobile app frameworks (React Native / Flutter) is a plus",
+      "Good knowledge of SQL/NoSQL databases",
+      "Version control with Git/GitHub",
+      "Understanding of RESTful APIs and integration",
+      "Strong problem-solving skills and debugging capabilities",
+      "Ability to write clean, maintainable, and well-documented code",
+      "Teamwork and communication skills"
+    ],
+    "benefits": [
+      "Opportunity to work on full-stack web and mobile applications",
+      "Professional development and learning opportunities",
+      "Collaborative and supportive work environment",
+      "Flexible working hours and on-site experience",
+      "Exposure to modern technologies and projects"
+    ],
+    "skills": [
+      "Full Stack Development",
+      "Frontend: React.js, Next.js, HTML, CSS, JavaScript",
+      "Backend: PHP, Laravel, Node.js",
+      "Database Management: MySQL, PostgreSQL, MongoDB",
+      "Version Control: Git/GitHub",
+      "REST API Development",
+      "Responsive Design",
+      "Debugging & Problem Solving"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "/images/company/70-img.png"
+  }
+]

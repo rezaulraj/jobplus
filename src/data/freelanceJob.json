@@ -1,0 +1,374 @@
+[
+  {
+    "id": 1,
+    "title": "Telesales Executive (Female)",
+    "company": "Bdjobs.com Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "experience": "Fresh Graduates",
+    "category": "Customer/Service/Call Centre",
+    "type": "Full Time",
+    "gender": "Female only",
+    "education": "Bachelor / Honors degree from a reputed university",
+    "description": "Perform telesales and customer service tasks — contacting potential and existing clients to promote products/services, handle enquiries and maintain follow-ups to meet sales targets.",
+    "requirements": [
+      "understand the company’s products and services.",
+      "Call and contact potential."
+    ],
+    "benefits": [
+      "Lunch Allowance; after probation — Travel Allowance, 2 Festival Bonuses, Yearly Increment, Provident Fund, Profit Share"
+    ],
+    "skills": [
+      "Excellent communication skills",
+      "Convincing / negotiation skills",
+      "Customer service orientation"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "BDBL Building (Old BSRS), 12 Kawran Bazar C/A, Dhaka-1215, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/15131_5.png"
+  },
+  {
+    "id": 2,
+    "title": "Full Stack Developer (React / Next.js / Node.js)",
+    "company": "R & H Business Solution",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "experience": 3,
+    "category": "IT/Telecommunication",
+    "type": "Full Time",
+    "gender": "All eligible",
+    "education": "Bachelor in Computer Science & Engineering (CSE) or related",
+    "description": "Develop and maintain scalable web applications using modern web technologies. Build frontend and backend for SaaS‑based/enterprise-grade systems, collaborating with design and QA teams, ensuring performance, security, and code quality. Work on microservices / cloud‑based architecture, implement APIs, and contribute to the full software development lifecycle.",
+    "requirements": [
+      "3‑5 years hands‑on experience with React, Next.js, Tailwind CSS, TypeScript, Node.js",
+      "Strong understanding of RESTful APIs, JSON, and backend API design",
+      "Familiarity with cloud platforms (AWS, Azure, or GCP) and microservices or multi‑tenant architecture",
+      "Proficiency in Git/GitHub and CI/CD workflows",
+      "Good problem‑solving and debugging skills",
+      "Ability to write clean, maintainable, testable code",
+      "Strong communication and teamwork skills"
+    ],
+    "benefits": [],
+    "skills": [
+      "React.js",
+      "Next.js",
+      "Tailwind CSS",
+      "TypeScript",
+      "Node.js",
+      "REST API",
+      "Cloud Platforms",
+      "Microservices",
+      "Git"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/101126_0.png"
+  },
+  {
+    "id": 3,
+    "title": "Odoo Developer / Software Engineer",
+    "company": "Equal & Co. Consulting Ltd",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 0,
+      "max": 0
+    },
+    "vacancy": 2,
+    "experience": 3,
+    "category": "IT/Telecommunication",
+    "type": "Full Time",
+    "gender": "All eligible",
+    "education": "Not explicitly specified; relevant degree in CS/IT or equivalent preferred",
+    "description": "Develop, customize, and maintain Odoo ERP — especially accounting and financial modules — for a self‑hosted environment. Build API integrations, extend functionalities, and collaborate with finance and operations teams to map real‑world business workflows into the Odoo system. Ensure stable, secure, and scalable operations across the platform.",
+    "requirements": [
+      "3+ years of Odoo development experience",
+      "Strong proficiency in Python, PostgreSQL, Linux (Ubuntu/Debian)",
+      "Experience with Git, Docker, CI/CD pipelines",
+      "Hands‑on experience with Odoo Accounting module customization",
+      "API design and development (REST / JSON‑RPC)",
+      "Understanding of accounting principles (double-entry, VAT/tax workflows, invoicing, bank reconciliation)",
+      "Good problem‑solving, documentation, and communication skills",
+      "Ability to collaborate with non‑technical stakeholders (finance / operations team)"
+    ],
+    "benefits": [
+      "Competitive salary",
+      "Flexible working hours / remote work option",
+      "Opportunity to work with modern technology stack and international clients",
+      "Chance to lead Odoo architecture and integrations"
+    ],
+    "skills": [
+      "Python",
+      "Odoo Framework",
+      "PostgreSQL",
+      "Linux",
+      "Git",
+      "Docker",
+      "CI/CD",
+      "REST API",
+      "ERP / Accounting workflows"
+    ],
+    "compnay": {
+      "website": "https://www.equalandco.com",
+      "email": "",
+      "phone": "",
+      "address": "House # 18‑20, Road # 10, South Banasree, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/196416_0.jpg"
+  },
+  {
+    "id": 4,
+    "title": "Tech Support Specialist",
+    "company": "Planet Education Networks Limited",
+    "location": "Chattogram",
+    "salary": {
+      "min": 60000,
+      "max": 70000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "experience": 5,
+    "category": "IT/Telecommunication",
+    "type": "Full Time",
+    "gender": "All eligible",
+    "education": "Bachelor / Honors (or equivalent)",
+    "description": "Provide on‑site technical support to users, handle remote support requests, manage user accounts and system access, and ensure smooth functioning of IT systems and services for the company.",
+    "requirements": [
+      "Minimum 3 years of experience in IT support or related role.",
+      "Proficient in student‑management systems / IT systems, remote access tools (e.g. TeamViewer, AnyDesk etc.).",
+      "Strong organizational skills and ability to manage multiple support requests under pressure.",
+      "Excellent written and verbal communication skills in English.",
+      "Familiarity with remote support tools, account and access management, software installation and configuration, troubleshooting and diagnostics."
+    ],
+    "benefits": [
+      "Competitive salary",
+      "Two festival bonuses per annum",
+      "Two weekly holidays + public holidays as per company policy",
+      "Sick leave, casual leave, annual leave as per Bangladesh labour law"
+    ],
+    "skills": [
+      "IT Support",
+      "Remote Assistance",
+      "System Administration",
+      "Account & Access Management",
+      "Troubleshooting",
+      "Communication",
+      "Multitasking",
+      "English proficiency"
+    ],
+    "compnay": {
+      "website": "https://www.pengroup.com",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/158794_1.png"
+  },
+
+  {
+    "id": 5,
+    "title": "Software Developer (male/female)",
+    "company": "Hana System Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 30000,
+      "max": 45000
+    },
+    "vacancy": "Not Specified",
+    "experience": 2,
+    "category": "IT/Telecommunication",
+    "type": "Full Time",
+    "gender": "Male & Female",
+    "education": "",
+    "description": "Develop ERP and other software solutions using .NET and Angular for a joint‑venture export‑oriented manufacturing company. Work with backend (C#, Web API Core, MS SQL Server) and frontend (Angular + Typescript) to build, maintain, and improve company’s ERP system devoted to bicycle production and export operations.",
+    "requirements": [
+      "Good working experience with C#, Web API Core 8.0 or higher, MS SQL Server 2019 or higher, Entity Framework Core 8.0+",
+      "Familiarity with RESTful Web Services",
+      "Experience with Typescript and Angular 15+",
+      "Knowledge of Automapper, Fluent Validation / Fluent API",
+      "Experience with version control (Git), unit testing",
+      "Familiarity with CI/CD pipelines (e.g. Azure)",
+      "Good understanding of OOP, SOLID principles, design patterns (CQRS, Repository Pattern)",
+      "Good English communication (writing & speaking)"
+    ],
+    "benefits": [
+      "Two festival bonuses (annual)",
+      "Casual leave (10 days) and sick leave (14 days) per year",
+      "Regular working hours: 8 hours/day, 6 days/week",
+      "Friendly, professional work environment under Bangladesh–German management"
+    ],
+    "skills": [
+      "C#",
+      "Web API Core",
+      "MS SQL Server",
+      "Entity Framework Core",
+      "REST API",
+      "Angular",
+      "TypeScript",
+      "Git",
+      "Unit Testing",
+      "CI/CD"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "HR@hana-ltd.com",
+      "phone": "",
+      "address": "Shanta Western Tower Level-3, 186, Bir Uttam Mir Shawkat Ali Road, Tejgaon I/A, Dhaka‑1208, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/69777_2.png"
+  },
+  {
+    "id": 6,
+    "title": "Senior SEO Analyst / Executive (Night Shift)",
+    "company": "ChefOnline",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "experience": 3,
+    "category": "Information Technology",
+    "type": "Full Time (Night Shift / Day Shift schedule)",
+    "gender": "All eligible",
+    "education": "BSc in Computer Science & Engineering (or related field)",
+    "description": "As Senior SEO Analyst/Executive, you will plan and execute search engine optimisation strategies to grow organic traffic, improve search visibility and conversion. The role involves technical SEO audits, on‑page and off‑page optimization, collaboration with content developers and web developers, and continuous performance monitoring to ensure website health and search‑ranking improvement.",
+    "requirements": [
+      "Proven experience in SEO strategy (technical, on‑page, off‑page)",
+      "Strong command over SEO tools: Google Analytics, Search Console, Ahrefs, SEMrush, Screaming Frog etc.",
+      "Good knowledge of HTML, CSS and CMS platforms (e.g. WordPress, Shopify)",
+      "Ability to analyze data and draw actionable insights",
+      "Strong understanding of crawling, indexing, site architecture, Core Web Vitals and mobile‑first optimization",
+      "Good communication skill in English & Bangla",
+      "Willingness to work in night shift (Mon–Thu night, Sat–Sun day)"
+    ],
+    "benefits": [],
+    "skills": [
+      "Technical SEO",
+      "On‑page & Off‑page SEO",
+      "Keyword Research",
+      "Backlink Strategy",
+      "Data Analysis / Web Analytics",
+      "HTML & CSS",
+      "CMS (WordPress / Shopify etc.)",
+      "SEO Audit & Site Optimization"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Gulshan‑1, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/85641_1.png"
+  },
+  {
+    "id": 7,
+    "title": "SEO Manager / Strategist (Senior – Data & Analytics Focus)",
+    "company": "ChefOnline",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "experience": 4,
+    "category": "IT/Telecommunication",
+    "type": "Full Time",
+    "gender": "All eligible",
+    "education": "Bachelor’s or Master’s in Marketing, Business, or relevant field",
+    "description": "Lead SEO and analytics strategy for ChefOnline, focusing on data‑driven growth. Oversee technical SEO audits, keyword research, content optimization, and performance tracking. Collaborate with content, design, and development teams to improve search visibility, user acquisition and conversion metrics.",
+    "requirements": [
+      "Minimum 7 years experience in SEO with strong expertise in technical SEO, audits, and analytics",
+      "Deep knowledge of SEO tools, Google Analytics, Search Console, and data‑driven decision making",
+      "Strong understanding of web technologies, on‑page/off‑page SEO, site architecture, and performance optimization",
+      "Ability to lead SEO strategy, coordinate with cross‑functional teams (content, design, dev)",
+      "Excellent communication skills, both English and Bangla",
+      "Up-to-date knowledge of search engine algorithms and best practices"
+    ],
+    "benefits": [],
+    "skills": [
+      "Technical SEO",
+      "SEO Strategy",
+      "Keyword Research",
+      "Data Analytics",
+      "Google Analytics / Search Console",
+      "Content Optimization",
+      "Team Collaboration",
+      "Performance Optimization"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/85641_1.png"
+  },
+  {
+    "id": 8,
+    "title": "Senior Flutter / UI‑UX Developer",
+    "company": "ChefOnline",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "experience": 4,
+    "category": "IT/Telecommunication",
+    "type": "Full Time",
+    "gender": "Male & Female",
+    "education": "BSc in Graphic Design, Multimedia, Computer Science or related",
+    "description": "Lead the design and development of modern, user‑centric mobile applications for ChefOnline. Manage full mobile app lifecycle from concept and UI/UX design to deployment, ensuring quality, performance, responsiveness and brand compliance.",
+    "requirements": [
+      "Proven experience with Flutter and strong UI/UX portfolio",
+      "Advanced proficiency in Flutter, Dart, mobile architectures",
+      "Skilled with design tools like Figma or Adobe XD",
+      "Experience with REST APIs, Firebase or similar backend integrations",
+      "Strong understanding of mobile UX principles, prototyping, animations and responsive design",
+      "Good communication skills"
+    ],
+    "benefits": [
+      "Weekly 2 holidays",
+      "Yearly salary review",
+      "2 Festival Bonuses"
+    ],
+    "skills": [
+      "Flutter",
+      "Dart",
+      "Mobile App Development",
+      "UI/UX Design",
+      "Figma / Adobe XD",
+      "REST API Integration",
+      "Firebase (or similar)",
+      "Animations & Custom UI"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "21/A Navana Tower, 45 Gulshan South C/A, Circle‑1, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/85641_1.png"
+  }
+]

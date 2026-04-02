@@ -1,0 +1,4444 @@
+[
+  {
+    "id": 1,
+    "title": "Edtech Sales Executive",
+    "company": "Star Line Food Products Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 30000,
+      "max": 40000,
+      "default": "Negotiable"
+    },
+    "vacancy": 10,
+    "category": "Sales/Marketing",
+    "experience": [3, 5],
+    "subCategory": "Sales",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-10",
+    "jobEndDate": "2026-01-30",
+    "gender": "Anyone Can Apply",
+    "education": "Any Bachelor’s degree (Business/Marketing preferred)",
+    "description": "A pivotal role responsible for driving enrollment growth and revenue by promoting professional certification programs. The position involves consulting prospects, offering course guidance, and closing sales through effective communication and relationship-building.",
+    "requirements": [
+      "Consult clients to assess learning and certification needs.",
+      "Present program value effectively to individuals and corporates.",
+      "Maintain strong client relationships to ensure satisfaction.",
+      "Meet and exceed sales and revenue targets.",
+      "Work closely with the marketing team to execute campaigns."
+    ],
+    "benefits": ["Performance-based incentives", "Career growth opportunities"],
+    "skills": [
+      "Sales strategy",
+      "Telesales & Cold Calling",
+      "Business Development",
+      "Communication",
+      "Negotiation",
+      "Persuasion",
+      "Result-oriented mindset"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "support@classifyiq.com",
+      "phone": "",
+      "address": "C Block, Sector 8, Noida, Uttar Pradesh 201301"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/87764_1.png"
+  },
+  {
+    "id": 2,
+    "title": "Senior Executive/Executive (Internal Audit)",
+    "company": "Haque Brothers Ltd",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Accounting/Finance",
+    "experience": [2, 3],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Only Male",
+    "education": "Masters in Accounting/Finance. CA/ACCA/CMA preferred.",
+    "description": "Responsible for conducting internal audits, ensuring compliance with company policies, improving internal controls, and identifying financial risks. This role supports the organization by reviewing financial records, detecting control gaps, and preparing detailed audit reports.",
+    "requirements": [
+      "Execute audit plans and assess internal controls.",
+      "Review financial statements and records for accuracy.",
+      "Ensure compliance with internal policies and regulatory guidelines.",
+      "Identify risks and report control weaknesses.",
+      "Prepare audit reports with actionable recommendations.",
+      "Conduct special investigations when required."
+    ],
+    "benefits": ["Company standard benefits", "Policy-based incentives"],
+    "skills": [
+      "Internal Audit",
+      "Risk Management",
+      "Financial Review",
+      "Compliance",
+      "Reporting",
+      "Analytical thinking",
+      "Professional communication",
+      "Ethical decision-making"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "Not specified",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/123769_1.png"
+  },
+  {
+    "id": 3,
+    "title": "Area Sales officer",
+    "company": "Haque Brothers Ltd",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 5,
+    "category": "Accounting/Finance",
+    "experience": [5, 7],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-10",
+    "jobEndDate": "2026-01-30",
+    "gender": "Anyone Can Apply",
+    "education": "Masters in Accounting/Finance (CA/ACCA/CMA preferred)",
+    "description": "Execute internal audits to ensure financial accuracy, regulatory compliance, and strong internal controls. The role involves evaluating risk management systems, reviewing financial records, preparing audit reports, and recommending process improvements.",
+    "requirements": [
+      "Plan and execute scheduled audit assignments.",
+      "Evaluate internal control systems and risk management processes.",
+      "Review financial documents for accuracy and compliance.",
+      "Ensure adherence to company policies and regulatory guidelines.",
+      "Identify internal control weaknesses and potential risks.",
+      "Prepare audit reports outlining findings and recommendations.",
+      "Monitor and track corrective action implementation.",
+      "Conduct special investigations as required."
+    ],
+    "benefits": ["Standard company benefits"],
+    "skills": [
+      "Internal Audit",
+      "Risk Assessment",
+      "Financial Analysis",
+      "Compliance",
+      "Internal Controls",
+      "Analytical skills",
+      "Communication",
+      "Integrity"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "hr@haquebrothers.com",
+      "phone": "",
+      "address": "Dhaka, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/195442_1.png"
+  },
+  {
+    "id": 4,
+    "title": "Customer Relationship Manager (CRM)",
+    "company": "Mir Telecom",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 5,
+    "category": "Accounting/Finance",
+    "experience": [2, 3],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor's degree in any discipline",
+    "description": "Manage customer relationships, ensure satisfaction, and handle service operations. The role involves resolving issues, monitoring metrics, improving processes, and training the service team.",
+    "requirements": [
+      "Manage day-to-day customer service activities",
+      "Resolve customer issues and maintain service standards",
+      "Monitor key performance metrics (CSAT, NPS, FCR)",
+      "Analyze customer feedback and improve processes",
+      "Train and support the service team",
+      "Prepare reports on customer service performance"
+    ],
+    "benefits": [
+      "Mobile bill allowance",
+      "Medical allowance",
+      "Performance bonus",
+      "Insurance",
+      "Festival Bonus"
+    ],
+    "skills": [
+      "Customer Relationship Management",
+      "Team Leadership",
+      "Service Operations",
+      "Customer Satisfaction",
+      "Reporting",
+      "Strong leadership skills",
+      "Excellent communication",
+      "Analytical mindset",
+      "Proactive problem-solving"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "hr@mirtelecom.net",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/116761_0.jpg"
+  },
+  {
+    "id": 5,
+    "title": "Safety Officer (Female)",
+    "company": "Action Engineering & Construction Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Accounting/Finance",
+    "experience": [1, 3],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Only Female",
+    "education": "B.Sc. in any discipline. Safety-related training preferred",
+    "description": "Ensure workplace safety compliance and promote a safe working environment. This includes monitoring safety protocols, training staff, inspecting equipment, and collaborating with management for improvements.",
+    "requirements": [
+      "Monitor daily site safety and enforce protocols",
+      "Inspect equipment and ensure safety standards",
+      "Train staff on safety procedures and regulations",
+      "Report and investigate accidents and near-misses",
+      "Maintain safety records and documentation",
+      "Collaborate with management on safety improvements"
+    ],
+    "benefits": [
+      "Mobile bill allowance",
+      "Medical allowance",
+      "Performance bonus",
+      "Festival Bonus"
+    ],
+    "skills": [
+      "Safety Management",
+      "Risk Assessment",
+      "Compliance",
+      "Accident Investigation",
+      "Safety Training",
+      "Vigilant and detail-oriented",
+      "Strong communication skills",
+      "Proactive and responsible"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "pabnaction@gmail.com",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/90358_3.png"
+  },
+  {
+    "id": 6,
+    "title": "Associate Director, Finance & Administration",
+    "company": "Stellar Service Management",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 5,
+    "category": "Accounting/Finance",
+    "experience": [7, 10],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Master's in Accounting/Finance. CA/ACCA preferred",
+    "description": "Lead finance and administration functions for health programs. Responsibilities include financial management, compliance, procurement, team leadership, reporting, and supporting program implementation.",
+    "requirements": [
+      "Oversee financial management and budgeting",
+      "Ensure compliance with donor and organizational policies",
+      "Manage procurement and administrative operations",
+      "Lead and mentor finance and admin teams",
+      "Prepare financial reports and ensure audit readiness",
+      "Support program implementation with financial oversight"
+    ],
+    "benefits": ["As per organization policy"],
+    "skills": [
+      "Financial Management",
+      "Donor Compliance",
+      "Budgeting",
+      "Team Leadership",
+      "NGO Operations",
+      "Strong leadership skills",
+      "Detail-oriented and analytical",
+      "Excellent communication"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "bd-recruitment@jhpiego.org",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/52990_1.png"
+  },
+  {
+    "id": 7,
+    "title": "Senior Engineer (I&C)",
+    "company": "Doreen Power Generations and Systems Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 1,
+    "category": "Engineering",
+    "experience": [7, 10],
+    "subCategory": "Engineering",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "B.Sc. in Electrical & Electronic Engineering",
+    "description": "Manage instrumentation and control systems for power plant operations. Oversee maintenance, ensure operational functionality of DCS, PLC, and SCADA systems, and supervise technicians.",
+    "requirements": [
+      "Plan and implement I&C maintenance activities.",
+      "Troubleshoot and repair control systems.",
+      "Ensure DCS, PLC, and SCADA systems are functional.",
+      "Supervise I&C technicians and contractors.",
+      "Maintain calibration records and compliance.",
+      "Support plant operations and safety systems."
+    ],
+    "benefits": [
+      "Mobile bill",
+      "Medical allowance",
+      "Performance bonus",
+      "Insurance",
+      "Gratuity",
+      "Festival Bonus: 2"
+    ],
+    "skills": [
+      "Instrumentation & Control",
+      "DCS/PLC/SCADA",
+      "Power Plant Systems",
+      "Maintenance Management",
+      "Team Supervision",
+      "Strong technical skills",
+      "Problem-solving ability",
+      "Leadership and teamwork"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "hr@doreenpower.com",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/47268_1.png"
+  },
+  {
+    "id": 8,
+    "title": "Assistant Manager - Agency",
+    "company": "Apex Footwear Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 2,
+    "category": "Sales/Marketing",
+    "experience": [0, 1],
+    "subCategory": "Sales",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor's degree in any discipline",
+    "description": "Manage agency sales channel and drive business growth. Oversee operations, recruit and train agents, and achieve sales targets while coordinating with marketing and supply teams.",
+    "requirements": [
+      "Oversee agency operations and performance.",
+      "Recruit and train new sales agents.",
+      "Achieve sales targets through agency network.",
+      "Monitor agent activities and sales metrics.",
+      "Resolve agency-related issues and provide support.",
+      "Coordinate with marketing and supply teams."
+    ],
+    "benefits": ["As per company policy"],
+    "skills": [
+      "Agency Management",
+      "Sales Operations",
+      "Team Leadership",
+      "Recruitment",
+      "Performance Monitoring",
+      "Strong leadership skills",
+      "Excellent communication",
+      "Result-oriented"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "career@apexfootwear.com",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/26954_2.png"
+  },
+  {
+    "id": 9,
+    "title": "Assistant Engineer (Electrical)",
+    "company": "Action Engineering & Construction Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 2,
+    "category": "Engineering",
+    "experience": [0, 1],
+    "subCategory": "Engineering",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Diploma in Electrical Engineering",
+    "description": "Support electrical systems installation and maintenance for projects. Supervise site activities, ensure safety compliance, and coordinate with project teams.",
+    "requirements": [
+      "Assist in electrical design and installation work.",
+      "Supervise site electrical activities.",
+      "Maintain electrical equipment and troubleshoot issues.",
+      "Ensure compliance with electrical codes and safety.",
+      "Coordinate with contractors and project teams.",
+      "Prepare reports and documentation."
+    ],
+    "benefits": [
+      "Mobile bill",
+      "Medical allowance",
+      "Performance bonus",
+      "Festival Bonus: 2"
+    ],
+    "skills": [
+      "Electrical Installation",
+      "Site Supervision",
+      "Maintenance",
+      "Safety Compliance",
+      "Troubleshooting",
+      "Technical proficiency",
+      "Attention to detail",
+      "Team player"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "pabnaction@gmail.com",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/45662_3.png"
+  },
+  {
+    "id": 10,
+    "title": "IT Office",
+    "company": "Action Engineering & Construction Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 1,
+    "category": "Information Technology",
+    "experience": [2, 3],
+    "subCategory": "Information Technology",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "B.Sc in Computer Science and Engineering or related field",
+    "description": "Excel, Powerpoint windos systems installation and maintenance for projects. Supervise site activities, ensure safety compliance, and coordinate with project teams.",
+    "requirements": [
+      "Assist in CCTV Carama and installation work.",
+      "Maintain electrical equipment and troubleshoot issues.",
+      "Ensure compliance with problem solveing skills.",
+      "Prepare reports and documentation."
+    ],
+    "benefits": [
+      "Mobile bill",
+      "Medical allowance",
+      "Performance bonus",
+      "Festival Bonus: 2"
+    ],
+    "skills": [
+      "Softwate installation",
+      "Maintenance",
+      "Safety Compliance",
+      "Troubleshooting",
+      "Technical proficiency",
+      "Attention to detail",
+      "Team player"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "pabnaction@gmail.com",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/45662_3.png"
+  },
+  {
+    "id": 11,
+    "title": "Senior Officer, Finance and Accounts",
+    "company": "BRAC Institute of Governance and Development (BIGD)",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 2,
+    "category": "Accounting/Finance",
+    "experience": [3, 5],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "MBA (Accounting/Finance) or MBS in Accounting or equivalent; CA knowledge under supervision of a reputed CA firm is an advantage",
+    "description": "Manage day-to-day finance and accounts operations for BIGD, including project accounting, donor-funded project financial reporting, bank operations, and reconciliation.",
+    "requirements": [
+      "Prepare financial proposals for various donors and donor-reports",
+      "Prepare project budgets and monitor fund utilization",
+      "Update project expenses and ensure accurate booking under correct project head",
+      "Post regular transactions into accounting software and perform monthly bank and cash reconciliation",
+      "Maintain proper vouchers, documents and records",
+      "Manage banking operations including cheque/EFT preparation and disbursement",
+      "Coordinate with internal and external audit teams",
+      "Provide monthly, quarterly and annual closing entries/journal vouchers",
+      "Prepare monthly, quarterly and annual financial statements",
+      "Coordinate with program teams to reconcile donor reports with project accounts",
+      "Liaise with banks/NBFIs for day-to-day operations",
+      "Other finance/accounting related tasks as assigned"
+    ],
+    "benefits": [],
+    "skills": [
+      "Accounting / Book-keeping",
+      "Project Financial Management",
+      "Budgeting & Fund Utilization Monitoring",
+      "Accounting Software Usage",
+      "Bank Reconciliation",
+      "Donor Reporting",
+      "Audit Coordination",
+      "Financial Statement Preparation",
+      "Good interpersonal and communication skills",
+      "Time management",
+      "Integrity",
+      "Attention to detail",
+      "Ability to work under deadlines"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Mohakhali, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/33061_6.png"
+  },
+  {
+    "id": 12,
+    "title": "Asst. Manager/Sr. Executive, Accounts & Finance",
+    "company": "Primitek Group",
+    "location": "Chattogram",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 1,
+    "category": "Accounting/Finance",
+    "experience": [0, 2],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "BBA in Accounting / Finance or MBA in Finance / Accounting",
+    "description": "Manage finance and accounts operations for factory/production unit including budgeting, ledger, vouchers, cash flow and reconciliation.",
+    "requirements": [
+      "Prepare and analyze production & operational reports vs budget or forecast",
+      "Collect and organize financial data: general ledgers, cash summaries, factory-related financial documents",
+      "Ensure internal controls and maintain proper documentation",
+      "Perform analytical checks (growth %, expense vs revenue ratios, vertical analysis)",
+      "Check vouchers and all kinds of bills",
+      "Support budgeting and forecasting activities",
+      "Prepare monthly budget variance reports",
+      "Conduct monthly physical inventory count",
+      "Prepare forecast vs actual cash flow variance report",
+      "Handle monthly inter-factory reconciliations"
+    ],
+    "benefits": [
+      "Mobile bill",
+      "Provident fund",
+      "Yearly salary review",
+      "2 Festival Bonuses",
+      "Accommodation (as per policy)"
+    ],
+    "skills": [
+      "Accounting / Book-keeping",
+      "Budgeting & Forecasting",
+      "Financial Analysis",
+      "Voucher & Bill Checking",
+      "Inventory Accounting",
+      "Inter-factory Reconciliation",
+      "Analytical skills",
+      "Attention to detail",
+      "Integrity",
+      "Ability to work under factory/industrial accounting context"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Corporate Head Office: Primitek Tower, House # 43/B, Road # 24, Block # CWS(B), Gulshan-1, Dhaka-1212, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/92455_3.png"
+  },
+  {
+    "id": 13,
+    "title": "Senior Analyst - Internal Audit & Compliance",
+    "company": "Expo Holdings (BD) Limited",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 30000,
+      "max": 30000,
+      "default": "Not specified"
+    },
+    "vacancy": 1,
+    "category": "Accounting/Finance",
+    "experience": [3, 5],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Graduate in finance/accounting/business or related field",
+    "description": "Support internal audit, compliance review and process improvement across assigned business units, ensuring regulatory and policy compliance and operational controls.",
+    "requirements": [
+      "Audit financial transactions of SBUs — validate vouchers and supporting documents",
+      "Verify compliance with internal controls, SOPs, and company policies",
+      "Perform accounting validation of transactions (including VAT, company law compliance)",
+      "Review procurement, payments, inventory movements and related controls",
+      "Perform sales audit: check sales transactions for compliance, verify receivables and overdue balances",
+      "Examine customer agreements, security instruments, and documentation",
+      "Audit operations: walk-throughs of freight, warehousing, CFS, shipment, distribution and related operational processes",
+      "Review shipment files, credit notes, proofs of delivery, bank NOCs, and operational documents",
+      "Identify process gaps or non-compliance issues and recommend improvements",
+      "Help strengthen governance across the group by supporting compliance & control enforcement"
+    ],
+    "benefits": [],
+    "skills": [
+      "Accounting & bookkeeping",
+      "Internal audit processes",
+      "Compliance & regulatory knowledge (VAT, Tax, Company Act)",
+      "ERP & accounting software use",
+      "Advanced MS Office (especially Excel)",
+      "Analytical skills",
+      "Attention to detail",
+      "Integrity",
+      "Strong sense of responsibility",
+      "Ability to work under supervision",
+      "Good communication"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "206/A (Level 2), Tejgaon Industrial Area, Dhaka-1208"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/103391_1.png"
+  },
+  {
+    "id": 14,
+    "title": "Assistant General Manager - Accounts & Finance",
+    "company": "SQ Group of Companies",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 1,
+    "category": "Accounting/Finance",
+    "experience": [3, 4],
+    "subCategory": "Banking",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Only Male",
+    "education": "Master of Business Studies (MBS) in Accounting or Finance & Banking",
+    "description": "Lead and supervise the accounts & finance team, manage financial operations across the group including cash/bank, fund flow, stock records, financial controls and statutory compliance.",
+    "requirements": [
+      "Lead and supervise the Accounts & Finance team and ensure implementation of financial policies",
+      "Oversee accounts, cash & bank management, fund flow management, stock records, and financial controls",
+      "Prepare monthly, quarterly and annual financial statements and management reports",
+      "Ensure Tax & VAT compliance including TDS/VAT deduction and statutory filings",
+      "Coordinate with Store, Sales, Marketing, and Factory departments for integrated financial operations",
+      "Manage internal & external audits and ensure compliance with corporate policies, regulatory and statutory requirements (RJSC, tax laws etc.)",
+      "Use ERP/SAP or accounting software (e.g. Tally/SAP) and MS Excel for reporting, analysis and process improvement"
+    ],
+    "benefits": [],
+    "skills": [
+      "Management Accounting",
+      "Financial Statement Preparation",
+      "Tax & VAT Compliance",
+      "Cash / Bank / Fund Flow Management",
+      "ERP/SAP & Accounting Software",
+      "Audit Coordination",
+      "Financial Controls",
+      "Analytical skills",
+      "Integrity",
+      "Confidentiality",
+      "Problem-solving",
+      "Leadership"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Suvastu Suraiya Trade Center, 9th-13th Floor, Plot 57, Road 21, Kemal Ataturk Avenue, Banani, Dhaka-1213"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/34636_0.png"
+  },
+  {
+    "id": 15,
+    "title": "Sr. Executive / Executive - Finance",
+    "company": "Galaxy Bangladesh Group",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Banking/Financial Services",
+    "experience": [0, 2],
+    "subCategory": "Banking",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Only Male",
+    "education": "BBA in Finance / Accounting & Information System or MBA in Finance / Accounting & Information System",
+    "description": "Handle finance operations including cash & bank management, revenue & invoice collections, reconciliations, corporate billing and supplier/vendor payments for Galaxy Bangladesh Group.",
+    "requirements": [
+      "Lead and supervise departmental finance activities.",
+      "Maintain communication with bank and other departments.",
+      "Collect invoices and cash from all outlets.",
+      "Encash foreign currency from money-exchange and deposit revenue into company bank account per policy.",
+      "Maintain and update cash vault records and perform withdrawals per policy.",
+      "Post credit-card revenue collections in Excel and reconcile; prepare bank-receipt vouchers.",
+      "Prepare daily fund-position reports for management review.",
+      "Handle IOU payments and adjustments (including at Uttara office).",
+      "Post petty-cash payment vouchers in the system.",
+      "Pay utility bills and properly file paid bill records.",
+      "Disburse monthly cash salary and service charges to employees.",
+      "Reconcile cash and invoices collected from all outlets; prepare daily revenue reconciliation report.",
+      "Coordinate VAT revenue input in EFD machines; prepare VAT challans for corporate customer billing.",
+      "Issue invoices and bills to corporate customers; collect cash/cheques from them and deposit to company bank account.",
+      "Prepare A/R ageing reports; follow up with corporate customers for overdue collections.",
+      "Perform supplier ageing analysis; prepare cheques for TDS/VDS and supplier payments; collect authorized signatures and disburse payments.",
+      "Deposit monthly TDS and VDS to government treasury.",
+      "Adjust employee mobile bills against salaries.",
+      "Conduct advance reconciliations, monthly bank reconciliation, post journal vouchers for bank charges/interest.",
+      "Perform inventory reconciliation and physical verification where applicable.",
+      "Post journal vouchers for monthly expenses and maintain monthly accounting checklist.",
+      "Prepare and circulate monthly MIS reports to management."
+    ],
+    "benefits": [],
+    "skills": [
+      "Cash & Bank Management",
+      "Revenue / Invoice Collection",
+      "Credit Card & Voucher Posting",
+      "Bank & Cash Reconciliation",
+      "VAT/TDS / Tax / Compliance",
+      "Accounts Receivable & Payable Management",
+      "Supplier Payments & Cheque Handling",
+      "MIS Reporting",
+      "Excel / Accounting Software",
+      "Detail oriented",
+      "Integrity",
+      "Good communication skills",
+      "Organized",
+      "Ability to coordinate with multiple departments"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Taj Marriott 5th floor, 25 Gulshan Avenue, Gulshan-1, Dhaka-1212, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/25467_1.png"
+  },
+  {
+    "id": 16,
+    "title": "Accounts Assistant",
+    "company": "Elevator Engineers Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Business Development",
+    "experience": [1, 2],
+    "subCategory": "Business",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Only Female",
+    "education": "Bachelor’s degree in Accounting / Finance / Business Administration (BBA/BBS) or equivalent",
+    "description": "Support daily accounting tasks including vouchers, bills, invoices, bank reconciliation, ledger updates and financial documentation for Elevator Engineers Ltd.",
+    "requirements": [
+      "Maintain daily financial records and update all documentation.",
+      "Prepare, check and file vouchers, bills, invoices, and payment documents.",
+      "Support monthly bank reconciliation and ledger updates.",
+      "Assist in preparing financial reports and monitoring budgets.",
+      "Verify all accounting entries for accuracy and compliance.",
+      "Assist Senior Officer in all documentation tasks."
+    ],
+    "benefits": ["Festival bonuses and benefits as per company policy"],
+    "skills": [
+      "Basic accounting principles",
+      "MS Excel / MS Word",
+      "Accounting software usage",
+      "Analytical and numerical skills",
+      "Documentation & record-keeping",
+      "Good communication skills",
+      "Detail oriented",
+      "Organized"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "eel.service24@gmail.com",
+      "phone": "",
+      "address": "House 664/A, Road 09 (Main Road), DOHS Mirpur, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/42390_1.png"
+  },
+  {
+    "id": 17,
+    "title": "Manager - Costing, Budgeting & MIS",
+    "company": "M & J Group",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": "Not Specified",
+    "category": "Business Development",
+    "experience": [1, 2],
+    "subCategory": "Business",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "M.Com or equivalent; professional qualification (e.g. Cost & Management Accountant) preferred",
+    "description": "Lead the costing, budgeting and MIS functions — including cost analysis, budget planning and financial reporting for the group’s factories and operations.",
+    "requirements": [
+      "Lead costing, budgeting and MIS activities to ensure accurate cost analysis and budget planning.",
+      "Monitor factory performance data and drive cost-optimization initiatives.",
+      "Support strategic decision-making through financial reporting and analysis.",
+      "Coordinate with cross-functional teams to ensure compliance with company SOPs.",
+      "Supervise team members involved in costing, budgeting and MIS.",
+      "Improve process efficiency across costing, budgeting and MIS operations."
+    ],
+    "benefits": [
+      "Mobile bill, weekly 2 holidays, medical allowance, transport/pick-drop, full subsidized lunch, performance bonus, festival bonus (2), yearly salary review, earned-leave encashment"
+    ],
+    "skills": [
+      "Costing & Budgeting Analysis",
+      "MIS & Financial Reporting",
+      "Cost Optimization",
+      "Analytical Skills",
+      "Team Supervision",
+      "Cross-functional Coordination",
+      "Strong analytical mindset",
+      "Detail oriented",
+      "Leadership & supervision ability",
+      "Integrity",
+      "Ability to work under pressure"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Red Crescent Concord Tower, 17 Mohakhali C/A, Dhaka-1212"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/24849_2.png"
+  },
+  {
+    "id": 18,
+    "title": "Admin and Accounts Officer",
+    "company": "Nabolok Parishad",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Business Development",
+    "experience": [3, 5],
+    "subCategory": "Business",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Not explicitly specified",
+    "description": "Manage administrative tasks and accounts/finance operations for Nabolok Parishad, ensuring accurate financial records and internal controls.",
+    "requirements": [
+      "Manage day-to-day accounts and financial management tasks.",
+      "Maintain proper documentation and financial records.",
+      "Ensure internal financial controls and compliance.",
+      "Coordinate administrative functions alongside financial duties.",
+      "Assist in audits, reconciliations, and financial reporting as required."
+    ],
+    "benefits": [],
+    "skills": [
+      "Accounts & Financial Management",
+      "Book-keeping",
+      "Documentation & Record-keeping",
+      "Internal Control & Compliance",
+      "Administrative Coordination",
+      "Detail oriented",
+      "Integrity",
+      "Good communication",
+      "Reliability",
+      "Organizational skills"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Not specified"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/98488_1.png"
+  },
+  {
+    "id": 19,
+    "title": "Accounts & Finance Head",
+    "company": "MYRO",
+    "location": "Dhaka",
+    "salary": {
+      "min": 25000,
+      "max": 40000,
+      "default": "Negotiable"
+    },
+    "vacancy": 1,
+    "category": "Accounting/Finance",
+    "experience": [4, 5],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Not explicitly specified",
+    "description": "Oversee all financial, accounting, and fund-flow operations of the e-commerce business including cash management, order settlement, inventory valuation, financial controls, and reporting.",
+    "requirements": [
+      "Maintain accurate books, ledgers, journals, and financial records.",
+      "Supervise daily transactions and perform monthly closing.",
+      "Ensure compliance with accounting standards and software accuracy.",
+      "Monitor daily cash-in / cash-out from online and COD operations.",
+      "Prepare cash flow forecasts and maintain adequate working capital.",
+      "Reconcile COD orders and verify payment statuses from CMS panels.",
+      "Track cancellations, refunds, and returns; adjust financial records accordingly.",
+      "Monitor stock movement, value inventory, and calculate COGS and profitability.",
+      "Match daily sales with payment gateway or online settlement reports.",
+      "Verify courier billing and handle return parcel reconciliations.",
+      "Manage VAT, tax returns, and compliance; maintain statutory records.",
+      "Prepare payroll and coordinate with HR/attendance.",
+      "Plan monthly/annual budgets; forecast revenue, expenses, and profits.",
+      "Prepare weekly dashboards and monthly P&L, Balance Sheet, Cash Flow Statements.",
+      "Maintain supplier ledgers, verify bills, schedule payments, prevent duplicates.",
+      "Establish internal control & risk-management systems; detect fraud or anomalies."
+    ],
+    "benefits": [],
+    "skills": [
+      "Financial accounting & controls",
+      "Cash flow & fund management",
+      "E-commerce order & payment reconciliation",
+      "Inventory valuation & COGS calculation",
+      "Accounting software & MIS reporting",
+      "Budgeting & financial forecasting",
+      "VAT/Tax compliance",
+      "Payroll processing",
+      "Analytical skills",
+      "Attention to detail",
+      "Integrity",
+      "Ability to manage multiple finance operations",
+      "Good communication & coordination"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Dhaka (Shyamoli)"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/193863_0.png"
+  },
+  {
+    "id": 20,
+    "title": "Accounts Officer",
+    "company": "High-Tech Building Materials Industries Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 1,
+    "category": "Accounting/Finance",
+    "experience": [0, 1],
+    "subCategory": "Finance",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor’s or Master’s in Accounting / Finance or related field",
+    "description": "Manage daily financial operations including bookkeeping, ledger maintenance, asset accounting, supplier/customer reconciliation, and monthly financial reporting for PVC ceiling and building materials business.",
+    "requirements": [
+      "Prepare bank reconciliation sheets.",
+      "Maintain cash book and general ledger regularly.",
+      "Prepare supplier and customer reconciliation reports.",
+      "Perform fixed asset accounting.",
+      "Generate monthly financial asset reports and balance sheets.",
+      "Manage accounts payable and receivable reports.",
+      "Prepare monthly balance sheet and overall financial statements.",
+      "Report directly to Head of Accounts / Management."
+    ],
+    "benefits": [
+      "Lunch",
+      "Mobile allowance",
+      "Performance bonus/incentives",
+      "Career growth opportunities"
+    ],
+    "skills": [
+      "Accounting / Book-keeping",
+      "Bank reconciliation",
+      "Fixed asset accounting",
+      "Accounts payable & receivable management",
+      "Inventory/store accounting / cost sheet preparation",
+      "Proficiency in accounting software (Tally / QuickBooks / ERP)",
+      "MS Excel",
+      "VAT/Tax handling & financial documentation",
+      "Supplier/customer reconciliation",
+      "Financial reporting",
+      "Detail-oriented",
+      "Analytical",
+      "Good communication skills",
+      "Ability to work under pressure and meet deadlines"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "01752063857",
+      "address": "Bhai Bhai Market (3rd Floor), Hasnabad Container Port Road, South Keraniganj, Dhaka‑1311"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/139287_0.png"
+  },
+  {
+    "id": 21,
+    "title": "Accountant",
+    "company": "ASSK AMARI WAY DEVELOPERS LTD.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Accounting/Finance",
+    "experience": [4, 5],
+    "subCategory": "Finance",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Only Male",
+    "education": "Bachelor / Honours in Accounting / BBA / MBA (Accounting) — CA (CC) preferred",
+    "description": "Manage company accounts, taxation, audit, and financial reporting for ASSK AMARI WAY DEVELOPERS LTD.",
+    "requirements": [
+      "Maintain and manage company accounts with accuracy and confidentiality.",
+      "Handle tax-related matters, including VAT/Tax preparation and submission.",
+      "Assist in internal and external audits.",
+      "Prepare financial statements, vouchers, and supporting documents.",
+      "Ensure compliance with company policies and regulatory requirements.",
+      "Document and report financial information accurately, meet deadlines."
+    ],
+    "benefits": [
+      "T/A",
+      "Mobile bill",
+      "Profit share",
+      "Subsidized lunch",
+      "Yearly salary review"
+    ],
+    "skills": [
+      "Accounting",
+      "Tax & VAT management",
+      "Financial reporting",
+      "Audit support",
+      "Cash / account management",
+      "Analytical ability",
+      "Strong documentation skills",
+      "Honesty and integrity",
+      "Ability to work under guidance and meet deadlines"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "House‑11/B, 1st Floor, Road‑130, Gulshan‑1, Dhaka‑1212"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/97532_1.png"
+  },
+  {
+    "id": 22,
+    "title": "Finance Officer (Lead)",
+    "company": "Association for Alternative Development (AFAD)",
+    "location": "Kurigram",
+    "salary": {
+      "min": 33500,
+      "max": 33500,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Accounting/Finance",
+    "experience": [2, 3],
+    "subCategory": "Finance",
+    "employeeStatus": "Full Time",
+    "jobType": "Contractual",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor’s or Master’s degree in Accounting, Finance, or Business Administration",
+    "description": "Oversee and manage all financial operations for donor-funded project under AFAD, ensuring transparent, accurate, and timely financial management across project districts in compliance with organizational and donor policies.",
+    "requirements": [
+      "Prepare monthly, quarterly, and annual financial statements.",
+      "Maintain vouchers, ledgers, cashbooks, bank reconciliation.",
+      "Manage cash flow, payroll, asset register and financial documentation.",
+      "Ensure procurement and expenditure compliance with donor rules.",
+      "Monitor financial reporting for consortium partners and ensure accurate fund utilisation tracking.",
+      "Support external and internal audits.",
+      "Ensure financial reporting and compliance for project fund management.",
+      "Coordinate with project management to align budgets, expenses and reporting."
+    ],
+    "benefits": [],
+    "skills": [
+      "NGO / Donor-funded project financial management",
+      "Accounting & Book-keeping",
+      "Budgeting & Fund Utilization Monitoring",
+      "Financial Reporting & Audit Support",
+      "Bank Reconciliation, Cash Flow & Payroll Management",
+      "High integrity",
+      "Attention to detail",
+      "Ability to work independently",
+      "Accountability",
+      "Good communication skills"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "afadkuri@gmail.com",
+      "phone": "",
+      "address": "RK Road, Kaliganj, Kurigram‑5600, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/114278_2.png"
+  },
+
+  {
+    "id": 23,
+    "title": "Assistant / Deputy Manager - Financial Performance & Analysis",
+    "company": "Aftab Bahumukhi Farms Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 2,
+    "category": "Accounting/Finance",
+    "experience": [3, 5],
+    "subCategory": "Finance",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "BBA in Accounting or MBA in Accounting (CA/ACCA/CMA part-qualified preferred)",
+    "description": "Lead financial planning, budgeting, and analysis for agro-food business units, supporting strategic financial decisions and ensuring business objectives are met.",
+    "requirements": [
+      "Formulate short- and long-term financial and strategic plans with strategy team.",
+      "Lead annual budgeting process and prepare monthly/quarterly forecasts of revenues, expenses, and cash flow.",
+      "Perform in-depth financial analysis including SKU-wise product/portfolio analysis and variance analysis.",
+      "Prepare management reports, performance dashboards, and executive presentations.",
+      "Collaborate with departments/business units to understand performance drivers.",
+      "Perform tasks assigned by line manager."
+    ],
+    "benefits": [
+      "T/A",
+      "Mobile bill",
+      "Provident fund",
+      "Weekly 2 holidays",
+      "Insurance",
+      "Medical allowance",
+      "Gratuity",
+      "2 Festival Bonuses"
+    ],
+    "skills": [
+      "Budgeting & Forecasting",
+      "Financial Analysis",
+      "Financial Planning & Strategy",
+      "Management Reporting",
+      "Business Partnering",
+      "Analytical mindset",
+      "Attention to detail",
+      "Collaboration",
+      "Integrity",
+      "Proactive"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Islam Chamber (Level 12), 125/A, Motijheel C/A, Dhaka-1000"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/21037_1.png"
+  },
+  {
+    "id": 24,
+    "title": "Senior Manager - Corporate Finance",
+    "company": "Unique Group",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Accounting/Finance",
+    "experience": [7, 10],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "MBA (preferably in Finance / Accounting / related field)",
+    "description": "Manage corporate-level financial planning, treasury, fund management, investment analysis, and long-term strategies for Unique Group’s diversified operations.",
+    "requirements": [
+      "Lead corporate financial planning, budgeting and forecasting.",
+      "Manage cash flow, treasury operations, and fund management.",
+      "Perform investment analysis and prepare feasibility studies / business cases.",
+      "Prepare and review financial reports for strategic decisions.",
+      "Ensure compliance with financial regulations, tax laws, and internal controls.",
+      "Liaise with banks and financial institutions for credit, term-loans, LCs, and financing.",
+      "Monitor fund utilization, financing costs, and repayment of liabilities.",
+      "Oversee financial documentation, loan proposals, and bank covenants compliance.",
+      "Support development of financial policies, SOPs, and internal controls.",
+      "Provide risk assessment and decision-support analysis to management.",
+      "Perform other finance-related tasks as needed."
+    ],
+    "benefits": [
+      "Mobile bill",
+      "Provident fund",
+      "Insurance",
+      "Yearly salary review",
+      "2 Festival bonuses",
+      "Other benefits as per company policy"
+    ],
+    "skills": [
+      "Corporate Financial Planning",
+      "Treasury & Fund Management",
+      "Investment & Feasibility Analysis",
+      "Financial Reporting",
+      "Budgeting & Forecasting",
+      "Regulatory Compliance & Internal Controls",
+      "Bank & Financial Institution Liaison",
+      "Risk Assessment",
+      "ERP / Accounting Software",
+      "Leadership & Communication",
+      "Analytical mindset",
+      "Integrity",
+      "Strategic thinking"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Borak Mehnur 51/B, Kemal Ataturk Avenue, Banani, Dhaka-1213"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/23916_1.png"
+  },
+  {
+    "id": 25,
+    "title": "Accountant",
+    "company": "Grain & Protein Technologies Bangladesh Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 1,
+    "category": "Accounting/Finance",
+    "experience": [5, 8],
+    "subCategory": "Finance",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "BBS in Accounting or Finance",
+    "description": "Handle accounting functions including VAT-compliant invoicing, vendor & customer transaction processing, bookkeeping, reconciliations, and general financial support across departments.",
+    "requirements": [
+      "Assist in sales quotation and costing processes.",
+      "Prepare VAT-compliant invoices and timely filing of VAT returns.",
+      "Enter vendor invoices into ERP and resolve discrepancies.",
+      "Monitor accounts receivable and follow up on payments.",
+      "Manage outgoing payments and perform bank reconciliations.",
+      "Maintain full accounts and execute monthly closing.",
+      "Reconcile balance-sheet and income-statement accounts.",
+      "Generate AP/AR/GL reports.",
+      "Perform inter-company account reconciliations.",
+      "Coordinate with payroll providers.",
+      "Liaise with auditors, tax agents, and banks.",
+      "Assist with budget preparation and financial forecasts.",
+      "Support commercial team with quotations.",
+      "Provide general financial and administrative support.",
+      "Handle ad-hoc tasks and projects assigned by management."
+    ],
+    "benefits": [
+      "Yearly increment",
+      "Festival bonuses",
+      "Other company benefits as per policy"
+    ],
+    "skills": [
+      "Accounting / Book-keeping",
+      "VAT-compliant invoicing",
+      "ERP / Accounting Software",
+      "Accounts Payable & Receivable Management",
+      "Bank Reconciliation",
+      "Financial Reporting",
+      "Vendor & Customer Transaction Handling",
+      "Inter-company Reconciliation",
+      "Budgeting & Forecasting",
+      "Analytical & Numerical Skills",
+      "Good communication skills",
+      "Detail oriented",
+      "Integrity",
+      "Ability to work under deadlines"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "TSL Tower, House #43, Level #03, Sonargaon Janapath Road, Sector-12, Uttara, Dhaka-1230, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/145599_0.png"
+  },
+  {
+    "id": 26,
+    "title": "Officer Finance and VAT",
+    "company": "Nevian Lifescience PLC",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 4,
+    "category": "Accounting/Finance",
+    "experience": [3, 4],
+    "subCategory": "Finance",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "BBS in Accounting or Finance (CA/CMA part-qualified preferred)",
+    "description": "Support daily cash management, invoice processing, VAT/accounting entries, and treasury operations at head-office and Tongi site.",
+    "requirements": [
+      "Assist in daily cash management, fund transfers, and payment processing.",
+      "Provide reports to Head Treasury on treasury metrics.",
+      "Ensure timely and accurate processing of supplier invoices.",
+      "Support business operations and vendor relationships.",
+      "Handle invoice posting and reconciliation.",
+      "Maintain VAT documentation and perform month-end/year-end closing.",
+      "Perform stock adjustments in VAT software.",
+      "Ensure compliance with company treasury policy, internal controls, and regulations."
+    ],
+    "benefits": ["Not clearly specified"],
+    "skills": [
+      "Cash & Bank Management",
+      "Invoice Processing",
+      "VAT Accounting/Documentation",
+      "Treasury Operations",
+      "Invoice Posting & Reconciliation",
+      "Interpersonal / communication skills",
+      "Attention to detail",
+      "Integrity",
+      "Willingness to learn"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Tower 117/A, Tejgaon I/A, Dhaka-1208, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/191601_0.png"
+  },
+  {
+    "id": 27,
+    "title": "Senior Officer, Inquiry",
+    "company": "BRAC",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 3,
+    "category": "Law/Legal",
+    "experience": [3, 5],
+    "subCategory": "Law",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Master’s degree in Law or relevant discipline",
+    "description": "Handle and resolve complaints through fair and thorough inquiry processes ensuring adherence to organisational policies, legal standards, and safeguarding guidelines.",
+    "requirements": [
+      "Review assigned complaints and assess risks, identifying key issues for investigation.",
+      "Develop an inquiry plan — prepare checklists, questionnaires, identify interviewees and required documents/evidence.",
+      "Engage with concerned personnel to secure cooperation for investigation and evidence collection.",
+      "Conduct interviews of parties and witnesses, verify evidence and maintain proper records with signatures.",
+      "Prepare and submit inquiry reports (preliminary and final), issue show-cause or notice letters, support review hearings.",
+      "Present findings to the SGMC forum and/or Ombudsperson, ensuring fair hearing and informed decisions.",
+      "Ensure confidentiality, due process and procedural integrity throughout the inquiry.",
+      "Promote and uphold safeguarding standards, including prevention of harassment, exploitation, abuse (SEA), and awareness on PSHEA policies.",
+      "Follow safeguarding reporting procedures in case of reportable incidents, and support safeguarding implementation across teams."
+    ],
+    "benefits": [
+      "Festival Bonus",
+      "Contributory Provident Fund",
+      "Gratuity",
+      "Health & Life Insurance",
+      "Maternity/Paternity Leave",
+      "Wellness Centre",
+      "Day Care facility (as per policy)"
+    ],
+    "skills": [
+      "Verbal and written communication",
+      "MS Office proficiency",
+      "Typing / transcription (Bijoy/Avro)",
+      "Understanding of labour laws and safeguarding/PSHEA standards",
+      "Investigation skills",
+      "Report writing",
+      "Integrity",
+      "Confidentiality",
+      "Analytical thinking",
+      "Ability to travel as needed"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Mohakhali, Dhaka-1212, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/91316_2.png"
+  },
+  {
+    "id": 28,
+    "title": "Audit Officer",
+    "company": "RNS Distribution",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 20000,
+      "max": 25000,
+      "default": "Not specified"
+    },
+    "vacancy": 5,
+    "category": "Accounting/Finance",
+    "experience": [3, 5],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "HSC / Bachelor of Arts (BA)",
+    "description": "Ensure compliance with company procedures and policies; verify office reports, audit business operations and staff performance across RNS Distribution.",
+    "requirements": [
+      "Ensure that operations follow company rules and internal policies.",
+      "Check and verify all office reports and documents.",
+      "Assist in audit investigations when required.",
+      "Report any irregularities or mistakes in office operations to management and support corrective action.",
+      "Ensure staff perform their duties properly and maintain work discipline."
+    ],
+    "benefits": [],
+    "skills": [],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Mobarakgona, Mirsharai, Chattogram, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/196257_0.jpeg"
+  },
+  {
+    "id": 29,
+    "title": "Accounts & Admin Officer",
+    "company": "Ashraf Foundation (AF)",
+    "location": "Jashore",
+    "salary": {
+      "min": 40000,
+      "max": 45000,
+      "default": "Not specified"
+    },
+    "vacancy": 2,
+    "category": "Accounting/Finance",
+    "experience": [3, 5],
+    "subCategory": "Finance",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "MCom or MBA (Accounting/Finance or related)",
+    "description": "Manage financial and administrative operations of the project, ensuring compliance, record-keeping, procurement, and office logistics for smooth implementation of NGO program.",
+    "requirements": [
+      "Maintain and update lease agreements, contracts and other documents at project office.",
+      "Arrange accommodation, travel/ticketing and logistical support for internal and external visitors.",
+      "Ensure office equipment (photocopiers, computers, printers, IPS systems) are functional; manage utilities, security and office cleanliness.",
+      "Provide logistical/admin support for meetings, workshops/seminars/training sessions, interviews, and visitor coordination.",
+      "Handle procurement according to donor/organization policies, including obtaining quotations and organizing procurement-committee meetings.",
+      "Maintain inventory, asset and store registers; ensure proper storage and documentation of materials.",
+      "Maintain staff records: attendance, leave, movement, personal files, fixed assets register.",
+      "Operate and maintain accounting software (Tally ERP 9 / Prime) for bookkeeping.",
+      "Supervise office support staff and coordinate with local service providers under financial policy compliance.",
+      "Conduct monthly and year-end account closures, including bank reconciliations and statement generation, and report to headquarters on schedule.",
+      "Assist in budget analysis and disbursement per project budget lines; prepare monthly expenditure plans in consultation with project leadership.",
+      "Maintain cash control, process bills/vouchers/payments, verify transactions including bill verification and payment processing.",
+      "Ensure compliance with accounting standards, VAT/tax/custom regulations; verify financial transactions randomly to ensure accuracy.",
+      "Support financial monitoring for the project, maintain financial documents and ensure proper audit readiness.",
+      "Perform any other tasks assigned by supervisor or donor as needed for additional projects under the organization."
+    ],
+    "benefits": ["T/A, Mobile bill, Weekly 2 holidays, Insurance"],
+    "skills": [
+      "Accounting & Book-keeping",
+      "Tally ERP 9 / Prime usage",
+      "Financial management & compliance",
+      "Procurement & vendor liaising",
+      "Office administration & logistics",
+      "Budget analysis & expenditure planning",
+      "Good communication (English & Bangla)",
+      "Proficiency in MS Office (Excel, Word, PowerPoint)",
+      "Analytical ability",
+      "Integrity and attention to detail",
+      "Ability to manage admin + finance tasks in NGO context"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Chaugachha, Jashore, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/136346_1.png"
+  },
+  {
+    "id": 30,
+    "title": "Assistant Manager - Finance",
+    "company": "DHAKA EXPATRIATE SERVICES LTD.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 55000,
+      "max": 65000,
+      "default": "Not specified"
+    },
+    "vacancy": 1,
+    "category": "Accounting/Finance",
+    "experience": [3, 4],
+    "subCategory": "Accounting",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Strong accounting/finance background",
+    "description": "Manage end-to-end revenue cycle, client invoicing, receivables collection, cash & bank management, and support financial operations including audit, compliance, budgeting, and salary disbursement.",
+    "requirements": [
+      "Issue BDT and USD invoices to clients and manage entire revenue cycle.",
+      "Follow up on due and overdue invoices; communicate with clients regarding payments and resolve outstanding receivables.",
+      "Record receipts, manage deposits and ensure accurate cash management and bank transactions.",
+      "Serve as primary finance contact for clients — provide accounting statements and respond to billing/payment queries.",
+      "Support VAT/Tax audit and internal compliance, maintain all financial documentation properly.",
+      "Assist in preparing yearly budget and financial forecasts.",
+      "Facilitate routine banking operations; reconcile cash flows and bank statements.",
+      "Prepare and distribute monthly salary statements; lead accounts team in absence of management.",
+      "Scan, file, and maintain all vouchers, receipts and financial documents accurately.",
+      "Assist Finance Manager with general finance functions, analysis and reporting."
+    ],
+    "benefits": [
+      "Mobile bill, Insurance, Gratuity, Provident fund, Weekly 2 holidays, Yearly salary review, 2 Festival bonuses, Baisakhi bonus"
+    ],
+    "skills": [
+      "Revenue & Accounts Receivable Management",
+      "Invoice Issuance (BDT & USD)",
+      "Client Communication & Negotiation",
+      "Cash & Bank Management",
+      "Financial Documentation & Record-keeping",
+      "VAT/Tax Audit & Compliance",
+      "Budgeting & Forecasting",
+      "ERP/Accounting Software & MS Excel",
+      "Analytical skills",
+      "Attention to detail and accuracy",
+      "Good communication (English & Bengali)",
+      "Integrity and ethical conduct",
+      "Ability to work independently and as part of a team"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Ventura Iconia, House 37, Level 3, Road 11, Block H, Banani, Dhaka-1213"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/19929_1.png"
+  },
+  {
+    "id": 31,
+    "title": "Visa Consultant",
+    "company": "TRAVEL MIGRA",
+    "location": "Dhaka",
+    "salary": {
+      "min": 25000,
+      "max": 35000,
+      "default": "Negotiable"
+    },
+    "vacancy": 5,
+    "category": "Consultants",
+    "experience": [3, 4],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Hybrid",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Not specified",
+    "description": "Provide consultation and services for various visa categories including student, visit, work permit, permanent residency & family migration, handling visa-related tasks for clients seeking to migrate or travel abroad.",
+    "requirements": [
+      "Handle all visa-related tasks as per travel agency’s visa-section rules.",
+      "Consult clients regarding visa categories for Canada, USA, Australia and European countries.",
+      "Assist clients with Student Visa, Visit Visa, Work Permit, Permanent Residency & Family Migration processes.",
+      "Prepare, verify and submit necessary visa documents for clients.",
+      "Provide guidance and support to clients; maintain strong communication (calls, meetings, emails).",
+      "Maintain proper documentation and follow up on each client case until visa outcome.",
+      "Represent company professionally; ensure client-service standards.",
+      "Work within office hours 10:00 AM – 6:00 PM."
+    ],
+    "benefits": [],
+    "skills": [
+      "Visa processing & consultation",
+      "Client communication (Bengali & English)",
+      "Document verification & submission",
+      "Customer service",
+      "Time management",
+      "Presentable and well-mannered",
+      "Organized",
+      "Ability to work under pressure"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/132396_0.png"
+  },
+  {
+    "id": 32,
+    "title": "VISA Processing & Travel Consultant Expert",
+    "company": "Axzon International Tours and Travels Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 2,
+    "category": "Consultants",
+    "experience": [2, 3],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Hybrid",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor / Honors or relevant certification",
+    "description": "Manage visa processing and travel consultancy services for clients applying for visas and planning international or domestic tours.",
+    "requirements": [
+      "Handle tourist visa applications for various destinations (USA, UK, Canada, Australia, Schengen countries, Malaysia, Singapore, India, Thailand, UAE, etc.).",
+      "Advise clients on visa requirements, documentation and procedures for different countries.",
+      "Ensure visa application forms are correctly filled out and fees paid properly.",
+      "Liaise with embassies, consulates, and visa processing centers to expedite approvals and resolve issues.",
+      "Review and verify visa applications and supporting documents to minimize errors and maximize approval chances.",
+      "Maintain records of visa applications, approvals, denials, and related correspondence for documentation and reporting.",
+      "Handle complex or escalated visa cases using problem-solving skills and attention to detail.",
+      "Plan and organize domestic and international tour packages: coordinate hotel bookings, transportation, sightseeing, itineraries.",
+      "Communicate with clients to understand travel/visa needs and propose suitable visa or tour packages.",
+      "Coordinate with airlines, hotels, transport companies and other vendors to manage bookings and travel logistics."
+    ],
+    "benefits": [],
+    "skills": [
+      "Visa Processing & Documentation",
+      "Travel & Tour Management",
+      "Client Consultation & Customer Service",
+      "Communication (Phone / Email / In-person)",
+      "Coordination with Embassies / Consulates / Suppliers",
+      "Attention to Detail and Documentation Accuracy",
+      "Problem-Solving in Case of Complex Visa Issues",
+      "Proactive",
+      "Detail-oriented",
+      "Good communication skills",
+      "Client-service oriented",
+      "Ability to handle multiple visa/tour cases concurrently"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "House # 103, Level # 03, Suharwardy Avenue, Block # K, Sector # 10, Baridhara Diplomatic Zone, Dhaka, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/148919_0.png"
+  },
+  {
+    "id": 33,
+    "title": "Sr. Counselor / Destination Manager (USA, Canada, Malaysia, UK)",
+    "company": "Sagor Global Consultancy",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable (based on experience)"
+    },
+    "vacancy": 2,
+    "category": "Consultants",
+    "experience": [0, 1],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor degree (any discipline)",
+    "description": "Provide guidance and counselling to students seeking overseas admission and visa processing, manage relations with foreign partner institutions, and oversee end-to-end admission/visa processing for assigned destinations (USA, Canada, Malaysia, UK).",
+    "requirements": [
+      "Counsel students on study abroad options, admission pathways, program and country selection for USA, Canada, Malaysia and UK.",
+      "Guide students through application processes: program selection, documentation, submission, and post-admission support.",
+      "Advise on visa requirements and prepare students for visa interviews; assist with visa application & documentation.",
+      "Maintain up-to-date knowledge on university admission criteria, scholarship opportunities, and immigration/visa policies for target countries.",
+      "Build and manage relationships with partner universities, colleges, and institutions abroad; act as main liaison for admissions, enrollments, and institution-student communication.",
+      "Conduct counselling sessions, workshops or info-seminars for prospective students and their guardians.",
+      "Review students’ academic and financial profiles to recommend appropriate institutions and courses.",
+      "Maintain accurate records of student applications, admissions progress, visa status, and follow-ups.",
+      "Support marketing and outreach efforts (online/offline) for the consultancy’s study-abroad programs.",
+      "Coordinate with partner institutions for admissions updates, enrolment, and handle issues like visa refusals, tuition refund processes, or reapplications."
+    ],
+    "benefits": [
+      "Mobile bill, performance bonus, 2 festival bonuses, additional benefits as per company policy"
+    ],
+    "skills": [
+      "Student counseling",
+      "Visa & admission consultancy",
+      "Client communication and presentation",
+      "Documentation & record-keeping",
+      "CRM / software usage",
+      "Interpersonal skills",
+      "Target-orientated, proactive approach",
+      "Good English & Bengali communication skills",
+      "Ability to work under pressure",
+      "Organized and detail-oriented",
+      "Able to manage multiple tasks and follow-ups",
+      "Professionalism and client-oriented mindset"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "Jobs.SagorConsultancy@gmail.com",
+      "phone": "",
+      "address": "Plot-1/A, Road-2/A, Baridhara, Block-J, Dhaka-1212, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/115168_1.png"
+  },
+  {
+    "id": 34,
+    "title": "Visa Counselor",
+    "company": "SHADHIN BANGLA Consultancy & Travel Center",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 3,
+    "category": "Consultants",
+    "experience": [1, 2],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Higher Secondary / Bachelor / Masters (any discipline)",
+    "description": "Provide visa counselling and consultancy services for students and clients, guiding through application and documentation, acting as the first point of contact for enquiries and admissions/visa processing.",
+    "requirements": [
+      "Handle inbound telephone enquiries and provide accurate responses.",
+      "Follow up with prospective leads and convert them into applications.",
+      "Guide students/clients in selecting suitable courses/universities/countries based on their interests, profiles, and goals.",
+      "Provide career counselling and advise on pathways to meet aspirations.",
+      "Serve as first point of contact to make clients feel informed and supported.",
+      "Stay updated on admission requirements, academic/visa policies, and procedures of partner institutions and embassies.",
+      "Collect and verify client/student documents, ensure proper submission for admission and visa processing.",
+      "Support the organization in achieving student recruitment/visa processing targets.",
+      "Identify potential issues or roadblocks and escalate or resolve as needed."
+    ],
+    "benefits": [],
+    "skills": [
+      "Communication (phone & in-person)",
+      "Client counselling and customer service",
+      "Visa / Immigration / Study-abroad consultancy knowledge",
+      "Document verification & management",
+      "Lead follow-up & conversion",
+      "Basic computer and online operations skills",
+      "Friendly and supportive demeanor",
+      "Good interpersonal skills",
+      "Responsiveness and accountability",
+      "Ability to handle multiple client cases",
+      "Team-work oriented"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "House # 181A, Road # 13Ranavola Avenue, Sector # 10Uttara West Thana, Uttara, Dhaka-1230. Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/191645_0.jpg"
+  },
+  {
+    "id": 35,
+    "title": "Skilled Migration Expert",
+    "company": "Foring Fly",
+    "location": "Dhaka",
+    "salary": {
+      "min": 30000,
+      "max": 50000,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Consultants",
+    "experience": [4, 5],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Not explicitly specified",
+    "description": "Provide migration consultancy services — assess eligibility, guide clients through skilled migration visa processes for Australia and Canada, prepare and submit visa applications, and manage follow-ups with authorities.",
+    "requirements": [
+      "Assess client eligibility for Australia’s Skilled Independent (189), Skilled Nominated (190), and Skilled Work Regional (491) visas based on point‑test criteria and updated regulations.",
+      "Guide clients through skills assessment requirements via relevant assessment bodies (e.g. ACS, VETASSESS, Engineers Australia, ANMAC, etc.).",
+      "Prepare and submit Expressions of Interest (EOI) through SkillSelect for Australian visa applicants.",
+      "Provide advice to clients on strategies to improve points scores (education, experience, language, etc.) for better chances of visa invitation.",
+      "Prepare, review, and lodge Australian visa applications in compliance with regulations from Department of Home Affairs.",
+      "Track state/territory nomination requirements and recommend suitable visa pathways (Subclass 190 or 491) depending on client profile.",
+      "Stay updated on changes to skilled occupation lists (MLTSSL, STSOL, ROL) and immigration policy changes.",
+      "Manage Canadian immigration — assess eligibility under Express Entry (FSW, CEC, FST) and Provincial Nominee Programs (PNPs).",
+      "Create and submit Express Entry profiles with correct CRS calculation and advise clients on improving CRS scores (work experience, education, language, provincial demand, etc.).",
+      "Assist clients in preparing required documentation — proof of funds, credentials, job references, language tests (IELTS/CELPIP), ECA, biometrics, etc.",
+      "Follow up with immigration authorities (e.g. IRCC, provincial offices) for application status and clarifications when needed.",
+      "Maintain communication with clients to update them about status and next steps, ensuring transparency and support throughout immigration process."
+    ],
+    "benefits": [
+      "Mobile bill reimbursement",
+      "Performance bonus",
+      "Lunch subsidy",
+      "2 festival bonuses yearly"
+    ],
+    "skills": [
+      "Knowledge of Australia & Canada skilled migration laws and visa categories",
+      "Visa application preparation and documentation",
+      "Client assessment and counselling",
+      "Immigration compliance and regulation awareness",
+      "Communication (English/Bangla)",
+      "Attention to detail",
+      "Ability to work independently and as a team",
+      "Good command of English",
+      "Team‑player",
+      "Hard worker",
+      "Ability to manage full process independently"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "90/1, City Center, Level 30, Motijheel C/A, Dhaka-1000"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/173493_0.png"
+  },
+  {
+    "id": 36,
+    "title": "Senior Student Consultant",
+    "company": "Albatross Education Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Consultants",
+    "experience": [2, 3],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Likely Bachelor or equivalent",
+    "description": "Provide counselling and support to prospective students for UK study abroad; manage student applications, documentation, and liaise with UK universities and clients.",
+    "requirements": [
+      "Provide professional and accurate counselling to students and parents about UK education options.",
+      "Prepare, review and process student applications to partner UK universities/colleges.",
+      "Assess student profiles: academic background, English proficiency, financial capacity, documentation readiness.",
+      "Assist with visa application documentation: verify required documents, review SOPs and financial evidences.",
+      "Maintain communication with UK university representatives and academic partners.",
+      "Manage and update student/client database and CRM system.",
+      "Build and maintain relationships with clients, students, guardians and partners."
+    ],
+    "benefits": [],
+    "skills": [
+      "Student counselling / communication",
+      "Application processing",
+      "Documentation & visa-processing knowledge",
+      "CRM / database management",
+      "Client relationship management",
+      "Professional communication",
+      "Attention to detail",
+      "Organized and responsible",
+      "Customer/student oriented",
+      "Good interpersonal skills"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Uttara, Dhaka, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/105905_0.png"
+  },
+  {
+    "id": 37,
+    "title": "Senior Counselor (Study Abroad)",
+    "company": "Futureed Corporation Ltd",
+    "location": "Dhaka",
+    "salary": {
+      "min": 45000,
+      "max": 50000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Consultants",
+    "experience": [4, 6],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-10",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor/Honors degree (preferred from reputed university)",
+    "description": "Provide counselling and support to students seeking to study abroad (especially Australia), guiding them through admissions and visa process, handling applications, and ensuring compliance with visa/immigration requirements.",
+    "requirements": [
+      "Provide expert counselling based on students’ academic backgrounds, career goals, financial capacity, and visa eligibility.",
+      "Guide students through full application process: course selection, eligibility check, application submission to foreign institutions.",
+      "Assist in preparing necessary documents: GTE statements, SOPs, financial evidence, academic credentials, English-test scores, visa application paperwork.",
+      "Maintain up-to-date knowledge on Australian immigration policies, university requirements, scholarships, application deadlines.",
+      "Communicate regularly with students to track application progress and provide assistance.",
+      "Achieve monthly targets for counselling sessions, applications submitted, and student enrolments.",
+      "Participate in education fairs, seminars, workshops and promotional activities.",
+      "Maintain accurate records of student profiles, application statuses, and communication logs using CRM or internal systems."
+    ],
+    "benefits": [],
+    "skills": [
+      "Strong English communication (spoken & written)",
+      "Knowledge of overseas education & visa/immigration processes (especially Australia)",
+      "Student counselling and advisory skills",
+      "Documentation & paperwork management",
+      "CRM / data-tracking / record-keeping",
+      "Good interpersonal skills",
+      "Honesty & integrity",
+      "Ability to handle multiple clients",
+      "Result-oriented",
+      "Good organizational skills"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Ahmed Tower (6th Floor), Kemal Ataturk Avenue, Banani, Dhaka‑1213, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/36549_2.png"
+  },
+  {
+    "id": 38,
+    "title": "Business Development Manager (Study Abroad)",
+    "company": "Visabee Consultants Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Consultants",
+    "experience": [5, 7],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-09",
+    "jobEndDate": "2026-01-20",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor (Honours) or equivalent",
+    "description": "Drive business growth through student counselling, visa-processing services and strategic partnership development; manage end-to-end counselling and visa application support for students aiming to study abroad.",
+    "requirements": [
+      "Develop and implement business growth strategies to expand company reach and partnerships.",
+      "Counsel students on study-abroad opportunities, university selection, and course pathways.",
+      "Assist students throughout the entire visa application process.",
+      "Build and maintain strong relationships with universities, partners, and internal teams.",
+      "Identify new market opportunities and contribute to strategic planning.",
+      "Achieve monthly and quarterly business targets.",
+      "Represent the company at education fairs, events, and seminars."
+    ],
+    "benefits": [
+      "Performance bonuses",
+      "Growth opportunities in an international education company"
+    ],
+    "skills": [
+      "Student counselling",
+      "Visa processing",
+      "Business development",
+      "Sales & negotiation",
+      "Partnership building",
+      "Team leadership / management",
+      "Target-driven",
+      "Strong communication & negotiation",
+      "Organized and professional",
+      "Able to work independently",
+      "Customer-oriented"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "info@visabeebd.com",
+      "phone": "",
+      "address": "Banani, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/123867_0.jpg"
+  },
+  {
+    "id": 39,
+    "title": "Cafeteria In-Charge",
+    "company": "MJL Bangladesh PLC",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 4,
+    "category": "Hospitality/Travel/Tourism",
+    "experience": [2, 3],
+    "subCategory": "Hospitality",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-12-01",
+    "jobEndDate": "2026-01-15",
+    "gender": "Anyone Can Apply",
+    "education": "Graduation / Post-graduation from any reputed university (Hospitality/Management preferred)",
+    "description": "Oversee and manage daily operations of the corporate office cafeteria — including meal preparation, food quality & safety, inventory and staff management, cost control, and administrative records.",
+    "requirements": [
+      "Manage daily cafeteria operations: meal planning, food preparation scheduling, food quality and quantity control.",
+      "Oversee inventory and supply management.",
+      "Prepare and manage monthly cafeteria budget; control costs and minimize waste.",
+      "Ensure sanitation and health regulations are followed.",
+      "Supervise, manage and train cafeteria staff.",
+      "Maintain detailed administrative records.",
+      "Ensure kitchen and cafeteria facilities and equipment are properly cleaned and maintained."
+    ],
+    "benefits": [],
+    "skills": [
+      "Food service management",
+      "Inventory & supply management",
+      "Budgeting & cost control",
+      "Staff supervision & training",
+      "Sanitation & hygiene compliance",
+      "Administrative & record-keeping",
+      "Customer service / hospitality mindset",
+      "MS Office proficiency",
+      "Good interpersonal and communication skills",
+      "Leadership and people-management",
+      "Ability to work under pressure",
+      "Detail oriented"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Dhaka, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/36356_3.png"
+  },
+  {
+    "id": 40,
+    "title": "Senior Counselor / Counselor (Tourist Visa)",
+    "company": "Visa World Bangladesh",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Hospitality/Travel/Tourism",
+    "experience": [2, 3],
+    "subCategory": "Travel",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2026-12-15",
+    "gender": "Anyone Can Apply",
+    "education": "Minimum bachelor’s degree in any discipline",
+    "description": "Provide visa consultation and travel-related services to clients; assist clients to plan travel itineraries, manage bookings, and handle visa/tour services end-to-end.",
+    "requirements": [
+      "Handle client inquiries professionally via phone, email and in-person.",
+      "Provide updated information on destinations, visa requirements and travel services.",
+      "Assist clients in planning domestic and international travel itineraries.",
+      "Process bookings for flights, hotels and tour packages.",
+      "Maintain client relationships through follow-ups and ongoing support.",
+      "Resolve travel and visa-related issues quickly and efficiently.",
+      "Work with team to achieve sales and service targets."
+    ],
+    "benefits": [
+      "Negotiable salary + incentives + 2 festival bonuses + annual leave & gov’t holidays"
+    ],
+    "skills": [
+      "Customer service",
+      "Communication (English & Bangla)",
+      "Travel booking platforms familiarity",
+      "Multitasking",
+      "Problem solving",
+      "Team work",
+      "Positive attitude",
+      "Helping mindset",
+      "Service-oriented",
+      "Ability to handle clients under pressure"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "info.hrvwb@gmail.com",
+      "phone": "",
+      "address": "Florida Castle, Level-3, House-7, Road 23/A, Gulshan-1, Dhaka-1212, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/39765_0.png"
+  },
+  {
+    "id": 41,
+    "title": "Education Counselor",
+    "company": "LEC Abroad Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 4,
+    "category": "Consultants",
+    "experience": [3, 4],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2026-12-15",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor / Honors degree",
+    "description": "Provide counseling and support to students seeking study-abroad admissions and manage their application/enrollment process.",
+    "requirements": [
+      "Counsel students from initial inquiry through pre-departure: advise on suitable countries, universities, courses, scholarships.",
+      "Support application and admission processes: ensure documents are organized and submitted on time.",
+      "Manage admission and enrollment for all in-house programs of the consultancy.",
+      "Follow up with prospective and enrolled students; maintain communication to ensure timely progress.",
+      "Maintain accurate records of all student applications and interactions.",
+      "Assist the team with academic and administrative tasks as needed."
+    ],
+    "benefits": ["T/A", "Annual salary review", "2 festival bonuses"],
+    "skills": [
+      "Communication (English & Bengali)",
+      "Student Counseling / Guidance",
+      "Knowledge of international education systems and visa procedures",
+      "Administrative and documentation skills",
+      "Ability to multitask and manage follow-ups",
+      "Proactive attitude",
+      "Positive interpersonal skills",
+      "Organized & detail oriented"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Demra Staff Quarter, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/144813_0.png"
+  },
+  {
+    "id": 42,
+    "title": "Senior Education Counselor (UK, Australia, New Zealand & Malaysia)",
+    "company": "EDUX GLOBAL CONSULTANCY",
+    "location": "Dhaka",
+    "salary": {
+      "min": 30000,
+      "max": 50000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Consultants",
+    "experience": [3, 4],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-11",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor’s degree (or equivalent)",
+    "description": "Provide counselling and support to students for overseas admission (UK, Australia, New Zealand & Malaysia), assist them in application, documentation and visa-guidance processes.",
+    "requirements": [
+      "Counsel students on overseas education options, tuition fees, scholarships and suitable universities based on their profile, budget and goals.",
+      "Guide students through university application procedures, assist in preparing documents such as SOP, CV, reference letters, bank statements.",
+      "Follow-up on application status and coordinate with admission offices.",
+      "Provide basic visa guidance and coordinate with visa-lodgement team.",
+      "Communicate regularly with students via WhatsApp / Phone / Facebook, maintain counselling records and update daily reports.",
+      "Work with office team to coordinate operations and support overall application & admission process.",
+      "Meet monthly admission/conversion targets by converting interested leads into enrolled students."
+    ],
+    "benefits": [],
+    "skills": [
+      "Education Counseling",
+      "Customer Service & Relationship Management",
+      "Admission Procedures & Documentation (SOP, CV, Bank Statement etc.)",
+      "Communication in English and Bangla",
+      "Sales / Target Achievement",
+      "Student Visa Guidance",
+      "Confident and friendly attitude",
+      "Student-focused mindset",
+      "Good communication skills",
+      "Ability to work under target pressure"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Dhaka (Banani)"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/147858_0.png"
+  },
+  {
+    "id": 43,
+    "title": "Education Counsellor / Education Counsellor",
+    "company": "Study Vision Advisory Ltd",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 1,
+    "category": "Consultants",
+    "experience": [0, 1],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-11",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor / Honors (overseas degree advantage)",
+    "description": "Provide counselling and guidance to students seeking higher education abroad; handle university/visa application processes and assist with documentation and institution liaison.",
+    "requirements": [
+      "Provide accurate, professional counselling to students seeking tertiary education overseas (Malaysia, UK, Ireland, USA, Canada, Australia, etc.)",
+      "Assist students with university selection, application procedures, documentation, and visa processes",
+      "Maintain strong communication with partner institutions and stakeholders",
+      "Participate in education fairs, school visits, seminars, and marketing events",
+      "Meet student recruitment targets and deadlines",
+      "Travel locally or internationally for work purposes when needed"
+    ],
+    "benefits": [
+      "Basic salary + monthly incentives + yearly performance bonus + training & professional development + overseas travel opportunities"
+    ],
+    "skills": [
+      "English (spoken & written)",
+      "Communication & interpersonal skills",
+      "Presentation skills",
+      "Counselling / Advisory skills",
+      "Client/stakeholder liaison",
+      "Positive attitude",
+      "Responsible & proactive",
+      "Target-driven",
+      "Good teamwork"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Level 4, 46 Kemal Ataturk Ave, Banani, Dhaka-1213, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/196036_0.jpg"
+  },
+  {
+    "id": 44,
+    "title": "Executive / Executive – Sales & Reservation",
+    "company": "Ayat Air Travels",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 1,
+    "category": "Hospitality/Travel/Tourism",
+    "experience": [0, 1],
+    "subCategory": "Tourism",
+    "employeeStatus": "Full Time",
+    "jobType": "Hybrid",
+    "jobPostedDate": "2025-11-11",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor/Honors or Higher Secondary",
+    "description": "Promote and sell domestic and international travel packages, manage reservation services and customer bookings while achieving monthly sales targets.",
+    "requirements": [
+      "Promote and sell domestic and international travel/tour packages to individuals, groups and corporate clients.",
+      "Develop and implement sales strategies to meet or exceed monthly sales targets.",
+      "Manage reservations and ticket bookings for clients.",
+      "Handle client enquiries through phone, email and in-person; respond to multiple queries simultaneously.",
+      "Maintain proper records of leads, follow-ups and sales/bookings data.",
+      "Coordinate with airlines, hotels, tour operators and vendors to arrange travel-related services.",
+      "Support online and offline marketing efforts — promote packages via social media, email, or other channels.",
+      "Ensure smooth communication between departments (operations, ticketing, accounts) for booking and service delivery.",
+      "Adapt to fluctuating workloads; may need to work evenings or weekends during peak travel periods."
+    ],
+    "benefits": [],
+    "skills": [
+      "Sales & Marketing",
+      "Computer skills (MS Office, Google Workspace)",
+      "Typing speed (Bangla & English)",
+      "Customer communication & service",
+      "Booking / Reservation knowledge (advantage)",
+      "Time management & multitasking",
+      "Good communication skills",
+      "Organized and detail-oriented",
+      "Customer-focused / service minded",
+      "Ability to work under pressure / target-driven"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/146888_0.jpg"
+  },
+  {
+    "id": 45,
+    "title": "Visa, Work Permit Processing & Protocol Officer",
+    "company": "Sharmin Group",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Consultants",
+    "experience": [3, 5],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Hybrid",
+    "jobPostedDate": "2025-11-11",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "MSc or MBA",
+    "description": "Manage visa and work-permit processing for employees and families, and provide protocol support for foreign officials, ensuring compliance with immigration and regulatory requirements.",
+    "requirements": [
+      "Handle complete visa application processes for employees and their families for various countries.",
+      "Process work permits and ensure all documentation complies with relevant government regulations (BMET, BIDA, MOFA, Immigration etc.).",
+      "Monitor visa status and renewal deadlines; track validity and ensure timely renewals.",
+      "Collect, verify and maintain required documents: passports, appointment letters, tax documents, police clearance certificates, contracts etc.",
+      "Maintain confidentiality and accuracy of visa-related records and files.",
+      "Provide protocol services for VIP officials: coordinate airport pick-up/drop, air-tickets, hotel bookings, arrival/departure formalities.",
+      "Liaise with relevant authorities — immigration, labour department, police, embassies/high commissions, airport authorities — for smooth processing."
+    ],
+    "benefits": [],
+    "skills": [
+      "Visa & Work Permit Processing",
+      "Documentation & Regulatory Compliance",
+      "Coordination with government/immigration/embassy",
+      "Protocol & Travel Arrangement",
+      "Record-keeping & Confidentiality",
+      "Communication & Liaising",
+      "Attention to detail",
+      "Organizational skills",
+      "Integrity",
+      "Ability to handle confidential documents",
+      "Good communication"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Narashinghapur, Ashulia, Dhaka-1341, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/52186_1.png"
+  },
+  {
+    "id": 46,
+    "title": "Admission & Visa Officer – International Admissions",
+    "company": "Global_Vision",
+    "location": "Dhaka",
+    "salary": {
+      "min": 30000,
+      "max": 50000,
+      "default": "Not specified"
+    },
+    "vacancy": 3,
+    "category": "Consultants",
+    "experience": [4, 5],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-11",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Master’s degree",
+    "description": "Manage students’ international admissions and visa processing for multiple destinations, ensuring smooth application, documentation, and follow‑up until visa approval.",
+    "requirements": [
+      "Manage the entire admission process: application preparation, submission, monitoring, and follow-up with universities abroad.",
+      "Assist students with documentation, tuition deposits, offer letters, and other necessary paperwork.",
+      "Provide complete visa application guidance: form filling, documentation, appointment scheduling, and interview preparation.",
+      "Stay updated on international visa rules, admission policies and institutional guidelines across various destinations.",
+      "Maintain regular communication with overseas universities, coordinate deadlines, and track application status.",
+      "Participate in educational events, webinars, and recruitment activities to support international admissions drive.",
+      "Ensure smooth, timely file processing and client satisfaction throughout the admission and visa cycle."
+    ],
+    "benefits": ["Mobile bill allowance", "Commission as per company policy"],
+    "skills": [
+      "Strong communication skills (English)",
+      "Document handling & visa process knowledge",
+      "Time management",
+      "Teamwork",
+      "Computer literacy",
+      "Honest and dedicated",
+      "Quick learner",
+      "Responsible",
+      "Able to work under deadlines"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Dhaka, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/87962_1.png"
+  },
+  {
+    "id": 47,
+    "title": "Admission Officer",
+    "company": "Education@",
+    "location": "Dhaka",
+    "salary": {
+      "min": 20000,
+      "max": 40000,
+      "default": "Not specified"
+    },
+    "vacancy": 4,
+    "category": "Consultants",
+    "experience": [4, 5],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor / Honors degree",
+    "description": "Assist students with admission and visa applications for overseas universities (USA, UK, Australia, Canada), manage application processes and liaise with universities and clients.",
+    "requirements": [
+      "Provide guidance to students on admission processes of universities in USA, UK, Australia and Canada.",
+      "Assist students with visa application process, ensuring timely and accurate documentation.",
+      "Stay up‑to‑date with university entry requirements and eligibility criteria.",
+      "Maintain communication with students throughout the admission process and support them with queries and issues.",
+      "Track application progress, monitor status and follow up.",
+      "Coordinate with university admission offices and representatives to manage application processes.",
+      "Conduct research on education trends and program updates to improve services.",
+      "Organize and participate in education fairs, seminars, and workshops along with team members.",
+      "Maintain accurate records of student profiles, application materials and correspondence."
+    ],
+    "benefits": [],
+    "skills": [
+      "Knowledge of overseas university admission & visa processes",
+      "Good English writing and communication skills",
+      "Customer / student counselling",
+      "Computer literacy",
+      "Analytical and organizational skills",
+      "Pleasant personality",
+      "Ability to work under pressure",
+      "Team‑player",
+      "Attention to detail"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Dhaka (Banani)"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/43958_1.png"
+  },
+  {
+    "id": 48,
+    "title": "Student Counselor (Female)",
+    "company": "USHA CONSULTANCY",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 20000,
+      "max": 35000,
+      "default": "Not specified"
+    },
+    "vacancy": 4,
+    "category": "Consultants",
+    "experience": [0, 1],
+    "subCategory": "Consultants",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-20",
+    "gender": "Only Female",
+    "education": "Bachelor’s degree in any discipline",
+    "description": "Provide counselling and guidance to students seeking to study abroad (UK/Canada/Europe/Australia), helping them with admission pathways, visa guidance and application processing support.",
+    "requirements": [
+      "Provide one‑to‑one counselling to students for study‑abroad destinations (UK, Canada, Europe, Australia).",
+      "Explain admission requirements, costs, scholarships, and visa steps to prospective students and parents.",
+      "Assist students in selecting appropriate courses and universities based on their academic background and career goals.",
+      "Maintain regular communication with students and parents throughout the application and visa process.",
+      "Coordinate with the application and visa teams to ensure smooth file processing.",
+      "Stay updated on global education trends, visa regulations, and university guidelines.",
+      "Organize and conduct seminars, webinars and workshops for students and parents about study‑abroad opportunities."
+    ],
+    "benefits": [
+      "Friendly work environment",
+      "Training & growth opportunities",
+      "Festival bonus"
+    ],
+    "skills": [
+      "Counseling / Student Guidance",
+      "Communication & Presentation in English and Bangla",
+      "Knowledge of international universities / admission & visa processes",
+      "CRM or Student Management (preferred)",
+      "Multi‑tasking and independent working ability",
+      "Good interpersonal skills",
+      "Clear presentation skills (especially English)",
+      "Ability to handle multiple students professionally",
+      "Organized and detail oriented"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "info.ushaconsultancy@gmail.com",
+      "phone": "",
+      "address": "Level‑2, 152/2/M, New Panthapath Signal, Dhaka‑1206, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/175989_0.png"
+  },
+  {
+    "id": 49,
+    "title": "Junior Executive Officer",
+    "company": "Shakib Agrotech Pvt Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 14000,
+      "max": 17000,
+      "default": "Not specified"
+    },
+    "vacancy": 2,
+    "category": "Customer/Service/Call Center",
+    "experience": [0, 1],
+    "subCategory": "Call Center",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Male",
+    "education": "Higher Secondary or Diploma (HSC or equivalent)",
+    "description": "Provide office-level administrative and after-sales / tele-communication support as part of company’s service operations.",
+    "requirements": [
+      "Finish tasks in a timely manner respecting deadlines and time management.",
+      "Work collaboratively with team-mates and coordinate tasks with other team members.",
+      "Take ownership — understand and manage your duties independently.",
+      "Assist in office support, communication, after-sales or customer-service related tasks as needed."
+    ],
+    "benefits": [
+      "2 Festival Bonuses per year",
+      "Annual promotion and salary increment opportunities",
+      "After-sales / tele-communication work environment"
+    ],
+    "skills": [
+      "Office Assistance / Office Management",
+      "Basic Computer Skills",
+      "Teamwork",
+      "Time Management",
+      "Honesty & hardworking attitude",
+      "Reliability",
+      "Ability to understand and complete tasks independently",
+      "Team-player mindset"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "House-07, Road-09, Nikunja-2, Khilkhet, Dhaka-1229, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/128907_0.png"
+  },
+  {
+    "id": 50,
+    "title": "Call Centre Agent",
+    "company": "Talent Pro",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Customer/Service/Call Centre",
+    "experience": [3, 4],
+    "subCategory": "Customer Service",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor’s degree in any discipline",
+    "description": "Handle inbound and outbound calls to respond to customer inquiries, provide product or service information, and ensure customer satisfaction through proficient communication and support.",
+    "requirements": [
+      "Handle inbound and outbound customer calls in a professional and courteous manner.",
+      "Respond to customer inquiries, complaints, and requests promptly and accurately.",
+      "Provide detailed information about products, services, or company policies to customers.",
+      "Maintain accurate records of customer interactions using CRM or call-logging systems.",
+      "Follow communication scripts and standard operating procedures (SOPs).",
+      "Escalate complex issues to the relevant supervisor or department when necessary.",
+      "Meet or exceed daily, weekly and monthly performance targets (call volume, response time, customer satisfaction).",
+      "Participate in training sessions to improve product knowledge, communication skills, and service quality.",
+      "Maintain confidentiality and handle sensitive customer information responsibly.",
+      "Support a positive and collaborative team environment within the call centre."
+    ],
+    "benefits": [
+      "Mobile bill",
+      "Weekly 2 holidays",
+      "Subsidized lunch",
+      "Annual salary review",
+      "2x festival bonuses",
+      "Afternoon snacks",
+      "Other facilities per company policy"
+    ],
+    "skills": [
+      "Customer service",
+      "Inbound & Outbound call handling",
+      "Good communication (Bengali & English)",
+      "Patience and empathy",
+      "CRM / call-logging",
+      "Problem-solving",
+      "Time management",
+      "Professionalism",
+      "Punctuality",
+      "Team-player attitude",
+      "Motivation to learn",
+      "Reliability"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "DOHS Banani, Dhaka, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/95309_1.png"
+  },
+  {
+    "id": 51,
+    "title": "Customer Care Executive (Female)",
+    "company": "Global.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 13000,
+      "max": 18000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Customer/Service/Call Centre",
+    "experience": [2, 3],
+    "subCategory": "Customer Service",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Female",
+    "education": "Bachelor / Honors degree (minimum)",
+    "description": "Perform order-collection and customer care tasks at office as part of Global Bangladesh Group’s team.",
+    "requirements": [
+      "Collect orders from clients or customers (order-collection role).",
+      "Handle customer care and treat customers or clients contacting the office.",
+      "Manage phone calls or communications for customer support or order follow-ups.",
+      "Update and maintain records of orders received / processed.",
+      "Coordinate with internal teams as needed to ensure order fulfillment or customer satisfaction.",
+      "Work at office on full-time basis (10.5 hours per day)."
+    ],
+    "benefits": ["Not specified"],
+    "skills": [
+      "Customer Service",
+      "Order Collection",
+      "Communication Skills (Bangla / English)",
+      "Phone Handling",
+      "Office Communication & Coordination",
+      "Good interpersonal skills",
+      "Punctuality",
+      "Professionalism",
+      "Ability to work full-time (long hours)"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "hr.globalbangladesh@gmail.com",
+      "phone": "",
+      "address": "H-04, R-20, Pallabi, Mirpur-12, Dhaka, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/38002_0.png"
+  },
+  {
+    "id": 52,
+    "title": "Officer, IT and Support",
+    "company": "PMASPIRE LIMITED",
+    "location": "Dhaka",
+    "salary": {
+      "min": 30000,
+      "max": 40000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Information Technology",
+    "experience": [3, 4],
+    "subCategory": "Information Technology",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor/Honors degree",
+    "description": "Provide technical support and IT assistance to customers and internal staff; manage customer queries and IT operations for the company.",
+    "requirements": [
+      "Handle daily customer queries through email, chat, and ticketing systems per company policy.",
+      "Resolve technical or complex issues or escalate them when needed.",
+      "Maintain records of customer feedback and recurring issues; prepare monthly support reports.",
+      "Transfer qualified leads/issues to Sales or relevant departments where needed.",
+      "Provide IT assistance to onsite and remote employees — including software installation, troubleshooting, and account setup.",
+      "Manage employee IT onboarding and offboarding; ensure data security and proper access control.",
+      "Conduct regular IT compliance checks (password policies, device security, data privacy).",
+      "Maintain IT asset inventory and update compliance/documentation (NDA, access forms, workstation verification).",
+      "Coordinate with IT vendors and support teams for software updates and system maintenance.",
+      "Update company website / portals: upload approved content, event or product information; monitor uptime, link accuracy, and form submissions.",
+      "Coordinate with marketing/design team for landing-page optimisation or technical corrections; maintain basic SEO/website compliance standards."
+    ],
+    "benefits": ["Not specified"],
+    "skills": [
+      "IT support & maintenance",
+      "Customer service / support via email/chat/ticketing",
+      "Technical troubleshooting & software installation",
+      "IT asset & access management",
+      "Basic website/portal maintenance & technical SEO",
+      "Communication skills (English & Bengali)",
+      "Problem-solving",
+      "Responsibility",
+      "Organised",
+      "Good communication",
+      "Ability to manage remote and onsite technical support"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/46189_3.png"
+  },
+  {
+    "id": 53,
+    "title": "Telesales Executive (Female)",
+    "company": "Bdjobs.com Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Customer/Service/Call Centre",
+    "experience": [0, 1],
+    "subCategory": "Call Centre",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Female",
+    "education": "Bachelor / Honors degree from a reputed university",
+    "description": "Perform telesales and customer service tasks — contacting potential and existing clients to promote products/services, handle enquiries and maintain follow-ups to meet sales targets.",
+    "requirements": [
+      "Learn and understand the company’s products and services.",
+      "Call and contact potential and existing clients to promote products and make sales.",
+      "Convince customers to purchase and encourage repeat sales by building good relationships.",
+      "Handle customer queries, problems, and complaints politely and professionally.",
+      "Collect feedback from customers and share it with the sales/service team.",
+      "Suggest solutions to customers based on their needs and feedback.",
+      "Keep clear records of all customer calls, sales, and follow-ups.",
+      "Achieve daily, weekly and monthly call and sales targets."
+    ],
+    "benefits": [
+      "Lunch Allowance; after probation — Travel Allowance, 2 Festival Bonuses, Yearly Increment, Provident Fund, Profit Share"
+    ],
+    "skills": [
+      "Excellent communication & interpersonal skills",
+      "Convincing / negotiation skills",
+      "Customer service orientation",
+      "Basic computer skills (call logs, records)",
+      "Ability to handle complaints and feedback positively",
+      "Positive attitude",
+      "Patience",
+      "Persuasive",
+      "Organized"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "BDBL Building (Old BSRS), 12 Kawran Bazar C/A, Dhaka-1215, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/15131_5.png"
+  },
+  {
+    "id": 54,
+    "title": "Executive/Sr. Executive – Communication & Business Development",
+    "company": "Zubion Development Solutions Limited (ZDSL)",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Customer/Service/Call Centre",
+    "experience": [3, 4],
+    "subCategory": "Service",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Female",
+    "education": "Bachelor’s / Master’s degree in Business, Marketing, Real Estate or similar field",
+    "description": "Support land acquisition, client-relationship and business development activities including lead generation, client communication, documentation, and coordination across teams.",
+    "requirements": [
+      "Communicate with landowners and manage relationships for land acquisition opportunities.",
+      "Coordinate meetings between landowners and company management.",
+      "Collect and verify land-related documents and ownership details.",
+      "Maintain and update database of prospective landowners and leads.",
+      "Assist in developing inventory of land, apartments, and other real-estate assets.",
+      "Coordinate with Sales, Marketing, Engineering and other internal teams to gather information and support proposals.",
+      "Support preparation of proposals, reports and presentations as needed.",
+      "Handle call center duties: respond to incoming/outgoing calls about land inquiries, record call details, update CRM or lead-management system.",
+      "Follow-up calls with leads, manage lead distribution to relevant teams.",
+      "Coordinate internal meetings with landowners and relevant departments for smooth process flow."
+    ],
+    "benefits": [
+      "TA (transport allowance)",
+      "Mobile bill",
+      "Performance bonus",
+      "Gratuity",
+      "Lunch facility (fully subsidized)",
+      "2 festival bonuses per year",
+      "Welfare fund"
+    ],
+    "skills": [
+      "Strong communication and negotiation skills",
+      "Client/lead management",
+      "Document verification and data handling",
+      "CRM / MS Office proficiency",
+      "Organizational and coordination skills",
+      "Ability to work under pressure",
+      "Good interpersonal skills",
+      "Persistence",
+      "Detail oriented",
+      "Team player"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Zubion Centre, House-08, Road-2/A, Sector-15/I, Uttara, Dhaka-1230"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/97207_0.jpg"
+  },
+  {
+    "id": 55,
+    "title": "Full Stack Developer (React / Next.js / Node.js)",
+    "company": "R & H Business Solution",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "IT/Telecommunication",
+    "experience": [2, 4],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Remote",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor in Computer Science & Engineering (CSE) or related",
+    "description": "Develop and maintain scalable web applications using modern web technologies. Build frontend and backend for SaaS‑based/enterprise-grade systems, collaborating with design and QA teams, ensuring performance, security, and code quality. Work on microservices / cloud‑based architecture, implement APIs, and contribute to the full software development lifecycle.",
+    "requirements": [
+      "3‑5 years hands‑on experience with React, Next.js, Tailwind CSS, TypeScript, Node.js",
+      "Strong understanding of RESTful APIs, JSON, and backend API design",
+      "Familiarity with cloud platforms (AWS, Azure, or GCP) and microservices or multi‑tenant architecture",
+      "Proficiency in Git/GitHub and CI/CD workflows",
+      "Good problem‑solving and debugging skills",
+      "Ability to write clean, maintainable, testable code",
+      "Strong communication and teamwork skills"
+    ],
+    "benefits": [],
+    "skills": [
+      "React.js",
+      "Next.js",
+      "Tailwind CSS",
+      "TypeScript",
+      "Node.js",
+      "REST API",
+      "Cloud Platforms",
+      "Microservices",
+      "Git"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/101126_0.png"
+  },
+  {
+    "id": 56,
+    "title": "Front End Engineer (React / Next.js)",
+    "company": "Project 2morrow Software Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 20000,
+      "max": 25000
+    },
+    "vacancy": "Not Specified",
+    "category": "IT/Telecommunication",
+    "experience": [2, 4],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Male",
+    "education": "Graduate in CSE / Software Engineering or related",
+    "description": "Design and build responsive, user‑focused front‑end applications for fintech and software products, working closely with design, backend, and product teams to deliver high‑performance, scalable UI components.",
+    "requirements": [
+      "6 months – 1 year experience in front‑end development",
+      "Proficiency in React.js, Next.js, JavaScript (ES6+)",
+      "Good knowledge of HTML5, CSS3 and responsive design",
+      "Understanding of front‑end workflows and UI/UX principles",
+      "Basic understanding of Node.js and REST APIs",
+      "Familiarity with databases (MySQL / PostgreSQL / MongoDB) is a plus",
+      "Version‑control with Git",
+      "Problem‑solving mindset and willingness to learn"
+    ],
+    "benefits": [
+      "Yearly salary reviews (performance based)",
+      "Complimentary breakfast and lunch at office",
+      "Performance bonuses",
+      "Two festival bonuses per year",
+      "Opportunity to work on real-world fintech & software projects with global exposure"
+    ],
+    "skills": [
+      "React.js",
+      "Next.js",
+      "JavaScript ES6",
+      "HTML5",
+      "CSS3",
+      "REST API",
+      "Git",
+      "Responsive Design"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "hr@p2msoft.com",
+      "phone": "",
+      "address": "House No. 40, Block – I, Rd No 1/A, Banani, Dhaka 1212, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/195095_0.png"
+  },
+  {
+    "id": 57,
+    "title": "Odoo Developer / Software Engineer",
+    "company": "Equal & Co. Consulting Ltd",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 0,
+      "max": 0
+    },
+    "vacancy": 2,
+    "category": "IT/Telecommunication",
+    "experience": [3, 5],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Not explicitly specified; relevant degree in CS/IT or equivalent preferred",
+    "description": "Develop, customize, and maintain Odoo ERP — especially accounting and financial modules — for a self‑hosted environment. Build API integrations, extend functionalities, and collaborate with finance and operations teams to map real‑world business workflows into the Odoo system. Ensure stable, secure, and scalable operations across the platform.",
+    "requirements": [
+      "3+ years of Odoo development experience",
+      "Strong proficiency in Python, PostgreSQL, Linux (Ubuntu/Debian)",
+      "Experience with Git, Docker, CI/CD pipelines",
+      "Hands‑on experience with Odoo Accounting module customization",
+      "API design and development (REST / JSON‑RPC)",
+      "Understanding of accounting principles (double-entry, VAT/tax workflows, invoicing, bank reconciliation)",
+      "Good problem‑solving, documentation, and communication skills",
+      "Ability to collaborate with non‑technical stakeholders (finance / operations team)"
+    ],
+    "benefits": [
+      "Competitive salary",
+      "Flexible working hours / remote work option",
+      "Opportunity to work with modern technology stack and international clients",
+      "Chance to lead Odoo architecture and integrations"
+    ],
+    "skills": [
+      "Python",
+      "Odoo Framework",
+      "PostgreSQL",
+      "Linux",
+      "Git",
+      "Docker",
+      "CI/CD",
+      "REST API",
+      "ERP / Accounting workflows"
+    ],
+    "compnay": {
+      "website": "https://www.equalandco.com",
+      "email": "",
+      "phone": "",
+      "address": "House # 18‑20, Road # 10, South Banasree, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/196416_0.jpg"
+  },
+  {
+    "id": 58,
+    "title": "Tech Support Specialist",
+    "company": "Planet Education Networks Limited",
+    "location": "Chattogram",
+    "salary": {
+      "min": 60000,
+      "max": 70000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "IT/Telecommunication",
+    "experience": [5, 7],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor / Honors (or equivalent)",
+    "description": "Provide on‑site technical support to users, handle remote support requests, manage user accounts and system access, and ensure smooth functioning of IT systems and services for the company.",
+    "requirements": [
+      "Minimum 5 years of experience in IT support or related role.",
+      "Proficient in student‑management systems / IT systems, remote access tools (e.g. TeamViewer, AnyDesk etc.).",
+      "Strong organizational skills and ability to manage multiple support requests under pressure.",
+      "Excellent written and verbal communication skills in English.",
+      "Familiarity with remote support tools, account and access management, software installation and configuration, troubleshooting and diagnostics."
+    ],
+    "benefits": [
+      "Competitive salary",
+      "Two festival bonuses per annum",
+      "Two weekly holidays + public holidays as per company policy",
+      "Sick leave, casual leave, annual leave as per Bangladesh labour law"
+    ],
+    "skills": [
+      "IT Support",
+      "Remote Assistance",
+      "System Administration",
+      "Account & Access Management",
+      "Troubleshooting",
+      "Communication",
+      "Multitasking",
+      "English proficiency"
+    ],
+    "compnay": {
+      "website": "https://www.pengroup.com",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/158794_1.png"
+  },
+
+  {
+    "id": 59,
+    "title": "Software Developer",
+    "company": "Hana System Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 30000,
+      "max": 45000
+    },
+    "vacancy": "Not Specified",
+    "category": "IT/Telecommunication",
+    "experience": [3, 5],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "",
+    "description": "Develop ERP and other software solutions using .NET and Angular for a joint‑venture export‑oriented manufacturing company. Work with backend (C#, Web API Core, MS SQL Server) and frontend (Angular + Typescript) to build, maintain, and improve company’s ERP system devoted to bicycle production and export operations.",
+    "requirements": [
+      "Good working experience with C#, Web API Core 8.0 or higher, MS SQL Server 2019 or higher, Entity Framework Core 8.0+",
+      "Familiarity with RESTful Web Services",
+      "Experience with Typescript and Angular 15+",
+      "Knowledge of Automapper, Fluent Validation / Fluent API",
+      "Experience with version control (Git), unit testing",
+      "Familiarity with CI/CD pipelines (e.g. Azure)",
+      "Good understanding of OOP, SOLID principles, design patterns (CQRS, Repository Pattern)",
+      "Good English communication (writing & speaking)"
+    ],
+    "benefits": [
+      "Two festival bonuses (annual)",
+      "Casual leave (10 days) and sick leave (14 days) per year",
+      "Regular working hours: 8 hours/day, 6 days/week",
+      "Friendly, professional work environment under Bangladesh–German management"
+    ],
+    "skills": [
+      "C#",
+      "Web API Core",
+      "MS SQL Server",
+      "Entity Framework Core",
+      "REST API",
+      "Angular",
+      "TypeScript",
+      "Git",
+      "Unit Testing",
+      "CI/CD"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "HR@hana-ltd.com",
+      "phone": "",
+      "address": "Shanta Western Tower Level-3, 186, Bir Uttam Mir Shawkat Ali Road, Tejgaon I/A, Dhaka‑1208, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/69777_2.png"
+  },
+  {
+    "id": 60,
+    "title": "Senior SEO Analyst / Executive (Night Shift)",
+    "company": "ChefOnline",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Information Technology",
+    "experience": [3, 5],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "BSc in Computer Science & Engineering (or related field)",
+    "description": "As Senior SEO Analyst/Executive, you will plan and execute search engine optimisation strategies to grow organic traffic, improve search visibility and conversion. The role involves technical SEO audits, on‑page and off‑page optimization, collaboration with content developers and web developers, and continuous performance monitoring to ensure website health and search‑ranking improvement.",
+    "requirements": [
+      "Proven experience in SEO strategy (technical, on‑page, off‑page)",
+      "Strong command over SEO tools: Google Analytics, Search Console, Ahrefs, SEMrush, Screaming Frog etc.",
+      "Good knowledge of HTML, CSS and CMS platforms (e.g. WordPress, Shopify)",
+      "Ability to analyze data and draw actionable insights",
+      "Strong understanding of crawling, indexing, site architecture, Core Web Vitals and mobile‑first optimization",
+      "Good communication skill in English & Bangla",
+      "Willingness to work in night shift (Mon–Thu night, Sat–Sun day)"
+    ],
+    "benefits": [],
+    "skills": [
+      "Technical SEO",
+      "On‑page & Off‑page SEO",
+      "Keyword Research",
+      "Backlink Strategy",
+      "Data Analysis / Web Analytics",
+      "HTML & CSS",
+      "CMS (WordPress / Shopify etc.)",
+      "SEO Audit & Site Optimization"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Gulshan‑1, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/85641_1.png"
+  },
+  {
+    "id": 61,
+    "title": "SEO Manager / Strategist (Senior – Data & Analytics Focus)",
+    "company": "ChefOnline",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "IT/Telecommunication",
+    "experience": [7, 10],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Hybrid",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor’s or Master’s in Marketing, Business, or relevant field",
+    "description": "Lead SEO and analytics strategy for ChefOnline, focusing on data‑driven growth. Oversee technical SEO audits, keyword research, content optimization, and performance tracking. Collaborate with content, design, and development teams to improve search visibility, user acquisition and conversion metrics.",
+    "requirements": [
+      "Minimum 7 years experience in SEO with strong expertise in technical SEO, audits, and analytics",
+      "Deep knowledge of SEO tools, Google Analytics, Search Console, and data‑driven decision making",
+      "Strong understanding of web technologies, on‑page/off‑page SEO, site architecture, and performance optimization",
+      "Ability to lead SEO strategy, coordinate with cross‑functional teams (content, design, dev)",
+      "Excellent communication skills, both English and Bangla",
+      "Up-to-date knowledge of search engine algorithms and best practices"
+    ],
+    "benefits": [],
+    "skills": [
+      "Technical SEO",
+      "SEO Strategy",
+      "Keyword Research",
+      "Data Analytics",
+      "Google Analytics / Search Console",
+      "Content Optimization",
+      "Team Collaboration",
+      "Performance Optimization"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/85641_1.png"
+  },
+  {
+    "id": 62,
+    "title": "Senior Flutter / UI‑UX Developer",
+    "company": "ChefOnline",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "IT/Telecommunication",
+    "experience": [7, 10],
+    "subCategory": "App Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Hybrid",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "BSc in Graphic Design, Multimedia, Computer Science or related",
+    "description": "Lead the design and development of modern, user‑centric mobile applications for ChefOnline. Manage full mobile app lifecycle from concept and UI/UX design to deployment, ensuring quality, performance, responsiveness and brand compliance.",
+    "requirements": [
+      "Proven experience with Flutter and strong UI/UX portfolio",
+      "Advanced proficiency in Flutter, Dart, mobile architectures",
+      "Skilled with design tools like Figma or Adobe XD",
+      "Experience with REST APIs, Firebase or similar backend integrations",
+      "Strong understanding of mobile UX principles, prototyping, animations and responsive design",
+      "Good communication skills"
+    ],
+    "benefits": [
+      "Weekly 2 holidays",
+      "Yearly salary review",
+      "2 Festival Bonuses"
+    ],
+    "skills": [
+      "Flutter",
+      "Dart",
+      "Mobile App Development",
+      "UI/UX Design",
+      "Figma / Adobe XD",
+      "REST API Integration",
+      "Firebase (or similar)",
+      "Animations & Custom UI"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "21/A Navana Tower, 45 Gulshan South C/A, Circle‑1, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/85641_1.png"
+  },
+  {
+    "id": 63,
+    "title": "Junior Software Engineer",
+    "company": "Arena Phone BD Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "IT/Telecommunication",
+    "experience": [0, 1],
+    "subCategory": "Web Develper",
+    "employeeStatus": "Full Time",
+    "jobType": "Remote",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Male",
+    "education": "BSc or MSc in relevant field",
+    "description": "Develop and maintain web applications for clients; work on frontend and backend coding, bug fixes, collaboration, and support tasks in a dynamic software‑services environment.",
+    "requirements": [],
+    "benefits": [],
+    "skills": [
+      "PHP",
+      "React",
+      "Web Development",
+      "API Implementation",
+      "Bug Fixing",
+      "Git",
+      "Clean Code",
+      "Testing"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "House 2 Road 23/A, Gulshan‑1, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/23446_0.png"
+  },
+  {
+    "id": 64,
+    "title": "WordPress Elementor and Shopify Experts",
+    "company": "Tech Maximus",
+    "location": "Dhaka",
+    "salary": {
+      "min": 18000,
+      "max": 20000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "IT/Telecommunication",
+    "experience": [0, 1],
+    "subCategory": "Web Develper",
+    "employeeStatus": "Full Time",
+    "jobType": "Remote",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor of Science (BSc) or equivalent",
+    "description": "Build and customize WordPress websites (using Elementor and related plugins) and Shopify stores; deliver responsive, modern, high‑performance web solutions, working with dynamic content, e-commerce or LMS features as needed.",
+    "requirements": [
+      "Minimum 2–4 years experience with WordPress Elementor / WooCommerce / Shopify development",
+      "Hands‑on experience with Crocoblock / CPTs / advanced WordPress plugin/theme customization",
+      "Experience setting up and customizing Shopify themes and templates including product listings, collections, store configurations",
+      "Ability to build responsive front‑end designs and ensure good UI/UX and performance",
+      "Familiarity with integrating third‑party APIs/apps and payment gateways for Shopify/WooCommerce",
+      "Strong debugging, optimization, and troubleshooting skills for web sites and stores",
+      "Good command of English, ability to work under pressure and collaborate with marketing/design teams"
+    ],
+    "benefits": [],
+    "skills": [
+      "WordPress",
+      "Elementor",
+      "Crocoblock",
+      "WooCommerce",
+      "Shopify",
+      "Shopify Theme Development",
+      "Responsive Web Design",
+      "E‑commerce",
+      "Plugin/Theme Customization",
+      "Troubleshooting"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/173530_0.jpg"
+  },
+  {
+    "id": 65,
+    "title": "Sr. Software Developer (PHP, SQL – MySQL, PostgreSQL, MS SQL)",
+    "company": "BDTASK",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "IT/Telecommunication",
+    "experience": [3, 5],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Male",
+    "education": "Bachelor’s degree in CSE / IT / Software Engineering / Information Systems",
+    "description": "As a Senior Software Developer at BDTASK, you will design, develop and maintain web‑based applications and their underlying databases. The role involves building robust backend and database solutions, optimizing performance, and working with complex data. You will collaborate with cross‑functional teams, contribute to system design decisions, and ensure code and data integrity. Accounting or finance‑related knowledge is a plus — so developers with ERP / accounting background are preferred.",
+    "requirements": [
+      "3–5 years of professional experience in PHP development",
+      "Strong experience with SQL databases: MySQL, PostgreSQL, MS SQL / SQL Server (T‑SQL, stored procedures, indexing, query‑optimization)",
+      "Ability to write and optimize complex SQL queries, functions, stored procedures, and indexing strategies",
+      "Familiarity with PHP frameworks (Laravel or CodeIgniter) preferred",
+      "Experience in API development and integration",
+      "Good analytical and problem‑solving skills, especially dealing with large/complex data sets",
+      "Comfort working under deadlines in a fast‑paced, collaborative environment",
+      "Strong communication skills",
+      "Basic or intermediate accounting/finance knowledge is an advantage"
+    ],
+    "benefits": [],
+    "skills": [
+      "PHP",
+      "Laravel / CodeIgniter",
+      "MySQL",
+      "PostgreSQL",
+      "MS SQL / SQL Server",
+      "T‑SQL, Stored Procedures, Query Optimization",
+      "API Development",
+      "Database Design & Management",
+      "Git / Version Control",
+      "Data Analysis"
+    ],
+    "compnay": {
+      "website": "https://www.bdtask.com/",
+      "email": "",
+      "phone": "",
+      "address": "B‑25, Mannan Plaza, 4th Floor, Khilkhet, Dhaka, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/45506_1.png"
+  },
+  {
+    "id": 66,
+    "title": "Full‑Stack Developer (ERPNext, Frappe, Python)",
+    "company": "Starkology Solution Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "IT/Telecommunication",
+    "experience": [3, 5],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "BSc in Computer Science/Engineering or related field",
+    "description": "Develop and maintain customized ERP / web solutions using ERPNext & Frappe framework, handling full‑stack development (backend + frontend) and ensuring scalable, maintainable code & deployment. Work as part of a dynamic team in an IT solutions provider delivering ERP, web & mobile apps for clients. Friendly work environment, 5‑day work week, subsidized lunch, festival bonuses and yearly review. :contentReference[oaicite:0]{index=0}",
+    "requirements": [
+      "3–5 years proven experience in ERPNext & Frappe framework, Python, JavaScript / Node.js / React or Vue. :contentReference[oaicite:1]{index=1}",
+      "At least 3 successful ERP development & implementation records with ERPNext. :contentReference[oaicite:2]{index=2}",
+      "Working knowledge of JavaScript, HTML, CSS. :contentReference[oaicite:3]{index=3}",
+      "Experience building and integrating RESTful APIs. :contentReference[oaicite:4]{index=4}",
+      "Familiarity with version control (Git) and collaborative development workflows. :contentReference[oaicite:5]{index=5}",
+      "Good problem‑solving and communication/documentation skills (e.g. BRD, SRS, TOR). :contentReference[oaicite:6]{index=6}",
+      "Optional but preferred: familiarity with microservice architecture, Docker/Kubernetes, API gateway patterns. :contentReference[oaicite:7]{index=7}"
+    ],
+    "benefits": [
+      "5‑day work week (Sunday–Thursday) :contentReference[oaicite:8]{index=8}",
+      "Fully subsidized lunch + evening snacks :contentReference[oaicite:9]{index=9}",
+      "Festival bonus (2 times a year) :contentReference[oaicite:10]{index=10}",
+      "Yearly salary review & career growth opportunities :contentReference[oaicite:11]{index=11}"
+    ],
+    "skills": [
+      "Python",
+      "Frappe / ERPNext",
+      "JavaScript / Node.js",
+      "React or Vue",
+      "HTML & CSS",
+      "RESTful API",
+      "Database management (MySQL/PostgreSQL/MariaDB/MongoDB)",
+      "Git / Version control",
+      "Problem-solving",
+      "Documentation & communication"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "fahad@starkology.com",
+      "phone": "",
+      "address": "House 50, Road 28, Gulshan 1, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/196812_0.png"
+  },
+  {
+    "id": 67,
+    "title": "Software Developer",
+    "company": "JOYcalls Bangladesh Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 60000,
+      "max": 70000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "IT/Telecommunication",
+    "experience": [3, 5],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "BSc in CSE / EEE / CS / IT / ETE or related",
+    "description": "Develop and maintain backend services and scalable APIs/microservices for high‑performance telecom/AdTech / VAS platforms for JOYcalls. Work in a dynamic environment, collaborating with QA, Product and Operations teams, ensuring code quality and system reliability.",
+    "requirements": [
+      "Strong proficiency in Java Core and Spring Boot",
+      "Experience with EJB/Hibernate, Elasticsearch, relational databases",
+      "Familiarity with designing & implementing scalable APIs / microservices",
+      "Ability to write and maintain unit tests (JUnit)",
+      "Good troubleshooting and debugging skills",
+      "Fluency in English, strong analytical and problem‑solving skills",
+      "Ability to work in a fast‑paced environment",
+      "Experience in telecom or AdTech systems is a plus"
+    ],
+    "benefits": [
+      "Weekly 2 holidays",
+      "Mobile bill",
+      "Performance bonus",
+      "Transport allowance (T/A)",
+      "Subsidized lunch",
+      "Annual salary review",
+      "2 Festival bonuses per year"
+    ],
+    "skills": [
+      "Java",
+      "Spring Boot",
+      "EJB/Hibernate",
+      "Elasticsearch",
+      "REST API",
+      "Microservices",
+      "JUnit / Unit Testing",
+      "Database (SQL / RDBMS)",
+      "Troubleshooting"
+    ],
+    "compnay": {
+      "website": "www.joycalls.com",
+      "email": "",
+      "phone": "",
+      "address": "Plot #34, Awal Centre (4th Floor), Kemal Ataturk Avenue, Banani PS, Dhaka‑1213"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/76918_1.png"
+  },
+  {
+    "id": 68,
+    "title": "WordPress Web Developer",
+    "company": "Corporate Care IT",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "IT/Telecommunication",
+    "experience": [0, 1],
+    "subCategory": "Web Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Male",
+    "education": "Bachelor of Science (BSc)",
+    "description": "Develop and maintain professional WordPress websites using modern tools. Work on clean design, efficient code, and user‑friendly, responsive, SEO‑optimized websites. Handle customization, maintenance, performance, security updates, and payment‑gateway integration as needed for client projects at Corporate Care IT. Long‑term employment with performance-based growth and festival bonuses.",
+    "requirements": [],
+    "benefits": ["Annual salary review", "2 Festival Bonuses (yearly)"],
+    "skills": [
+      "WordPress",
+      "PHP",
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "MySQL",
+      "Page builder (Elementor / WPBakery)",
+      "SEO",
+      "Responsive web design"
+    ],
+    "compnay": {
+      "website": "https://corporatecareit.com/",
+      "email": "",
+      "phone": "",
+      "address": "Flat‑A1, House‑40/5, Abdul Hadi Lane, Bangshal, Dhaka‑1000, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/112347_1.png"
+  },
+  {
+    "id": 69,
+    "title": "Associate Manager / Manager, Information & Communication Technology Audit, ICC",
+    "company": "BRAC Bank PLC",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 0,
+      "max": 0
+    },
+    "vacancy": 2,
+    "category": "Information Technology",
+    "experience": [5, 7],
+    "subCategory": "Networking",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor’s or Master’s degree in Computer Science / IT / related field",
+    "description": "Lead and perform comprehensive ICT audits — including information security and cloud security — across the bank’s systems, ensuring compliance, risk mitigation, and robust internal controls. Plan, execute and report audit findings; identify vulnerabilities in software, systems and processes; recommend improvements; and ensure compliance with applicable banking and security standards.",
+    "requirements": [
+      "At least 5 years relevant experience in IT systems, preferably banking IT environment",
+      "Professional certifications (e.g. ISACA, ISC2, IIA, CEH, RHCE, ITIL etc.) preferred",
+      "Strong analytical skills and risk‑assessment capability",
+      "Knowledge of information security, cloud security, audit standards and regulatory compliance",
+      "Familiarity with auditing IT systems, applications, QA testing (manual & automated), vulnerability management",
+      "Ability to plan and implement audit strategy, and communicate audit findings and recommendations clearly",
+      "Team‑player, adaptable to dynamic & challenging banking environment"
+    ],
+    "benefits": [],
+    "skills": [
+      "ICT Audit",
+      "Information Security",
+      "Cloud Security",
+      "Risk Assessment",
+      "Compliance",
+      "Audit Reporting",
+      "Vulnerability Management"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Anik Tower (Level‑9), 220/B, Tejgaon Gulshan Link Road, Dhaka‑1208"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/25059_4.png"
+  },
+  {
+    "id": 70,
+    "title": "Senior Full Stack App & Web Developer",
+    "company": "The Second Source",
+    "location": "Rajshahi",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "IT/Telecommunication",
+    "experience": [3, 4],
+    "subCategory": "Software Developer",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor in Computer Science / Software Engineering or equivalent",
+    "description": "Develop and maintain high-quality web and mobile applications, handle both backend and frontend tasks, ensure scalable and maintainable solutions, collaborate with designers and team members to deliver responsive and efficient software.",
+    "requirements": [
+      "Strong experience with PHP/Laravel or Node.js backend development",
+      "Proficiency in frontend technologies: HTML, CSS, JavaScript, React.js, Next.js, or similar",
+      "Experience with mobile app frameworks (React Native / Flutter) is a plus",
+      "Good knowledge of SQL/NoSQL databases",
+      "Version control with Git/GitHub",
+      "Understanding of RESTful APIs and integration",
+      "Strong problem-solving skills and debugging capabilities",
+      "Ability to write clean, maintainable, and well-documented code",
+      "Teamwork and communication skills"
+    ],
+    "benefits": [
+      "Opportunity to work on full-stack web and mobile applications",
+      "Professional development and learning opportunities",
+      "Collaborative and supportive work environment",
+      "Flexible working hours and on-site experience",
+      "Exposure to modern technologies and projects"
+    ],
+    "skills": [
+      "Full Stack Development",
+      "Frontend: React.js, Next.js, HTML, CSS, JavaScript",
+      "Backend: PHP, Laravel, Node.js",
+      "Database Management: MySQL, PostgreSQL, MongoDB",
+      "Version Control: Git/GitHub",
+      "REST API Development",
+      "Responsive Design",
+      "Debugging & Problem Solving"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/134642_0.jpg"
+  },
+  {
+    "id": 71,
+    "title": "Data Entry Computer Operator",
+    "company": "Reazaur Rahman & Associates",
+    "location": "Dhaka",
+    "salary": {
+      "min": 12500,
+      "max": 12500,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Data Entry/Office Support",
+    "experience": [0, 1],
+    "subCategory": "Data Entry",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Diploma in Computer or BBA",
+    "description": "Perform data‑entry, bookkeeping and general office‑support tasks including voucher/book keeping, maintaining cash & bank books, ledgers, preparing financial statements, and supporting documentation and procurement procedures for the organization.",
+    "requirements": [
+      "Proficiency in MS Word, MS Excel, MS PowerPoint and basic computer operation. :contentReference[oaicite:0]{index=0}",
+      "Ability to handle bookkeeping tasks — vouchers, cash book, bank book, general ledger, trial balance, bank reconciliation. :contentReference[oaicite:1]{index=1}",
+      "Willingness to perform field‑visits and collect data/documents as required. :contentReference[oaicite:2]{index=2}",
+      "Good record‑keeping, documentation and attention to detail. :contentReference[oaicite:3]{index=3}",
+      "Ability to support procurement‑related work and documentation under supervision. :contentReference[oaicite:4]{index=4}"
+    ],
+    "benefits": [],
+    "skills": [
+      "MS Word",
+      "MS Excel",
+      "MS PowerPoint",
+      "Bookkeeping / Ledger management",
+      "Bank reconciliation",
+      "Voucher & cash/bank book handling",
+      "Data entry",
+      "Office administration support"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Happy Rahman Plaza, (4th Floor), 25‑27 Banglamotor, Dhaka‑1000"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/66776_0.jpg"
+  },
+  {
+    "id": 72,
+    "title": "Computer Operator",
+    "company": "BANGLADESH LINK TOURS & TRAVELS",
+    "location": "Kishoreganj",
+    "salary": {
+      "min": 10000,
+      "max": 12000,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Data Entry/Office Support",
+    "experience": [0, 1],
+    "subCategory": "Data Entry",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Minimum HSC or Bachelor’s pass",
+    "description": "Perform daily office‑computer related tasks for the company, handling data entry, document preparation, and general administrative support to ensure smooth office operations.",
+    "requirements": [
+      "Minimum HSC or Bachelor’s pass",
+      "Proficiency in MS Office (Word, Excel, PowerPoint)",
+      "Ability to type in Bangla and English",
+      "Basic knowledge of Internet usage, email, printer/scanner operation",
+      "Responsible, punctual and hardworking",
+      "1 to 2 years of experience preferred"
+    ],
+    "benefits": [],
+    "skills": [
+      "MS Office (Word, Excel, PowerPoint)",
+      "Typing (Bangla & English)",
+      "Basic Internet and Email usage",
+      "Data Entry",
+      "Office Administration"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/188810_1.png"
+  },
+  {
+    "id": 73,
+    "title": "Computer Operator",
+    "company": "Croydon Kowloon Design Ltd.",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Not specified"
+    },
+    "vacancy": 3,
+    "category": "Data Entry/Office Support",
+    "experience": [0, 1],
+    "subCategory": "Data Entry",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "HSC / Diploma / Bachelor (or equivalent); computer training or certification in MS Office is advantage",
+    "description": "Perform data entry, record‑keeping and reporting tasks to support garment‑manufacturing operations. Maintain accurate documentation, generate reports and dashboards, and ass ist various departments with administrative and data‑processing support.",
+    "requirements": [
+      "Excellent proficiency in MS Excel, Word and PowerPoint",
+      "Typing speed: minimum 40 WPM in English and 30 WPM in Bangla",
+      "Knowledge of data visualization tools (Power BI or Tableau) is a plus",
+      "Strong attention to detail, accuracy and organizational skills",
+      "Good communication skills (Bangla and English)",
+      "Able to maintain both soft and hard copy filing / database systems"
+    ],
+    "benefits": [
+      "Provident Fund",
+      "Yearly salary review",
+      "2 Festival Bonuses (annual)",
+      "Earn‑leave encashment (as per company policy)"
+    ],
+    "skills": [
+      "MS Excel",
+      "MS Word",
+      "MS PowerPoint",
+      "Data entry",
+      "Typing (Bangla & English)",
+      "Data visualization (Power BI / Tableau) — optional",
+      "Documentation & Filing",
+      "Reporting & Dashboard generation",
+      "Attention to detail",
+      "Time/Task management"
+    ],
+    "compnay": {
+      "website": "https://ckdlbd.com/",
+      "email": "",
+      "phone": "",
+      "address": "DEPZ, Ashulia, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/92782_0.jpg"
+  },
+  {
+    "id": 74,
+    "title": "Medical Officer (IMO, EMO, NICU, ICU)",
+    "company": "Better Life Hospital Ltd",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": "Not Specified",
+    "category": "Healthcare/Hospital/Medical",
+    "experience": [2, 4],
+    "subCategory": "Medical",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "MBBS from any recognized medical college, valid BMDC registration mandatory",
+    "description": "Provide medical care, including diagnosis, treatment and emergency support in hospital settings (OPD, IPD, NICU/ICU/Emergency), under supervision of consultants, ensuring proper patient management and hospital protocols are followed.",
+    "requirements": [
+      "MBBS degree from any recognized medical college",
+      "Valid BMDC registration",
+      "Willingness to perform shift duties",
+      "Good communication skills and patient-friendly behaviour",
+      "Ability to work under pressure and in team environment",
+      "Experience in hospital or clinical practice will be considered an advantage",
+      "Familiarity or willingness to work with hospital management software / patient monitoring systems"
+    ],
+    "benefits": [
+      "Salary: Attractive & Negotiable",
+      "Yearly increment (based on performance)",
+      "Other benefits as per hospital policy"
+    ],
+    "skills": [
+      "Patient diagnosis & treatment",
+      "Emergency medical care (EMO / ICU / NICU)",
+      "Clinical documentation & record-keeping",
+      "Shift-duty readiness",
+      "Team-work and communication",
+      "Patient-care and bedside manner"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "directorblhl@gmail.com",
+      "phone": "",
+      "address": "1 East Rampura, DIT Road, Dhaka-1219, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/81249_0.jpg"
+  },
+  {
+    "id": 75,
+    "title": "Tutor (Microbiology - MBBS 2nd Year Student)",
+    "company": "The Royal Scientific Publications",
+    "location": "Dhaka",
+    "salary": {
+      "min": 20000,
+      "max": 40000,
+      "default": "Negotiable"
+    },
+    "vacancy": 5,
+    "category": "Education/Training",
+    "experience": [1, 2],
+    "subCategory": "Education",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Female",
+    "education": "Strong academic background in Microbiology (Bachelor’s or equivalent)",
+    "description": "Provide personalised tutoring in Microbiology for a 2nd-year MBBS student — helping to understand theoretical concepts, practical relevance, and preparing for exams and viva.",
+    "requirements": [
+      "Strong academic background in Microbiology",
+      "Excellent communication and tutoring skills",
+      "Ability to simplify complex topics for MBBS 2nd-year level",
+      "At least 1 year teaching or tutoring experience",
+      "Age not more than 34 years"
+    ],
+    "benefits": [],
+    "skills": [
+      "Microbiology knowledge",
+      "Tutoring / Teaching",
+      "Communication",
+      "Exam/viva preparation guidance"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Sultan Ahmed Plaza (9th Floor), 32, Purana Paltan, Dhaka-1000"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/56953_2.png"
+  },
+  {
+    "id": 76,
+    "title": "Medical Information Associate",
+    "company": "Nevian Lifescience PLC",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Healthcare/Hospital/Medical",
+    "experience": [0, 1],
+    "subCategory": "Healthcare",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor/Honors in Science (preferably Pharmacy, Zoology, Botany, Chemistry or other Life-Science subject)",
+    "description": "Provide scientific and medical information to health care professionals, support promotional and scientific events, and contribute to commercial and compliance objectives for a leading pharmaceutical company.",
+    "requirements": [
+      "Bachelor/Honors (4-year) degree in Science (Pharmacy, Zoology, Botany, Chemistry or relevant Life Science) required. :contentReference[oaicite:0]{index=0}",
+      "Age at most 30 years. :contentReference[oaicite:1]{index=1}",
+      "Willingness to work anywhere in Bangladesh as required. :contentReference[oaicite:2]{index=2}",
+      "Ability and willingness to ride motorbike. :contentReference[oaicite:3]{index=3}",
+      "Excellent interpersonal and communication skills (Bangla & English). :contentReference[oaicite:4]{index=4}"
+    ],
+    "benefits": [],
+    "skills": [
+      "Medical / Pharmaceutical information communication",
+      "Interpersonal & communication skills",
+      "Mobility (willing to travel / ride motorbike)",
+      "Teamwork & collaboration",
+      "Event coordination / support"
+    ],
+    "compnay": {
+      "website": "http://www.nevian.com.bd/",
+      "email": "",
+      "phone": "",
+      "address": "Tower One One Seven (5th Floor), Plot 117/A, Tejgaon I/A, Dhaka-1208, Bangladesh"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/191601_0.png"
+  },
+  {
+    "id": 77,
+    "title": "Hatchery Engineer",
+    "company": "Kazi Farms Group",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Engineering",
+    "experience": [4, 6],
+    "subCategory": "Engineering",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Diploma in Electrical (or relevant field)",
+    "description": "Responsible for managing preventive and corrective maintenance of hatchery machinery and equipment to ensure smooth, safe and uninterrupted hatchery production operations.",
+    "requirements": [
+      "Diploma in Electrical (or relevant engineering background)",
+      "Minimum 2 years of experience in hatchery or similar industrial/maintenance environment",
+      "Proficiency in maintenance of hatchery equipment, generators, chillers, compressors and other mechanical/electrical systems",
+      "Ability to plan and organize maintenance schedules and spare-parts requisitions",
+      "Familiarity with safety protocols and willingness to work in remote / rural locations",
+      "Basic computer literacy (e.g. MS Office)",
+      "Good communication and interpersonal skills"
+    ],
+    "benefits": [],
+    "skills": [
+      "Preventive maintenance",
+      "Troubleshooting electrical/mechanical equipment",
+      "Hatchery machinery maintenance (hatchers, setters, air compressors, chillers, generators)",
+      "Safety compliance",
+      "Maintenance scheduling & spare-parts management"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/19515_6.png"
+  },
+  {
+    "id": 78,
+    "title": "Project Engineer / Site-Contract Specialist",
+    "company": "National Development Engineers Ltd. (NDE)",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Engineering",
+    "experience": [0, 1],
+    "subCategory": "Engineering",
+    "employeeStatus": "Full Time",
+    "jobType": "Contractual",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Engineering degree or relevant qualification preferred",
+    "description": "Provide contract and site-level engineering support: interpret contract documents, prepare agreements, coordinate with stakeholders according to FIDIC guidelines, and help ensure project execution aligns with contractual obligations and technical standards.",
+    "requirements": [
+      "Good understanding of contract documents and terms under FIDIC or equivalent standards",
+      "Ability to prepare and manage contract agreements and related documentation",
+      "Strong communication and coordination skills to liaise with management, clients, and project teams",
+      "Attention to detail and ability to ensure compliance with contract and project requirements",
+      "Prior experience in contract management or site engineering (preferred)"
+    ],
+    "benefits": [],
+    "skills": [
+      "Contract document interpretation",
+      "Contract agreement preparation",
+      "Project coordination",
+      "Documentation and record-keeping",
+      "Communication"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/21252_5.jpg"
+  },
+  {
+    "id": 79,
+    "title": "Senior Architect (Real-Estate & Interior Design)",
+    "company": "G A Foundation",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Architect/Interior Design",
+    "experience": [5, 8],
+    "subCategory": "Architect",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Bachelor of Architecture (B.Arch)",
+    "description": "Lead design and architectural projects — develop concept and drawings for both interior and exterior works, produce 3D visualizations and renderings, coordinate with clients, supervise projects and ensure design quality and execution.",
+    "requirements": [
+      "Bachelor of Architecture (B.Arch)",
+      "5–8 years relevant design/architecture experience",
+      "Proficiency in AutoCAD (2D & 3D), SketchUp, Revit Architecture",
+      "Experience with 3D modelling & rendering (V-Ray, Lumion or similar)",
+      "Strong knowledge of raw materials and construction/finishing processes",
+      "Good 3D visualization and presentation skills",
+      "Ability to coordinate with clients and stakeholders, and strong communication skills",
+      "Detail-oriented, creative, able to deliver high-quality architectural drawings and designs",
+      "Ability to work independently and manage full project life-cycle"
+    ],
+    "benefits": [],
+    "skills": [
+      "AutoCAD 2D/3D",
+      "Revit Architecture",
+      "SketchUp",
+      "3D Modelling & Rendering (V-Ray / Lumion)",
+      "Interior & Exterior Architectural Design",
+      "Client Coordination & Presentation",
+      "Design Supervision",
+      "Project Management"
+    ],
+    "compnay": {
+      "website": "gafoundationltd.com",
+      "email": "",
+      "phone": "",
+      "address": "Road-1, House-5, Main Road Pallabi, Dhaka-1216"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/96757_1.png"
+  },
+  {
+    "id": 80,
+    "title": "Manager (Civil Engineering)",
+    "company": "Akij Insaf Group",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 3,
+    "category": "Engineering",
+    "experience": [10, 16],
+    "subCategory": "Engineering",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "BSc in Civil Engineering",
+    "description": "Lead civil‑engineering projects for Akij Insaf Group, overseeing feasibility, planning, execution and completion of construction works, ensuring compliance with building codes, safety standards, and project budgets/timeframes. Coordinate with multidisciplinary teams (architects, structural, electrical, plumbing engineers), liaise with regulatory bodies, and monitor project progress from inception to delivery.",
+    "requirements": [
+      "BSc in Civil Engineering from a reputed university.",
+      "Minimum 12 years of relevant experience in civil‑engineering / construction projects.",
+      "Strong knowledge of Bangladesh National Building Code (BNBC), load calculations, structural analysis and map/site layout analysis.",
+      "Proficiency in project management and civil‑engineering tools (e.g. AutoCAD, Microsoft Project, SketchUp or similar).",
+      "Ability to coordinate and communicate effectively with architects, structural engineers, plumbing/electrical engineers, contractors, regulatory authorities and consultants.",
+      "Strong planning, negotiation and decision‑making skills (e.g. negotiating/ finalizing rates with contractors)."
+    ],
+    "benefits": [
+      "Provident Fund",
+      "Gratuity",
+      "Mobile bill allowance",
+      "Annual salary review",
+      "2 Festival Bonuses (per year)"
+    ],
+    "skills": [
+      "Civil Engineering",
+      "Project Management",
+      "Structural Analysis & Load Calculations",
+      "Construction Planning & Execution",
+      "AutoCAD / Drafting Software",
+      "Project Scheduling (MS Project or similar)",
+      "Regulatory Compliance & Building Codes",
+      "Contractor Negotiation & Coordination"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "Akij House, 198, Bir Uttam Mir Shawkat Sarak (Gulshan Link Road), Tejgaon, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/120866_5.png"
+  },
+  {
+    "id": 81,
+    "title": "Engineer - Technical Coordinator",
+    "company": "Alphatek Engineering Limited",
+    "location": "Dhaka",
+    "salary": {
+      "min": 20000,
+      "max": 30000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Engineering",
+    "experience": [2, 3],
+    "subCategory": "Engineering",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Female",
+    "education": "Bachelor of Science (BSc)",
+    "description": "Support overall engineering operations, coordinate daily site & service‑team schedules, manage technical workflows and resource allocation, and bridge communication between management and engineering/service teams to ensure timely project/service delivery and quality compliance.",
+    "requirements": [
+      "Minimum 2 years experience in engineering firms, industrial equipment servicing or related.",
+      "Candidates from any discipline may be considered if they fulfill job context and responsibilities.",
+      "Strong communication and convincing skills (written & spoken Bangla & English)",
+      "Basic troubleshooting skills and ability to understand project documentation standards. ",
+      "Proficiency in MS Office (Excel, Word, PowerPoint).",
+      "Positive attitude toward pressure and workload; ability to interact confidently with management"
+    ],
+    "skills": [
+      "Engineering operations coordination",
+      "Project scheduling & resource allocation",
+      "Client communication & coordination",
+      "Technical documentation",
+      "Quotation / BOQ preparation",
+      "MS Office (Excel, Word, PowerPoint)",
+      "Troubleshooting & problem‑solving"
+    ],
+    "benefits": [
+      "T/A (Transportation allowance)",
+      "Mobile bill",
+      "Performance bonus",
+      "Annual salary review",
+      "Subsidized lunch (half‑subsidy)",
+      "2 festival bonuses per year"
+    ],
+    "compnay": {
+      "website": "www.alphatek.com.bd",
+      "email": "",
+      "phone": "",
+      "address": "Chowdhury Residence, 1st Floor, Plot No‑254/24‑25, Road No‑01, Mahmud Nagar New City (Sign Board), Demra, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/107450_3.png"
+  },
+  {
+    "id": 82,
+    "title": "Visual Design & Concept Artist – Architecture Support",
+    "company": "SANGATH",
+    "location": "Dhaka",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Architect/Interior Design",
+    "experience": [2, 4],
+    "subCategory": "Architect",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-21",
+    "jobEndDate": "2025-12-30",
+    "gender": "Only Female",
+    "education": "",
+    "description": "Support the architecture/design team of SANGATH by producing high‑quality conceptual and graphic design materials, combining art and architecture to create visuals, illustrations and content for projects and publications.",
+    "requirements": [
+      "At least 2 years of experience in design, illustration or related field",
+      "Proficiency in graphic design and illustration (hand/sketch/digital)",
+      "Good sense of architectural design and ability to integrate art with architecture concepts",
+      "Ability to produce conceptual sketches, layouts, presentation graphics, diagrams",
+      "Good command over graphic software (e.g. Adobe Photoshop, Illustrator) — or equivalent skills",
+      "Strong creativity, punctuality and responsibility",
+      "Good verbal and written communication skills"
+    ],
+    "benefits": [
+      "Yearly performance‑based increment",
+      "Festival bonuses as per company policy",
+      "Friendly and supportive working environment",
+      "Opportunities for skill development and portfolio enhancement"
+    ],
+    "skills": [
+      "Concept sketching & illustration",
+      "Graphic design / illustration software (e.g. Adobe Photoshop / Illustrator)",
+      "Architectural visualization / interior‑space illustration",
+      "Presentation graphics, layouts and print‑ready design",
+      "Content writing for design notes & project documentation",
+      "Photo editing and basic video editing (as required)"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": "House‑24/B, Road‑14/A, Dhanmondi, Dhaka"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/181696_0.png"
+  },
+  {
+    "id": 83,
+    "title": "Assistant Biomedical Engineer",
+    "company": "Biotrade Ltd",
+    "location": "Anywhere in Bangladesh",
+    "salary": {
+      "min": 0,
+      "max": 0,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Healthcare/Hospital/Medical",
+    "experience": [1, 2],
+    "subCategory": "Healthcare",
+    "employeeStatus": "Full Time",
+    "jobType": "Onsite",
+    "jobPostedDate": "2025-11-11",
+    "jobEndDate": "2025-12-20",
+    "gender": "Only Male",
+    "education": "Diploma in Electro‑medical (Biomedical Engineering) or BSc in Biomedical Engineering",
+    "description": "Provide sales and after‑sales service support for biomedical equipment. Conduct regular visits to hospitals, diagnostics centers and clinics to generate leads and support customers. Ensure high‑quality service delivery and contribute to sales growth for medical equipment through maintenance, service, and customer relationship management.",
+    "requirements": [
+      "3‑5 years experience in medical equipment sales or service",
+      "Diploma in Electro‑medical (Biomedical Engineering) or BSc in Biomedical Engineering",
+      "Experience working with hospital, diagnostic center or medical equipment supply/service",
+      "Willingness to travel across Bangladesh",
+      "Good communication and customer‑service attitude",
+      "Ability to build and maintain long‑term client relationships"
+    ],
+    "benefits": [
+      "Travel allowance (T/A)",
+      "Mobile bill allowance",
+      "Tour allowance",
+      "Performance bonus",
+      "Fully subsidized lunch",
+      "2 Festival bonuses per year"
+    ],
+    "skills": [
+      "Medical equipment sales & marketing",
+      "Client relationship management",
+      "After‑sales support and service",
+      "Lead generation & customer acquisition",
+      "Communication and interpersonal skills",
+      "Service request handling"
+    ],
+    "compnay": {
+      "website": "www.biotradeltd.com",
+      "email": "",
+      "phone": "",
+      "address": "14/A, Meherba Plaza, 33 Topkhana Road, Dhaka‑1000"
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/195941_0.png"
+  },
+  {
+    "id": 84,
+    "title": "Civil Engineer",
+    "company": "Eastern University",
+    "location": "Dhaka",
+    "salary": {
+      "min": 20000,
+      "max": 25000,
+      "default": "Negotiable"
+    },
+    "vacancy": 2,
+    "category": "Engineering",
+    "experience": [2, 4],
+    "subCategory": "Engineering",
+    "employeeStatus": "Full Time",
+    "jobType": "Contractual",
+    "jobPostedDate": "2025-11-30",
+    "jobEndDate": "2025-12-30",
+    "gender": "Anyone Can Apply",
+    "education": "Diploma in Civil Engineering (from government‑approved Polytechnic Institute, with minimum CGPA 3.0/4.0 or equivalent)",
+    "description": "Perform civil engineering duties for maintenance, construction and renovation works for university campus infrastructure, ensuring quality control and supervising site activities as required by Eastern University.",
+    "requirements": [
+      "Diploma in Civil Engineering from government‑approved Polytechnic Institute with at least CGPA 3.0/4.0 (or equivalent) :contentReference[oaicite:0]{index=0}",
+      "2 to 3 years of practical experience in construction, maintenance, renovation or infrastructure development works. :contentReference[oaicite:1]{index=1}",
+      "Experience in supervising civil works — preferably in educational institutions, corporate facilities, or large‑scale projects. :contentReference[oaicite:2]{index=2}"
+    ],
+    "benefits": [
+      "Medical allowance :contentReference[oaicite:3]{index=3}",
+      "Weekly 2 holidays :contentReference[oaicite:4]{index=4}"
+    ],
+    "skills": [
+      "Construction supervision",
+      "Project maintenance & renovation",
+      "Quality control",
+      "Site management",
+      "Basic civil engineering tasks / drawing reading / implementation"
+    ],
+    "compnay": {
+      "website": "",
+      "email": "",
+      "phone": "",
+      "address": ""
+    },
+    "clogo": "https://corporate.bdjobs.com/logos/29935_3.png"
+  }
+]
