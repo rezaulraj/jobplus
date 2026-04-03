@@ -101,6 +101,55 @@ const useSeekerStore = create((set, get) => ({
     }
   },
 
+  getPersonalInfo: async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/seekers/me/personal-info`,
+        get().getAuthConfig(),
+      );
+
+      if (response.data.success) {
+        set((state) => ({
+          seekerProfile: {
+            ...(state.seekerProfile || {}),
+            personalInfo: response.data.data || {},
+          },
+          isLoading: false,
+          error: null,
+        }));
+
+        return { success: true, data: response.data.data };
+      }
+
+      return { success: false, error: "Failed to fetch personal info" };
+    } catch (error) {
+      return get().handleError(error, "Failed to fetch personal info");
+    }
+  },
+
+  updatePersonalInfo: async (personalInfoData) =>
+    get().runRequest(
+      () =>
+        axios.patch(
+          `${API_URL}/seekers/me/personal-info`,
+          personalInfoData,
+          get().getAuthConfig(),
+        ),
+      "Personal information updated successfully!",
+      { refetchProfile: true },
+    ),
+
+  deletePersonalInfo: async () =>
+    get().runRequest(
+      () =>
+        axios.delete(
+          `${API_URL}/seekers/me/personal-info`,
+          get().getAuthConfig(),
+        ),
+      "Personal information removed successfully!",
+      { refetchProfile: true, updateProfile: false },
+    ),
+
   updateSummary: async (summary) =>
     get().runRequest(
       () =>
@@ -117,7 +166,7 @@ const useSeekerStore = create((set, get) => ({
       () =>
         axios.post(
           `${API_URL}/seekers/me/skills`,
-          skillData,
+          { skills: [skillData] },
           get().getAuthConfig(),
         ),
       "Skill added successfully!",
@@ -223,6 +272,7 @@ const useSeekerStore = create((set, get) => ({
           get().getAuthConfig(),
         ),
       "Project added successfully!",
+      { refetchProfile: true },
     ),
 
   updateProject: async (projectId, projectData) =>
@@ -234,6 +284,7 @@ const useSeekerStore = create((set, get) => ({
           get().getAuthConfig(),
         ),
       "Project updated successfully!",
+      { refetchProfile: true },
     ),
 
   deleteProject: async (projectId) =>
@@ -244,6 +295,7 @@ const useSeekerStore = create((set, get) => ({
           get().getAuthConfig(),
         ),
       "Project deleted successfully!",
+      { refetchProfile: true, updateProfile: false },
     ),
 
   updateJobPreferences: async (preferences) =>
@@ -279,15 +331,16 @@ const useSeekerStore = create((set, get) => ({
       { refetchProfile: true },
     ),
 
-  updateLanguage: async (language, level) =>
+  updateLanguage: async (language, proficiency) =>
     get().runRequest(
       () =>
         axios.patch(
           `${API_URL}/seekers/me/languages/${encodeURIComponent(language)}`,
-          { level },
+          { proficiency },
           get().getAuthConfig(),
         ),
       "Language updated successfully!",
+      { refetchProfile: true },
     ),
 
   deleteLanguage: async (language) =>
@@ -298,6 +351,7 @@ const useSeekerStore = create((set, get) => ({
           get().getAuthConfig(),
         ),
       "Language deleted successfully!",
+      { refetchProfile: true, updateProfile: false },
     ),
 
   uploadProfileAssets: async (formData) =>

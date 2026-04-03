@@ -24,6 +24,7 @@ import {
   FiTrash2,
   FiChevronDown,
   FiLoader,
+  FiGithub,
 } from "react-icons/fi";
 import useSeekerStore from "../../store/seekerStore";
 import useAuthStore from "../../store/authStore";
@@ -352,10 +353,13 @@ const SeekerProfile = () => {
   // PERSONAL INFO FORM (inline)
   // ════════════════════════════════════════════════════════════════════════════
   const PersonalInfoForm = () => {
+    const { updatePersonalInfo, deletePersonalInfo } = useSeekerStore();
+
     const [f, setF] = useState({
       name: profile.personalInfo?.name || user?.fullName || "",
       email: profile.personalInfo?.email || user?.email || "",
       fatherName: profile.personalInfo?.fatherName || "",
+      dobDay: profile.personalInfo?.dob?.day || "",
       dobMonth: profile.personalInfo?.dob?.month || "",
       dobYear: profile.personalInfo?.dob?.year || "",
       gender: profile.personalInfo?.gender || "",
@@ -369,21 +373,85 @@ const SeekerProfile = () => {
       expectedSalary: profile.personalInfo?.expectedSalary || "",
       postalAddress: profile.personalInfo?.postalAddress || "",
     });
-    const set = (k, v) => setF((p) => ({ ...p, [k]: v }));
+
+    useEffect(() => {
+      if (panels.personalInfo) {
+        setF({
+          name: profile.personalInfo?.name || user?.fullName || "",
+          email: profile.personalInfo?.email || user?.email || "",
+          fatherName: profile.personalInfo?.fatherName || "",
+          dobDay: profile.personalInfo?.dob?.day || "",
+          dobMonth: profile.personalInfo?.dob?.month || "",
+          dobYear: profile.personalInfo?.dob?.year || "",
+          gender: profile.personalInfo?.gender || "",
+          maritalStatus: profile.personalInfo?.maritalStatus || "",
+          nationality: profile.personalInfo?.nationality || "",
+          country: profile.personalInfo?.country || "",
+          city: profile.personalInfo?.city || "",
+          mobile: profile.personalInfo?.mobile || "",
+          careerLevel: profile.personalInfo?.careerLevel || "",
+          experience: profile.personalInfo?.experience || "",
+          expectedSalary: profile.personalInfo?.expectedSalary || "",
+          postalAddress: profile.personalInfo?.postalAddress || "",
+        });
+      }
+    }, [panels.personalInfo, profile.personalInfo, user]);
+
+    const setField = (k, v) => setF((p) => ({ ...p, [k]: v }));
 
     const save = async () => {
       setSav("personalInfo", true);
-      try {
-        // Optimistic local update — replace with real API call per your auth/seeker store
-        setProfile((p) => ({
-          ...p,
-          personalInfo: { ...f, dob: { month: f.dobMonth, year: f.dobYear } },
-        }));
+
+      const payload = {
+        name: f.name.trim() || "",
+        email: f.email.trim() || "",
+        fatherName: f.fatherName.trim() || "",
+        dob: {
+          day: f.dobDay || "",
+          month: f.dobMonth || "",
+          year: f.dobYear || "",
+        },
+        gender: f.gender || "",
+        maritalStatus: f.maritalStatus || "",
+        nationality: f.nationality || "",
+        country: f.country.trim() || "",
+        city: f.city.trim() || "",
+        mobile: f.mobile.trim() || "",
+        careerLevel: f.careerLevel || "",
+        experience: f.experience || "",
+        expectedSalary: f.expectedSalary ? String(f.expectedSalary).trim() : "",
+        postalAddress: f.postalAddress.trim() || "",
+      };
+
+      const result = await updatePersonalInfo(payload);
+
+      if (result?.success) {
+        await loadProfile();
         togglePanel("personalInfo", false);
         toast.success("Personal information saved!");
-      } catch {
-        toast.error("Failed to save");
+      } else {
+        toast.error(result?.error || "Failed to save");
       }
+
+      setSav("personalInfo", false);
+    };
+
+    const removeAll = async () => {
+      const ok = window.confirm("Delete personal information?");
+      if (!ok) return;
+
+      setSav("personalInfo", true);
+
+      const result = await deletePersonalInfo();
+
+      if (result?.success) {
+        await loadProfile();
+        togglePanel("personalInfo", false);
+        toast.success("Personal information removed!");
+      } else {
+        toast.error(result?.error || "Failed to delete");
+      }
+
       setSav("personalInfo", false);
     };
 
@@ -400,69 +468,88 @@ const SeekerProfile = () => {
             <input
               className={INPUT}
               value={f.name}
-              onChange={(e) => set("name", e.target.value)}
+              onChange={(e) => setField("name", e.target.value)}
             />
           </Field>
+
           <Field label="Email *">
             <input
               className={INPUT}
               type="email"
               value={f.email}
-              onChange={(e) => set("email", e.target.value)}
+              onChange={(e) => setField("email", e.target.value)}
             />
           </Field>
         </Row>
+
         <Row>
           <Field label="Father Name">
             <input
               className={INPUT}
               value={f.fatherName}
-              onChange={(e) => set("fatherName", e.target.value)}
+              onChange={(e) => setField("fatherName", e.target.value)}
             />
           </Field>
-          <Field label="Mobile *">
+
+          <Field label="Mobile">
             <input
               className={INPUT}
               type="tel"
               value={f.mobile}
-              placeholder="+880…"
-              onChange={(e) => set("mobile", e.target.value)}
+              placeholder="+880..."
+              onChange={(e) => setField("mobile", e.target.value)}
             />
           </Field>
         </Row>
+
         <Row>
           <Field label="Date of Birth">
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2">
+              <input
+                className={INPUT}
+                placeholder="Day"
+                value={f.dobDay}
+                onChange={(e) => setField("dobDay", e.target.value)}
+              />
               <select
                 className={INPUT}
                 value={f.dobMonth}
-                onChange={(e) => set("dobMonth", e.target.value)}
+                onChange={(e) => setField("dobMonth", e.target.value)}
               >
                 <option value="">Month</option>
                 {MONTHS.map((m) => (
-                  <option key={m}>{m}</option>
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
                 ))}
               </select>
               <select
                 className={INPUT}
                 value={f.dobYear}
-                onChange={(e) => set("dobYear", e.target.value)}
+                onChange={(e) => setField("dobYear", e.target.value)}
               >
                 <option value="">Year</option>
                 {YEARS.map((y) => (
-                  <option key={y}>{y}</option>
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
                 ))}
               </select>
             </div>
           </Field>
-          <Field label="Gender *">
+
+          <Field label="Gender">
             <div className="flex rounded-xl overflow-hidden border border-gray-200">
               {["Male", "Female", "Other"].map((g) => (
                 <button
                   key={g}
                   type="button"
-                  onClick={() => set("gender", g)}
-                  className={`flex-1 py-2.5 text-sm transition-all ${f.gender === g ? "bg-emerald-500 text-white font-semibold" : "hover:bg-gray-50 text-gray-600"}`}
+                  onClick={() => setField("gender", g)}
+                  className={`flex-1 py-2.5 text-sm transition-all ${
+                    f.gender === g
+                      ? "bg-emerald-500 text-white font-semibold"
+                      : "hover:bg-gray-50 text-gray-600"
+                  }`}
                 >
                   {g}
                 </button>
@@ -470,24 +557,28 @@ const SeekerProfile = () => {
             </div>
           </Field>
         </Row>
+
         <Row>
           <Field label="Marital Status">
             <select
               className={INPUT}
               value={f.maritalStatus}
-              onChange={(e) => set("maritalStatus", e.target.value)}
+              onChange={(e) => setField("maritalStatus", e.target.value)}
             >
               <option value="">Select</option>
               {["Single", "Married", "Divorced", "Widowed"].map((s) => (
-                <option key={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </Field>
+
           <Field label="Nationality">
             <select
               className={INPUT}
               value={f.nationality}
-              onChange={(e) => set("nationality", e.target.value)}
+              onChange={(e) => setField("nationality", e.target.value)}
             >
               <option value="">Select</option>
               {[
@@ -499,17 +590,20 @@ const SeekerProfile = () => {
                 "Pakistani",
                 "Other",
               ].map((n) => (
-                <option key={n}>{n}</option>
+                <option key={n} value={n}>
+                  {n}
+                </option>
               ))}
             </select>
           </Field>
         </Row>
+
         <Row>
           <Field label="Country">
             <select
               className={INPUT}
               value={f.country}
-              onChange={(e) => set("country", e.target.value)}
+              onChange={(e) => setField("country", e.target.value)}
             >
               <option value="">Select</option>
               {[
@@ -522,25 +616,29 @@ const SeekerProfile = () => {
                 "Pakistan",
                 "Other",
               ].map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
           </Field>
+
           <Field label="City">
             <input
               className={INPUT}
               value={f.city}
               placeholder="Your city"
-              onChange={(e) => set("city", e.target.value)}
+              onChange={(e) => setField("city", e.target.value)}
             />
           </Field>
         </Row>
+
         <Row>
           <Field label="Career Level">
             <select
               className={INPUT}
               value={f.careerLevel}
-              onChange={(e) => set("careerLevel", e.target.value)}
+              onChange={(e) => setField("careerLevel", e.target.value)}
             >
               <option value="">Select</option>
               {[
@@ -551,15 +649,18 @@ const SeekerProfile = () => {
                 "Director",
                 "Executive",
               ].map((l) => (
-                <option key={l}>{l}</option>
+                <option key={l} value={l}>
+                  {l}
+                </option>
               ))}
             </select>
           </Field>
+
           <Field label="Total Experience">
             <select
               className={INPUT}
               value={f.experience}
-              onChange={(e) => set("experience", e.target.value)}
+              onChange={(e) => setField("experience", e.target.value)}
             >
               <option value="">Select</option>
               {[
@@ -570,11 +671,14 @@ const SeekerProfile = () => {
                 "6-10 years",
                 "More than 10 years",
               ].map((e) => (
-                <option key={e}>{e}</option>
+                <option key={e} value={e}>
+                  {e}
+                </option>
               ))}
             </select>
           </Field>
         </Row>
+
         <Row cols={1}>
           <Field label="Expected Salary (BDT)">
             <input
@@ -582,18 +686,29 @@ const SeekerProfile = () => {
               type="number"
               value={f.expectedSalary}
               placeholder="e.g. 50000"
-              onChange={(e) => set("expectedSalary", e.target.value)}
+              onChange={(e) => setField("expectedSalary", e.target.value)}
             />
           </Field>
         </Row>
+
         <Field label="Postal Address">
           <textarea
             className={INPUT}
             rows={2}
             value={f.postalAddress}
-            onChange={(e) => set("postalAddress", e.target.value)}
+            onChange={(e) => setField("postalAddress", e.target.value)}
           />
         </Field>
+
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={removeAll}
+            className="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-sm"
+          >
+            Delete Personal Info
+          </button>
+        </div>
       </FormPanel>
     );
   };
@@ -1067,8 +1182,19 @@ const SeekerProfile = () => {
   // ════════════════════════════════════════════════════════════════════════════
   // JOB PREFERENCES FORM
   // ════════════════════════════════════════════════════════════════════════════
+  const JOB_TYPE_OPTIONS = [
+    { label: "Full Time", value: "full_time" },
+    { label: "Part Time", value: "part_time" },
+    { label: "Contract", value: "contract" },
+    { label: "Internship", value: "internship" },
+    { label: "Remote", value: "remote" },
+    { label: "Hybrid", value: "hybrid" },
+    { label: "Onsite", value: "onsite" },
+  ];
+
   const JobPrefForm = () => {
     const init = profile.preferences;
+
     const [f, setF] = useState({
       preferredTitles: init?.preferredTitles || [],
       salaryMin: init?.salaryMin ?? "",
@@ -1082,28 +1208,30 @@ const SeekerProfile = () => {
       noticePeriodDays: init?.noticePeriodDays ?? 0,
       openToRelocation: init?.openToRelocation || false,
     });
-    const JOB_TYPES = [
-      "full-time",
-      "part-time",
-      "contract",
-      "internship",
-      "remote",
-      "hybrid",
-      "onsite",
-    ];
+
     const toggle = (arr, val) =>
       arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
-    const addChip = (field, val) =>
-      setF((p) => ({ ...p, [field]: [...p[field], val] }));
+
+    const addChip = (field, val) => {
+      const v = String(val || "").trim();
+      if (!v) return;
+
+      setF((p) => ({
+        ...p,
+        [field]: p[field].includes(v) ? p[field] : [...p[field], v],
+      }));
+    };
+
     const rmChip = (field, val) =>
       setF((p) => ({ ...p, [field]: p[field].filter((x) => x !== val) }));
 
     const save = async () => {
       setSav("addPref", true);
+
       const payload = {
         preferredTitles: f.preferredTitles,
-        salaryMin: Number(f.salaryMin) || null,
-        salaryMax: Number(f.salaryMax) || null,
+        salaryMin: f.salaryMin === "" ? null : Number(f.salaryMin),
+        salaryMax: f.salaryMax === "" ? null : Number(f.salaryMax),
         currency: f.currency,
         salaryRangeKey: f.salaryRangeKey,
         preferredSkills: f.preferredSkills,
@@ -1113,12 +1241,17 @@ const SeekerProfile = () => {
         noticePeriodDays: Number(f.noticePeriodDays) || 0,
         openToRelocation: f.openToRelocation,
       };
+
       const result = await updateJobPreferences(payload);
+
       if (result?.success) {
         await loadProfile();
         togglePanel("addPref", false);
         toast.success("Job preferences saved!");
-      } else toast.error("Failed to save preferences");
+      } else {
+        toast.error(result?.error || "Failed to save preferences");
+      }
+
       setSav("addPref", false);
     };
 
@@ -1145,6 +1278,7 @@ const SeekerProfile = () => {
             ))}
           </div>
         </Field>
+
         <div>
           <label className={LABEL}>Salary Range</label>
           <div className="flex gap-2 items-center">
@@ -1175,27 +1309,38 @@ const SeekerProfile = () => {
               }
             >
               {["BDT", "USD", "EUR", "GBP"].map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
           </div>
         </div>
+
         <Field label="Job Types">
           <div className="flex flex-wrap gap-2">
-            {JOB_TYPES.map((t) => (
+            {JOB_TYPE_OPTIONS.map((opt) => (
               <button
-                key={t}
+                key={opt.value}
                 type="button"
                 onClick={() =>
-                  setF((p) => ({ ...p, jobTypes: toggle(p.jobTypes, t) }))
+                  setF((p) => ({
+                    ...p,
+                    jobTypes: toggle(p.jobTypes, opt.value),
+                  }))
                 }
-                className={`px-3 py-1.5 text-xs rounded-full border transition-all capitalize ${f.jobTypes.includes(t) ? "bg-emerald-500 text-white border-emerald-500" : "border-gray-200 text-gray-600 hover:border-emerald-400"}`}
+                className={`px-3 py-1.5 text-xs rounded-full border transition-all ${
+                  f.jobTypes.includes(opt.value)
+                    ? "bg-emerald-500 text-white border-emerald-500"
+                    : "border-gray-200 text-gray-600 hover:border-emerald-400"
+                }`}
               >
-                {t}
+                {opt.label}
               </button>
             ))}
           </div>
         </Field>
+
         <Field label="Preferred Skills">
           <AddChipInput
             placeholder="Add skill & press Enter"
@@ -1211,6 +1356,7 @@ const SeekerProfile = () => {
             ))}
           </div>
         </Field>
+
         <Field label="Preferred Locations">
           <AddChipInput
             placeholder="Add location & press Enter"
@@ -1226,6 +1372,7 @@ const SeekerProfile = () => {
             ))}
           </div>
         </Field>
+
         <Row>
           <Field label="Relocation Preference">
             <select
@@ -1240,6 +1387,7 @@ const SeekerProfile = () => {
               <option value="not_open">Not open</option>
             </select>
           </Field>
+
           <Field label="Notice Period (Days)">
             <input
               className={INPUT}
@@ -1252,6 +1400,7 @@ const SeekerProfile = () => {
             />
           </Field>
         </Row>
+
         <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
           <input
             type="checkbox"
@@ -1270,83 +1419,202 @@ const SeekerProfile = () => {
   // ════════════════════════════════════════════════════════════════════════════
   // PROJECTS FORM
   // ════════════════════════════════════════════════════════════════════════════
-  const ProjectForm = () => {
-    const [f, setF] = useState({
-      name: "",
-      liveUrl: "",
-      repoUrl: "",
-      role: "",
-      description: "",
-    });
+  const blankProject = () => ({
+    title: "",
+    description: "",
+    techInput: "",
+    techStack: [],
+    liveUrl: "",
+    repoUrl: "",
+    mediaInput: "",
+    mediaUrls: [],
+  });
+
+  const ProjectForm = ({
+    initial = null,
+    open,
+    onCancel,
+    onSave,
+    title = "Add Project",
+    savKey,
+  }) => {
+    const [f, setF] = useState(() => ({
+      title: initial?.title || "",
+      description: initial?.description || "",
+      techInput: "",
+      techStack: initial?.techStack || [],
+      liveUrl: initial?.liveUrl || "",
+      repoUrl: initial?.repoUrl || "",
+      mediaInput: "",
+      mediaUrls: initial?.mediaUrls || [],
+    }));
+
+    useEffect(() => {
+      setF({
+        title: initial?.title || "",
+        description: initial?.description || "",
+        techInput: "",
+        techStack: initial?.techStack || [],
+        liveUrl: initial?.liveUrl || "",
+        repoUrl: initial?.repoUrl || "",
+        mediaInput: "",
+        mediaUrls: initial?.mediaUrls || [],
+      });
+    }, [initial, open]);
+
+    const addChip = (field, inputField) => {
+      const value = String(f[inputField] || "").trim();
+      if (!value) return;
+
+      setF((p) => ({
+        ...p,
+        [field]: p[field].includes(value) ? p[field] : [...p[field], value],
+        [inputField]: "",
+      }));
+    };
+
+    const removeChip = (field, value) => {
+      setF((p) => ({
+        ...p,
+        [field]: p[field].filter((x) => x !== value),
+      }));
+    };
+
     const save = async () => {
-      if (!f.name) {
-        toast.error("Project name required");
+      if (!f.title.trim()) {
+        toast.error("Project title required");
         return;
       }
-      setSav("addProject", true);
-      const result = await addProject({
-        name: f.name,
-        liveUrl: f.liveUrl,
-        repoUrl: f.repoUrl,
-        role: f.role,
-        description: f.description,
-        stack: [],
-      });
-      if (result?.success) {
-        await loadProfile();
-        togglePanel("addProject", false);
-        toast.success("Project added!");
-      } else toast.error("Failed to add project");
-      setSav("addProject", false);
+
+      const payload = {
+        title: f.title.trim(),
+        description: f.description.trim(),
+        techStack: f.techStack,
+        liveUrl: f.liveUrl.trim(),
+        repoUrl: f.repoUrl.trim(),
+        mediaUrls: f.mediaUrls,
+      };
+
+      setSav(savKey, true);
+      await onSave(payload);
     };
+
     return (
       <FormPanel
-        title="Add Project"
-        open={panels.addProject}
-        onCancel={() => togglePanel("addProject", false)}
+        title={title}
+        open={open}
+        onCancel={onCancel}
         onSave={save}
-        saving={saving.addProject}
+        saving={saving[savKey]}
       >
-        <Field label="Project Name *">
+        <Field label="Project Title *">
           <input
             className={INPUT}
-            value={f.name}
+            value={f.title}
             placeholder="My Awesome App"
-            onChange={(e) => setF((p) => ({ ...p, name: e.target.value }))}
+            onChange={(e) => setF((p) => ({ ...p, title: e.target.value }))}
           />
         </Field>
+
         <Row>
           <Field label="Live URL">
             <input
               className={INPUT}
               type="url"
               value={f.liveUrl}
-              placeholder="https://…"
+              placeholder="https://..."
               onChange={(e) => setF((p) => ({ ...p, liveUrl: e.target.value }))}
             />
           </Field>
+
           <Field label="Repo URL">
             <input
               className={INPUT}
               type="url"
               value={f.repoUrl}
-              placeholder="https://github.com/…"
+              placeholder="https://github.com/..."
               onChange={(e) => setF((p) => ({ ...p, repoUrl: e.target.value }))}
             />
           </Field>
         </Row>
-        <Field label="Your Role">
-          <input
-            className={INPUT}
-            value={f.role}
-            placeholder="e.g. Lead Developer"
-            onChange={(e) => setF((p) => ({ ...p, role: e.target.value }))}
-          />
+
+        <Field label="Tech Stack">
+          <div className="flex gap-2">
+            <input
+              className={INPUT}
+              value={f.techInput}
+              placeholder="Add tech & press button"
+              onChange={(e) =>
+                setF((p) => ({ ...p, techInput: e.target.value }))
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addChip("techStack", "techInput");
+                }
+              }}
+            />
+            <button
+              type="button"
+              className={BTN_P}
+              onClick={() => addChip("techStack", "techInput")}
+            >
+              Add
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-2">
+            {f.techStack.map((t) => (
+              <Chip
+                key={t}
+                label={t}
+                onRemove={() => removeChip("techStack", t)}
+              />
+            ))}
+          </div>
         </Field>
-        <Field label="Description *">
+
+        <Field label="Media URLs">
+          <div className="flex gap-2">
+            <input
+              className={INPUT}
+              type="url"
+              value={f.mediaInput}
+              placeholder="https://image-or-demo-link..."
+              onChange={(e) =>
+                setF((p) => ({ ...p, mediaInput: e.target.value }))
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addChip("mediaUrls", "mediaInput");
+                }
+              }}
+            />
+            <button
+              type="button"
+              className={BTN_P}
+              onClick={() => addChip("mediaUrls", "mediaInput")}
+            >
+              Add
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-2">
+            {f.mediaUrls.map((u) => (
+              <Chip
+                key={u}
+                label={u}
+                onRemove={() => removeChip("mediaUrls", u)}
+              />
+            ))}
+          </div>
+        </Field>
+
+        <Field label="Description">
           <textarea
             className={INPUT}
-            rows={3}
+            rows={4}
             value={f.description}
             placeholder="What does this project do?"
             onChange={(e) =>
@@ -1358,20 +1626,63 @@ const SeekerProfile = () => {
     );
   };
 
-  const handleDeleteProject = async (id) => {
+  const handleSaveProject = async (payload, projectId) => {
+    const key = projectId ? `project-${projectId}` : "addProject";
+
+    const result = projectId
+      ? await updateProject(projectId, payload)
+      : await addProject(payload);
+
+    if (result?.success) {
+      await loadProfile();
+      togglePanel("addProject", false);
+      if (projectId) toggleEdit(`project-${projectId}`, false);
+      toast.success(projectId ? "Project updated!" : "Project added!");
+    } else {
+      toast.error(result?.error || "Failed to save project");
+    }
+
+    setSav(key, false);
+  };
+
+  const handleDeleteProject = async (projectId) => {
     if (!window.confirm("Delete this project?")) return;
-    const result = await deleteProject(id);
+
+    const result = await deleteProject(projectId);
     if (result?.success) {
       await loadProfile();
       toast.success("Project removed!");
-    } else toast.error("Failed to delete");
+    } else {
+      toast.error(result?.error || "Failed to delete");
+    }
   };
 
   // ════════════════════════════════════════════════════════════════════════════
   // LANGUAGE FORM
   // ════════════════════════════════════════════════════════════════════════════
-  const LanguageForm = () => {
-    const [f, setF] = useState({ language: "", level: "" });
+  const LanguageForm = ({
+    initial = { language: "", proficiency: "" },
+    title = "Add Language",
+    open,
+    onCancel,
+    onSave,
+    savKey,
+    disableLanguage = false,
+  }) => {
+    const [f, setF] = useState({
+      language: initial?.language || "",
+      proficiency: initial?.proficiency || "",
+    });
+
+    useEffect(() => {
+      if (open) {
+        setF({
+          language: initial?.language || "",
+          proficiency: initial?.proficiency || "",
+        });
+      }
+    }, [open, initial?.language, initial?.proficiency]);
+
     const LANGS = [
       "English",
       "Bengali",
@@ -1388,61 +1699,67 @@ const SeekerProfile = () => {
       "Urdu",
       "Hindi",
     ];
-    const LEVELS = [
-      "Native",
-      "Fluent",
-      "Professional Working",
-      "Limited Working",
-      "Elementary",
-      "Beginner",
+
+    const LANGUAGE_LEVEL_OPTIONS = [
+      { label: "Native", value: "native" },
+      { label: "Fluent", value: "fluent" },
+      { label: "Professional Working", value: "professional_working" },
+      { label: "Limited Working", value: "limited_working" },
+      { label: "Elementary", value: "elementary" },
+      { label: "Beginner", value: "beginner" },
     ];
+
     const save = async () => {
-      if (!f.language || !f.level) {
-        toast.error("Language and level required");
+      if (!f.language || !f.proficiency) {
+        toast.error("Language and proficiency required");
         return;
       }
-      setSav("addLang", true);
-      const result = await addLanguage({
+
+      setSav(savKey, true);
+      await onSave({
         language: f.language,
-        level: f.level,
+        proficiency: f.proficiency,
       });
-      if (result?.success) {
-        await loadProfile();
-        togglePanel("addLang", false);
-        toast.success("Language added!");
-      } else toast.error("Failed to add language");
-      setSav("addLang", false);
     };
+
     return (
       <FormPanel
-        title="Add Language"
-        open={panels.addLang}
-        onCancel={() => togglePanel("addLang", false)}
+        title={title}
+        open={open}
+        onCancel={onCancel}
         onSave={save}
-        saving={saving.addLang}
+        saving={saving[savKey]}
       >
         <Field label="Language *">
           <select
             className={INPUT}
             value={f.language}
+            disabled={disableLanguage}
             onChange={(e) => setF((p) => ({ ...p, language: e.target.value }))}
           >
             <option value="">Select language</option>
             {LANGS.map((l) => (
-              <option key={l}>{l}</option>
+              <option key={l} value={l}>
+                {l}
+              </option>
             ))}
           </select>
         </Field>
-        <Field label="Proficiency Level *">
+
+        <Field label="Proficiency *">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {LEVELS.map((l) => (
+            {LANGUAGE_LEVEL_OPTIONS.map((opt) => (
               <button
-                key={l}
+                key={opt.value}
                 type="button"
-                onClick={() => setF((p) => ({ ...p, level: l }))}
-                className={`py-2 px-3 text-xs rounded-xl border transition-all text-left ${f.level === l ? "bg-emerald-500 text-white border-emerald-500" : "border-gray-200 text-gray-600 hover:border-emerald-400"}`}
+                onClick={() => setF((p) => ({ ...p, proficiency: opt.value }))}
+                className={`py-2 px-3 text-xs rounded-xl border transition-all text-left ${
+                  f.proficiency === opt.value
+                    ? "bg-emerald-500 text-white border-emerald-500"
+                    : "border-gray-200 text-gray-600 hover:border-emerald-400"
+                }`}
               >
-                {l}
+                {opt.label}
               </button>
             ))}
           </div>
@@ -1451,12 +1768,35 @@ const SeekerProfile = () => {
     );
   };
 
-  const handleDeleteLanguage = async (id) => {
-    const result = await deleteLanguage(id);
+  const handleSaveLanguage = async (payload, currentLanguage = null) => {
+    const key = currentLanguage ? `lang-${currentLanguage}` : "addLang";
+
+    const result = currentLanguage
+      ? await updateLanguage(currentLanguage, payload.proficiency)
+      : await addLanguage(payload);
+
+    if (result?.success) {
+      await loadProfile();
+      togglePanel("addLang", false);
+      if (currentLanguage) toggleEdit(`lang-${currentLanguage}`, false);
+      toast.success(currentLanguage ? "Language updated!" : "Language added!");
+    } else {
+      toast.error(result?.error || "Failed to save language");
+    }
+
+    setSav(key, false);
+  };
+
+  const handleDeleteLanguage = async (language) => {
+    if (!window.confirm("Delete this language?")) return;
+
+    const result = await deleteLanguage(language);
     if (result?.success) {
       await loadProfile();
       toast.success("Language removed!");
-    } else toast.error("Failed to delete");
+    } else {
+      toast.error(result?.error || "Failed to delete");
+    }
   };
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -1588,7 +1928,7 @@ const SeekerProfile = () => {
   // ════════════════════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-gray-50/80 font-sans">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* ── LEFT COLUMN ── */}
           <div className="lg:w-7/12 space-y-4">
@@ -1699,59 +2039,113 @@ const SeekerProfile = () => {
                         user?.fullName ||
                         "Your Name"}
                     </h3>
+
                     {profile.personalInfo?.careerLevel && (
                       <span className="inline-block text-xs font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-100">
                         {profile.personalInfo.careerLevel}
                       </span>
                     )}
-                    <div className="space-y-1.5 pt-1">
+
+                    <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 pt-2">
                       {[
                         {
                           Icon: FiMail,
+                          label: "Email",
                           val: profile.personalInfo?.email || user?.email,
                         },
                         {
                           Icon: FiPhone,
-                          val: profile.personalInfo?.mobile || null,
-                          empty: "Not provided",
+                          label: "Mobile",
+                          val: profile.personalInfo?.mobile || "Not provided",
+                        },
+                        {
+                          Icon: FiUser,
+                          label: "Father Name",
+                          val:
+                            profile.personalInfo?.fatherName || "Not provided",
+                        },
+                        {
+                          Icon: FiCalendar,
+                          label: "Date of Birth",
+                          val: profile.personalInfo?.dob?.month
+                            ? `${profile.personalInfo.dob.day || ""} ${profile.personalInfo.dob.month} ${profile.personalInfo.dob.year || ""}`.trim()
+                            : "Not provided",
                         },
                         {
                           Icon: FiMapPin,
+                          label: "Location",
                           val:
                             [
                               profile.personalInfo?.city,
                               profile.personalInfo?.country,
                             ]
                               .filter(Boolean)
-                              .join(", ") || null,
+                              .join(", ") || "Not provided",
                         },
                         {
                           Icon: FiDollarSign,
+                          label: "Expected Salary",
                           val: profile.personalInfo?.expectedSalary
                             ? `${Number(profile.personalInfo.expectedSalary).toLocaleString()} BDT / month`
-                            : null,
+                            : "Not provided",
                         },
-                        {
-                          Icon: FiCalendar,
-                          val: profile.personalInfo?.dob?.month
-                            ? `${profile.personalInfo.dob.month} ${profile.personalInfo.dob.year}`
-                            : null,
-                        },
-                      ].map(({ Icon, val, empty }, i) => (
+                      ].map(({ Icon, label, val }, i) => (
                         <div
                           key={i}
-                          className="flex items-center gap-2 text-sm text-gray-600"
+                          className="flex items-start gap-2 text-sm text-gray-600"
                         >
-                          <Icon size={13} className="text-gray-400 shrink-0" />
-                          <span
-                            className={
-                              !val ? "text-gray-300 italic text-xs" : "truncate"
-                            }
-                          >
-                            {val || empty || null}
-                          </span>
+                          <Icon
+                            size={13}
+                            className="text-gray-400 shrink-0 mt-0.5"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-[11px] uppercase tracking-wide text-gray-400">
+                              {label}
+                            </p>
+                            <p className="truncate">{val}</p>
+                          </div>
                         </div>
                       ))}
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 pt-3 border-t border-gray-100 mt-3">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">
+                          Marital Status
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          {profile.personalInfo?.maritalStatus ||
+                            "Not provided"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">
+                          Nationality
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          {profile.personalInfo?.nationality || "Not provided"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">
+                          Experience
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          {profile.personalInfo?.experience || "Not provided"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">
+                          Postal Address
+                        </p>
+                        <p className="text-sm text-gray-700 break-words">
+                          {profile.personalInfo?.postalAddress ||
+                            "Not provided"}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2063,9 +2457,14 @@ const SeekerProfile = () => {
                     <div>
                       <p className={LABEL}>Job Types</p>
                       <div className="flex flex-wrap gap-1.5 mt-1">
-                        {profile.preferences.jobTypes.map((t) => (
-                          <Chip key={t} label={t} />
-                        ))}
+                        {profile.preferences.jobTypes.map((t) => {
+                          const found = JOB_TYPE_OPTIONS.find(
+                            (opt) => opt.value === t,
+                          );
+                          return (
+                            <Chip key={t} label={found ? found.label : t} />
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -2087,24 +2486,34 @@ const SeekerProfile = () => {
               onAdd={() => togglePanel("addProject")}
               addLabel={panels.addProject ? "Close" : "Add"}
             >
-              <ProjectForm />
+              <ProjectForm
+                title="Add Project"
+                open={panels.addProject}
+                savKey="addProject"
+                onCancel={() => togglePanel("addProject", false)}
+                onSave={(payload) => handleSaveProject(payload)}
+              />
+
               {profile.projects.length === 0 && !panels.addProject && (
                 <EmptyState emoji="📁" label="Showcase your projects" />
               )}
+
               <div className="grid gap-3 mt-2">
                 {profile.projects.map((pr) => (
                   <div
-                    key={pr.id || pr._id}
+                    key={pr.projectId}
                     className="flex items-start gap-3 p-4 rounded-2xl border border-gray-100 hover:border-emerald-100 transition-all group"
                   >
                     <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
                       <FiFolder size={14} className="text-gray-400" />
                     </div>
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-bold text-sm text-gray-800">
-                          {pr.name}
+                          {pr.title}
                         </p>
+
                         <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                           {pr.liveUrl && (
                             <a
@@ -2116,22 +2525,78 @@ const SeekerProfile = () => {
                               <FiExternalLink size={12} />
                             </a>
                           )}
+
+                          {pr.repoUrl && (
+                            <a
+                              href={pr.repoUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1 text-sky-600 hover:bg-sky-50 rounded"
+                            >
+                              <FiGithub size={12} />
+                            </a>
+                          )}
+
+                          <button
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            onClick={() =>
+                              toggleEdit(`project-${pr.projectId}`)
+                            }
+                          >
+                            <FiEdit2 size={10} />
+                          </button>
+
                           <button
                             className={BTN_D}
-                            onClick={() => handleDeleteProject(pr.id || pr._id)}
+                            onClick={() => handleDeleteProject(pr.projectId)}
                           >
                             <FiTrash2 size={10} />
                           </button>
                         </div>
                       </div>
-                      {pr.role && (
-                        <p className="text-xs text-gray-400">{pr.role}</p>
+
+                      {pr.techStack?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {pr.techStack.map((tech) => (
+                            <Chip key={tech} label={tech} />
+                          ))}
+                        </div>
                       )}
+
                       {pr.description && (
-                        <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">
+                        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
                           {pr.description}
                         </p>
                       )}
+
+                      {pr.mediaUrls?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {pr.mediaUrls.map((url) => (
+                            <a
+                              key={url}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-emerald-600 underline truncate"
+                            >
+                              {url}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+
+                      <ProjectForm
+                        title="Edit Project"
+                        initial={pr}
+                        savKey={`project-${pr.projectId}`}
+                        open={!!editPanels[`project-${pr.projectId}`]}
+                        onCancel={() =>
+                          toggleEdit(`project-${pr.projectId}`, false)
+                        }
+                        onSave={(payload) =>
+                          handleSaveProject(payload, pr.projectId)
+                        }
+                      />
                     </div>
                   </div>
                 ))}
@@ -2145,14 +2610,22 @@ const SeekerProfile = () => {
               onAdd={() => togglePanel("addLang")}
               addLabel={panels.addLang ? "Close" : "Add"}
             >
-              <LanguageForm />
+              <LanguageForm
+                title="Add Language"
+                open={panels.addLang}
+                savKey="addLang"
+                onCancel={() => togglePanel("addLang", false)}
+                onSave={(payload) => handleSaveLanguage(payload)}
+              />
+
               {profile.languages.length === 0 && !panels.addLang && (
                 <EmptyState emoji="🌐" label="Add languages you speak" />
               )}
+
               <div className="space-y-2 mt-2">
                 {profile.languages.map((l) => (
                   <div
-                    key={l.id || l._id}
+                    key={l.language}
                     className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0 group"
                   >
                     <div>
@@ -2160,16 +2633,41 @@ const SeekerProfile = () => {
                         {l.language}
                       </span>
                       <span className="ml-2 text-xs text-gray-400 font-medium">
-                        {l.level}
+                        {l.proficiency}
                       </span>
                     </div>
-                    <button
-                      className={`${BTN_D} opacity-0 group-hover:opacity-100 transition-opacity`}
-                      onClick={() => handleDeleteLanguage(l.id || l._id)}
-                    >
-                      <FiTrash2 size={10} />
-                    </button>
+
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                        onClick={() => toggleEdit(`lang-${l.language}`)}
+                      >
+                        <FiEdit2 size={10} />
+                      </button>
+
+                      <button
+                        className={BTN_D}
+                        onClick={() => handleDeleteLanguage(l.language)}
+                      >
+                        <FiTrash2 size={10} />
+                      </button>
+                    </div>
                   </div>
+                ))}
+
+                {profile.languages.map((l) => (
+                  <LanguageForm
+                    key={`form-${l.language}`}
+                    title="Edit Language"
+                    initial={l}
+                    open={!!editPanels[`lang-${l.language}`]}
+                    savKey={`lang-${l.language}`}
+                    disableLanguage
+                    onCancel={() => toggleEdit(`lang-${l.language}`, false)}
+                    onSave={(payload) =>
+                      handleSaveLanguage(payload, l.language)
+                    }
+                  />
                 ))}
               </div>
             </SectionCard>
