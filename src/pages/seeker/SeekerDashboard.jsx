@@ -39,12 +39,9 @@ import {
 import useSeekerStore from "../../store/seekerStore";
 import useAuthStore from "../../store/authStore";
 
-// ─── Design tokens (mirrors SeekerProfile) ───────────────────────────────────
-const EM = "#10b981"; // emerald-500
-const EM2 = "#059669"; // emerald-600
-const EM_BG = "#ecfdf5"; // emerald-50
+const EM = "#10b981";
 
-// ─── Shared card shell ────────────────────────────────────────────────────────
+// ─── Shared card shell ────
 const Card = ({ children, className = "" }) => (
   <div
     className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${className}`}
@@ -53,7 +50,7 @@ const Card = ({ children, className = "" }) => (
   </div>
 );
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
+// ─── Stat card ────
 const StatCard = ({ label, value, change, icon: Icon, delay = 0 }) => (
   <div
     className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
@@ -78,7 +75,7 @@ const StatCard = ({ label, value, change, icon: Icon, delay = 0 }) => (
   </div>
 );
 
-// ─── Section header ───────────────────────────────────────────────────────────
+// ─── Section header ────
 const SectionHeader = ({ icon: Icon, title, action }) => (
   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
     <div className="flex items-center gap-3">
@@ -93,7 +90,7 @@ const SectionHeader = ({ icon: Icon, title, action }) => (
   </div>
 );
 
-// ─── Custom tooltip ───────────────────────────────────────────────────────────
+// ─── Custom tooltip ───
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -104,7 +101,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
+// ─── Status badge ────
 const StatusBadge = ({ status }) => {
   const map = {
     New: "bg-sky-50 text-sky-700 border-sky-100",
@@ -122,9 +119,8 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// ═════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
-// ═════════════════════════════════════════════════════════════════════════════
+
 const SeekerDashboard = () => {
   const { fetchSeekerProfile } = useSeekerStore();
   const { user } = useAuthStore();
@@ -143,7 +139,7 @@ const SeekerDashboard = () => {
     videoCV: null,
   });
 
-  // ── Load profile ────────────────────────────────────────────────────────────
+  // ── Load profile ──
   const loadProfile = useCallback(async () => {
     const result = await fetchSeekerProfile();
     if (result?.success && result?.data) {
@@ -171,7 +167,7 @@ const SeekerDashboard = () => {
     })();
   }, [loadProfile]);
 
-  // ── Profile completion (same logic as SeekerProfile) ───────────────────────
+  // ── Profile completion ─────
   const completionItems = [
     { label: "Personal Info", done: !!profile.personalInfo },
     { label: "Work History", done: profile.experiences.length > 0 },
@@ -201,7 +197,7 @@ const SeekerDashboard = () => {
     .join(", ");
   const careerLevel = profile.personalInfo?.careerLevel || "";
 
-  // ── Static chart / demo data ────────────────────────────────────────────────
+  // ── Static chart ───
   const applicationData = [
     { name: "Applied", value: 42, color: "#10b981" },
     { name: "Viewed", value: 28, color: "#059669" },
@@ -304,7 +300,7 @@ const SeekerDashboard = () => {
     { icon: FiAward, label: "Achievements", path: "" },
   ];
 
-  // ── Loading screen (same style as SeekerProfile) ────────────────────────────
+  // ── Loading screen ─────
   if (pageLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -320,12 +316,10 @@ const SeekerDashboard = () => {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // RENDER
-  // ═══════════════════════════════════════════════════════════════════════════
+
   return (
     <div className="min-h-screen bg-gray-50/80 font-sans">
-      {/* ── Breadcrumb ── */}
       <header className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="py-3 flex items-center gap-2 text-xs text-gray-500">
@@ -709,7 +703,7 @@ const SeekerDashboard = () => {
               </div>
             </div>
 
-            {/* Completion tracker (same as SeekerProfile sidebar) */}
+            {/* Completion tracker */}
             <Card>
               <div className="p-5">
                 <div className="flex items-center justify-between mb-3">

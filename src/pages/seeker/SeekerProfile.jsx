@@ -30,7 +30,6 @@ import useSeekerStore from "../../store/seekerStore";
 import useAuthStore from "../../store/authStore";
 import { toast } from "react-toastify";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 const MONTHS = [
   "Jan",
   "Feb",
@@ -50,7 +49,6 @@ const YEARS = Array.from(
   (_, i) => new Date().getFullYear() - i,
 );
 
-// ─── Styling tokens ───────────────────────────────────────────────────────────
 const INPUT =
   "w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all bg-white placeholder:text-gray-300";
 const LABEL =
@@ -64,7 +62,7 @@ const BTN_D =
 const BTN_E =
   "inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-blue-600 rounded-lg hover:bg-blue-50 active:scale-95 transition-all";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ─────
 const Field = ({ label, children }) => (
   <div>
     {label && <label className={LABEL}>{label}</label>}
@@ -122,7 +120,7 @@ const AddChipInput = ({ placeholder, onAdd }) => {
   );
 };
 
-// ─── Animated expand ──────────────────────────────────────────────────────────
+// ─── Animated expand ───
 const Expandable = ({ open, children }) => {
   const ref = useRef(null);
   const [height, setHeight] = useState(0);
@@ -142,7 +140,7 @@ const Expandable = ({ open, children }) => {
   );
 };
 
-// ─── Section card ─────────────────────────────────────────────────────────────
+// ─── Section card ───────
 const SectionCard = ({
   icon: IC,
   title,
@@ -176,7 +174,7 @@ const SectionCard = ({
   </div>
 );
 
-// ─── Inline form panel ────────────────────────────────────────────────────────
+// ─── Inline form panel ───
 const FormPanel = ({ open, onCancel, onSave, saving, children, title }) => (
   <Expandable open={open}>
     <div className="mt-4 p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/30 space-y-4">
@@ -211,7 +209,7 @@ const FormPanel = ({ open, onCancel, onSave, saving, children, title }) => (
   </Expandable>
 );
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
+// ─── Empty state ─────
 const EmptyState = ({ emoji, label }) => (
   <div className="text-center py-10">
     <div className="text-4xl mb-2 opacity-60">{emoji}</div>
@@ -219,7 +217,7 @@ const EmptyState = ({ emoji, label }) => (
   </div>
 );
 
-// ─── Proficiency badge ────────────────────────────────────────────────────────
+// ─── Proficiency badge ────
 const PROF_CLS = {
   beginner: "bg-amber-50 text-amber-700 border-amber-100",
   intermediate: "bg-sky-50 text-sky-700 border-sky-100",
@@ -227,9 +225,7 @@ const PROF_CLS = {
   expert: "bg-emerald-50 text-emerald-700 border-emerald-100",
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════════
 const SeekerProfile = () => {
   const {
     isLoading,
@@ -290,7 +286,7 @@ const SeekerProfile = () => {
     setEditPanels((p) => ({ ...p, [k]: v !== undefined ? v : !p[k] }));
   const setSav = (k, v) => setSaving((p) => ({ ...p, [k]: v }));
 
-  // ── Load profile ────────────────────────────────────────────────────────────
+  // ── Load profile ────
   const loadProfile = useCallback(async () => {
     const result = await fetchSeekerProfile();
     if (result?.success && result?.data) {
@@ -319,7 +315,7 @@ const SeekerProfile = () => {
     })();
   }, [loadProfile]);
 
-  // ── Profile completion ──────────────────────────────────────────────────────
+  // ── Profile completion ─────
   const pct = (() => {
     const checks = [
       !!profile.personalInfo,
@@ -349,9 +345,7 @@ const SeekerProfile = () => {
     { label: "Video CV", done: !!profile.videoCV },
   ];
 
-  // ════════════════════════════════════════════════════════════════════════════
   // PERSONAL INFO FORM (inline)
-  // ════════════════════════════════════════════════════════════════════════════
   const PersonalInfoForm = () => {
     const { updatePersonalInfo, deletePersonalInfo } = useSeekerStore();
 
@@ -713,9 +707,7 @@ const SeekerProfile = () => {
     );
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // SUMMARY FORM
-  // ════════════════════════════════════════════════════════════════════════════
   const SummaryForm = () => {
     const [text, setText] = useState(profile.summary || "");
     const save = async () => {
@@ -749,9 +741,8 @@ const SeekerProfile = () => {
     );
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // EXPERIENCE FORMS
-  // ════════════════════════════════════════════════════════════════════════════
+
   const blankExp = () => ({
     jobTitle: "",
     company: "",
@@ -933,9 +924,7 @@ const SeekerProfile = () => {
     } else toast.error("Failed to delete");
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // SKILL FORMS
-  // ════════════════════════════════════════════════════════════════════════════
   const blankSkill = () => ({ skill: "", proficiency: "" });
 
   const SkillForm = ({
@@ -1031,9 +1020,8 @@ const SeekerProfile = () => {
     } else toast.error("Failed to delete");
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // EDUCATION FORMS
-  // ════════════════════════════════════════════════════════════════════════════
+
   const blankEdu = () => ({
     institute: "",
     degree: "",
@@ -1179,9 +1167,8 @@ const SeekerProfile = () => {
     } else toast.error("Failed to delete");
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // JOB PREFERENCES FORM
-  // ════════════════════════════════════════════════════════════════════════════
+
   const JOB_TYPE_OPTIONS = [
     { label: "Full Time", value: "full_time" },
     { label: "Part Time", value: "part_time" },
@@ -1416,9 +1403,8 @@ const SeekerProfile = () => {
     );
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // PROJECTS FORM
-  // ════════════════════════════════════════════════════════════════════════════
+
   const blankProject = () => ({
     title: "",
     description: "",
@@ -1657,9 +1643,8 @@ const SeekerProfile = () => {
     }
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // LANGUAGE FORM
-  // ════════════════════════════════════════════════════════════════════════════
+
   const LanguageForm = ({
     initial = { language: "", proficiency: "" },
     title = "Add Language",
@@ -1799,9 +1784,8 @@ const SeekerProfile = () => {
     }
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // VIDEO CV FORM
-  // ════════════════════════════════════════════════════════════════════════════
+
   const VideoForm = () => {
     const [f, setF] = useState({
       title: "",
@@ -1906,9 +1890,8 @@ const SeekerProfile = () => {
     );
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
   // LOADING SCREEN
-  // ════════════════════════════════════════════════════════════════════════════
+
   if (pageLoading)
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -1923,9 +1906,7 @@ const SeekerProfile = () => {
       </div>
     );
 
-  // ════════════════════════════════════════════════════════════════════════════
   // RENDER
-  // ════════════════════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-gray-50/80 font-sans">
       <div className="container mx-auto px-4 py-8">
