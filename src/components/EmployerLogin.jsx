@@ -1,76 +1,112 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
+  FaGoogle,
   FaEnvelope,
   FaLock,
   FaEye,
   FaEyeSlash,
   FaSignInAlt,
 } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import useAuthStore from "../store/authStore";
 
 const EmployerLogin = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  // ✅ from zustand store
+  const { login, googleAuth, isLoading, isAuthenticated } = useAuthStore();
+
+  // ✅ redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/employer/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setIsLoading(true);
 
     if (!formData.email || !formData.password) {
-      setError("Please fill in all fields");
-      setIsLoading(false);
+      toast.error("Please fill in all fields");
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Employer login:", formData);
-      setIsLoading(false);
-      // Handle successful login
-    }, 1500);
+    const result = await login(formData.email, formData.password);
+
+    if (result?.success) {
+      navigate("/employer/dashboard");
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    await googleAuth();
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-2">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Employer Login
           </h1>
-          <p className="text-gray-600">Sign in to your employer dashboard</p>
+          <p className="text-gray-600">Sign in to continue your journey</p>
         </div>
 
-        {/* Form */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          {error && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <button
+            onClick={handleGoogleAuth}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-[#4285f4] hover:shadow-lg transition-all duration-300 mb-6 group disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FaGoogle className="text-[#4285f4] text-xl" />
+            <span className="font-medium text-gray-700 group-hover:text-[#4285f4]">
+              {isLoading ? "Loading..." : "Sign in with Google"}
+            </span>
+          </button>
 
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500">
+                Or sign in with email
+              </span>
+            </div>
+          </div>
+
+          {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Work Email
+                Email Address
               </label>
               <div className="relative">
-                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaEnvelope className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="email"
+                  name="email"
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  onChange={handleInputChange}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e2558] focus:border-transparent transition-all duration-200"
-                  placeholder="you@company.com"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-300"
+                  placeholder="you@example.com"
                 />
               </div>
             </div>
@@ -80,21 +116,20 @@ const EmployerLogin = () => {
                 Password
               </label>
               <div className="relative">
-                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
+                  onChange={handleInputChange}
                   required
-                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e2558] focus:border-transparent transition-all duration-200"
+                  className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-300"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
@@ -107,22 +142,23 @@ const EmployerLogin = () => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-[#1e2558] rounded focus:ring-[#1e2558]"
+                  className="w-4 h-4 text-[#4eb956] rounded focus:ring-[#4eb956]"
                 />
                 <span className="text-sm text-gray-600">Remember me</span>
               </label>
-              <a
-                href="/employer/forgot-password"
-                className="text-sm text-[#1e2558] hover:underline"
+
+              <Link
+                to="/employer/forgot-password"
+                className="text-sm text-[#1e2558] hover:text-[#4eb956] hover:underline transition-colors duration-300"
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-[#1e2558] to-[#4eb956] text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-[#1e2558] to-[#2a3570] text-white py-4 rounded-xl font-semibold hover:from-[#4eb956] hover:to-[#3da345] hover:shadow-lg transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -135,15 +171,15 @@ const EmployerLogin = () => {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an employer account?{" "}
-              <a
-                href="/employer/signup"
-                className="text-[#1e2558] hover:underline font-medium"
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Don't have an account?{" "}
+              <Link
+                to="/employer/signup"
+                className="text-[#1e2558] hover:text-[#4eb956] font-semibold hover:underline transition-colors duration-300 cursor-pointer"
               >
-                Register your company
-              </a>
+                Create one now
+              </Link>
             </p>
           </div>
         </div>

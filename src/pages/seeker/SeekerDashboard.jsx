@@ -41,7 +41,6 @@ import useAuthStore from "../../store/authStore";
 
 const EM = "#10b981";
 
-// ─── Shared card shell ────
 const Card = ({ children, className = "" }) => (
   <div
     className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${className}`}
@@ -50,7 +49,6 @@ const Card = ({ children, className = "" }) => (
   </div>
 );
 
-// ─── Stat card ────
 const StatCard = ({ label, value, change, icon: Icon, delay = 0 }) => (
   <div
     className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
@@ -75,7 +73,6 @@ const StatCard = ({ label, value, change, icon: Icon, delay = 0 }) => (
   </div>
 );
 
-// ─── Section header ────
 const SectionHeader = ({ icon: Icon, title, action }) => (
   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
     <div className="flex items-center gap-3">
@@ -90,7 +87,6 @@ const SectionHeader = ({ icon: Icon, title, action }) => (
   </div>
 );
 
-// ─── Custom tooltip ───
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -101,7 +97,6 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-// ─── Status badge ────
 const StatusBadge = ({ status }) => {
   const map = {
     New: "bg-sky-50 text-sky-700 border-sky-100",
@@ -119,7 +114,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// MAIN COMPONENT
 
 const SeekerDashboard = () => {
   const { fetchSeekerProfile } = useSeekerStore();
@@ -139,7 +133,6 @@ const SeekerDashboard = () => {
     videoCV: null,
   });
 
-  // ── Load profile ──
   const loadProfile = useCallback(async () => {
     const result = await fetchSeekerProfile();
     if (result?.success && result?.data) {
@@ -197,7 +190,6 @@ const SeekerDashboard = () => {
     .join(", ");
   const careerLevel = profile.personalInfo?.careerLevel || "";
 
-  // ── Static chart ───
   const applicationData = [
     { name: "Applied", value: 42, color: "#10b981" },
     { name: "Viewed", value: 28, color: "#059669" },
@@ -300,7 +292,6 @@ const SeekerDashboard = () => {
     { icon: FiAward, label: "Achievements", path: "" },
   ];
 
-  // ── Loading screen ─────
   if (pageLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -315,8 +306,6 @@ const SeekerDashboard = () => {
       </div>
     );
   }
-
-  // RENDER
 
   return (
     <div className="min-h-screen bg-gray-50/80 font-sans">
@@ -333,7 +322,7 @@ const SeekerDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* ── Stat cards ── */}
+        {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((s, i) => (
             <StatCard key={i} {...s} delay={i * 60} />
@@ -341,9 +330,7 @@ const SeekerDashboard = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* ── LEFT COLUMN ── */}
           <div className="lg:w-8/12 space-y-4">
-            {/* ── Hero profile card ── */}
             <Card>
               {/* Banner */}
               <div className="relative h-32 md:h-36 overflow-hidden">
@@ -354,7 +341,7 @@ const SeekerDashboard = () => {
                 <div className="absolute -bottom-6 left-12 w-28 h-28 rounded-full bg-emerald-700/30" />
               </div>
 
-              {/* Content below banner */}
+              {/* Content below */}
               <div className="px-6 pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-10">
                   {/* Avatar + info */}
@@ -461,7 +448,7 @@ const SeekerDashboard = () => {
               </div>
             </Card>
 
-            {/* ── Analytics ── */}
+            {/* Analytics */}
             <Card>
               <SectionHeader
                 icon={FiTrendingUp}
@@ -625,7 +612,7 @@ const SeekerDashboard = () => {
               </div>
             </Card>
 
-            {/* ── Recent applications ── */}
+            {/* Recent applications */}
             <Card>
               <SectionHeader
                 icon={FiBriefcase}
@@ -676,9 +663,8 @@ const SeekerDashboard = () => {
             </Card>
           </div>
 
-          {/* ── RIGHT SIDEBAR ── */}
+          {/* RIGHT SIDEBAR */}
           <div className="lg:w-4/12 space-y-4">
-            {/* Pro tip banner */}
             <div className="rounded-2xl p-5 bg-gradient-to-br from-emerald-600 to-teal-500 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -translate-y-8 translate-x-8" />
               <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/10 translate-y-6 -translate-x-4" />

@@ -3,8 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import useAuthStore from "./authStore";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://76.13.210.206:4000/api/v1";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 const useSeekerStore = create((set, get) => ({
   seekerProfile: null,

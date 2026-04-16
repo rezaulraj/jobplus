@@ -5,8 +5,7 @@ import { toast } from "react-toastify";
 
 axios.defaults.withCredentials = true;
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://76.13.210.206:4000/api/v1";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -22,7 +21,6 @@ const processQueue = (error, token = null) => {
 
 const clearAuthState = (set) => {
   delete axios.defaults.headers.common["Authorization"];
-
   set({
     user: null,
     tokens: null,
@@ -42,9 +40,9 @@ const useAuthStore = create(
       otpEmail: null,
       registrationData: null,
 
+      // ── Helpers ─────────────────────────────────────────────────────────
       getBearerToken: () => {
-        const accessToken = get().tokens?.accessToken;
-        return accessToken || null;
+        return get().tokens?.accessToken || null;
       },
 
       setAuthHeader: (token) => {
@@ -55,14 +53,19 @@ const useAuthStore = create(
         }
       },
 
+      // Returns "seeker" | "employer" | null
+      getRole: () => {
+        return get().user?.role || null;
+      },
+
       logoutLocal: (showToast = true) => {
         clearAuthState(set);
-
         if (showToast) {
           toast.success("Logged out successfully!");
         }
       },
 
+      // ── fetchMe ──────────────────────────────────────────────────────────
       fetchMe: async () => {
         const accessToken = get().tokens?.accessToken;
 
@@ -82,6 +85,8 @@ const useAuthStore = create(
               user: {
                 ...state.user,
                 ...me,
+                // ensure role is always saved from latest /me response
+                role: me.role || state.user?.role,
               },
               isAuthenticated: true,
             }));
@@ -98,8 +103,6 @@ const useAuthStore = create(
             error.response?.data || error.message,
           );
 
-          // Only return auth failure for 401.
-          // Do NOT auto logout on 403/404/500/CORS/network issues.
           if (status === 401) {
             return {
               success: false,
@@ -115,6 +118,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── initializeAuth ───────────────────────────────────────────────────
       initializeAuth: async () => {
         const accessToken = get().tokens?.accessToken;
 
@@ -126,20 +130,14 @@ const useAuthStore = create(
 
         get().setAuthHeader(accessToken);
 
-        // First try fetchMe with current token
         const meResult = await get().fetchMe();
-        if (meResult.success) {
-          return meResult;
-        }
+        if (meResult.success) return meResult;
 
-        // If token expired, try refresh once
         if (meResult.unauthorized) {
           const refreshResult = await get().refreshTokens();
-
           if (refreshResult.success) {
             return await get().fetchMe();
           }
-
           get().logoutLocal(false);
           return {
             success: false,
@@ -147,10 +145,10 @@ const useAuthStore = create(
           };
         }
 
-        // For network/server errors, keep local session intact
         return meResult;
       },
 
+      // ── register ─────────────────────────────────────────────────────────
       register: async (userData) => {
         set({ isLoading: true });
 
@@ -202,6 +200,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── verifyOtp ────────────────────────────────────────────────────────
       verifyOtp: async (email, otp) => {
         set({ isLoading: true });
 
@@ -233,6 +232,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── login ────────────────────────────────────────────────────────────
       login: async (email, password) => {
         set({ isLoading: true });
 
@@ -248,6 +248,7 @@ const useAuthStore = create(
 
             set({
               tokens: { accessToken },
+              // preserve role from API response
               user: loginUser || null,
               isAuthenticated: true,
               isLoading: false,
@@ -257,7 +258,13 @@ const useAuthStore = create(
             hasShownSessionExpiredToast = false;
 
             toast.success("Logged in successfully!");
-            return { success: true, data: response.data };
+
+            // Return role so the login page can redirect correctly
+            return {
+              success: true,
+              data: response.data,
+              role: loginUser?.role || null,
+            };
           }
 
           set({ isLoading: false });
@@ -270,6 +277,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── googleAuth ───────────────────────────────────────────────────────
       googleAuth: async (idToken) => {
         set({ isLoading: true });
 
@@ -293,7 +301,11 @@ const useAuthStore = create(
             hasShownSessionExpiredToast = false;
 
             toast.success("Google login successful!");
-            return { success: true, data: response.data };
+            return {
+              success: true,
+              data: response.data,
+              role: user?.role || null,
+            };
           }
 
           set({ isLoading: false });
@@ -307,6 +319,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── refreshTokens ────────────────────────────────────────────────────
       refreshTokens: async () => {
         try {
           const response = await axios.post(`${API_URL}/auth/refresh-tokens`);
@@ -316,7 +329,13 @@ const useAuthStore = create(
 
             set((state) => ({
               tokens: { accessToken },
-              user: user || state.user,
+              user: user
+                ? {
+                    ...state.user,
+                    ...user,
+                    role: user.role || state.user?.role,
+                  }
+                : state.user,
               isAuthenticated: true,
             }));
 
@@ -332,9 +351,6 @@ const useAuthStore = create(
             "Token refresh failed:",
             error.response?.data || error.message,
           );
-
-          // Do not logout here directly.
-          // Let interceptor / initializeAuth decide.
           return {
             success: false,
             error: error.response?.data?.message || "Session expired",
@@ -343,6 +359,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── forgotPassword ───────────────────────────────────────────────────
       forgotPassword: async (email) => {
         set({ isLoading: true });
 
@@ -381,6 +398,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── resetPassword ────────────────────────────────────────────────────
       resetPassword: async (email, otp, newPassword) => {
         set({ isLoading: true });
 
@@ -413,6 +431,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── resendOtp ────────────────────────────────────────────────────────
       resendOtp: async (email) => {
         set({ isLoading: true });
 
@@ -442,6 +461,7 @@ const useAuthStore = create(
         }
       },
 
+      // ── logout ───────────────────────────────────────────────────────────
       logout: async (showToast = true) => {
         try {
           await axios.post(`${API_URL}/auth/logout`);
@@ -455,10 +475,11 @@ const useAuthStore = create(
         }
       },
     }),
+
     {
       name: "auth-storage",
       partialize: (state) => ({
-        user: state.user,
+        user: state.user, // role is inside user object
         tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
         otpTimer: state.otpTimer,
@@ -472,38 +493,26 @@ const useAuthStore = create(
   ),
 );
 
-// Response interceptor
+// ── Axios response interceptor ────────────────────────────────────────────
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (!originalRequest) {
-      return Promise.reject(error);
-    }
+    if (!originalRequest) return Promise.reject(error);
 
-    // Never try refresh for refresh endpoint itself
     if (originalRequest.url?.includes("/auth/refresh-tokens")) {
       return Promise.reject(error);
     }
 
-    // Only handle 401
-    if (error.response?.status !== 401) {
-      return Promise.reject(error);
-    }
+    if (error.response?.status !== 401) return Promise.reject(error);
 
-    // Avoid infinite loop
-    if (originalRequest._retry) {
-      return Promise.reject(error);
-    }
+    if (originalRequest._retry) return Promise.reject(error);
 
     const authState = useAuthStore.getState();
     const hasToken = !!authState.tokens?.accessToken;
 
-    // If user is not logged in, don't try refresh
-    if (!hasToken) {
-      return Promise.reject(error);
-    }
+    if (!hasToken) return Promise.reject(error);
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
@@ -525,17 +534,14 @@ axios.interceptors.response.use(
 
       if (result.success) {
         const newToken = useAuthStore.getState().tokens?.accessToken;
-
         axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
         originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-
         processQueue(null, newToken);
         return axios(originalRequest);
       }
 
       processQueue(new Error(result.error || "Refresh failed"), null);
-
       useAuthStore.getState().logoutLocal(false);
 
       if (!hasShownSessionExpiredToast) {
@@ -546,7 +552,6 @@ axios.interceptors.response.use(
       return Promise.reject(error);
     } catch (refreshError) {
       processQueue(refreshError, null);
-
       useAuthStore.getState().logoutLocal(false);
 
       if (!hasShownSessionExpiredToast) {

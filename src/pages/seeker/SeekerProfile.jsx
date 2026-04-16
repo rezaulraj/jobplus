@@ -241,9 +241,11 @@ const SeekerProfile = () => {
     updateEducation,
     deleteEducation,
     addProject,
+    updateProject,
     deleteProject,
     updateJobPreferences,
     addLanguage,
+    updateLanguage,
     deleteLanguage,
     uploadProfileAssets,
     uploadResumeVideo,
@@ -1184,17 +1186,25 @@ const SeekerProfile = () => {
 
     const [f, setF] = useState({
       preferredTitles: init?.preferredTitles || [],
-      salaryMin: init?.salaryMin ?? "",
-      salaryMax: init?.salaryMax ?? "",
+      salaryMin:
+        init?.salaryMin !== null && init?.salaryMin !== undefined
+          ? init.salaryMin
+          : "",
+      salaryMax:
+        init?.salaryMax !== null && init?.salaryMax !== undefined
+          ? init.salaryMax
+          : "",
       currency: init?.currency || "BDT",
-      salaryRangeKey: init?.salaryRangeKey || "",
+      salaryRangeKey: init?.salaryRangeKey || "monthly",
       preferredSkills: init?.preferredSkills || [],
       jobTypes: init?.jobTypes || [],
       relocationPreference: init?.relocationPreference || "within_country",
       preferredLocations: init?.preferredLocations || [],
-      noticePeriodDays: init?.noticePeriodDays ?? 0,
+      noticePeriodDays: init?.noticePeriodDays ?? 30,
       openToRelocation: init?.openToRelocation || false,
     });
+
+    const [errors, setErrors] = useState({});
 
     const toggle = (arr, val) =>
       arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
@@ -1207,52 +1217,143 @@ const SeekerProfile = () => {
         ...p,
         [field]: p[field].includes(v) ? p[field] : [...p[field], v],
       }));
+
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: null }));
+      }
     };
 
     const rmChip = (field, val) =>
       setF((p) => ({ ...p, [field]: p[field].filter((x) => x !== val) }));
 
+    const validateForm = () => {
+      const newErrors = {};
+
+      if (!f.preferredTitles || f.preferredTitles.length === 0) {
+        newErrors.preferredTitles =
+          "At least one preferred job title is required";
+      }
+
+      if (
+        f.salaryMin !== "" &&
+        f.salaryMax !== "" &&
+        Number(f.salaryMin) > Number(f.salaryMax)
+      ) {
+        newErrors.salaryRange =
+          "Maximum salary cannot be less than minimum salary";
+      }
+
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
+
     const save = async () => {
+      if (!validateForm()) {
+        toast.error("Please fix the validation errors before saving");
+        return;
+      }
+
       setSav("addPref", true);
 
       const payload = {
-        preferredTitles: f.preferredTitles,
-        salaryMin: f.salaryMin === "" ? null : Number(f.salaryMin),
-        salaryMax: f.salaryMax === "" ? null : Number(f.salaryMax),
-        currency: f.currency,
-        salaryRangeKey: f.salaryRangeKey,
-        preferredSkills: f.preferredSkills,
-        jobTypes: f.jobTypes,
-        relocationPreference: f.relocationPreference,
-        preferredLocations: f.preferredLocations,
+        preferredTitles:
+          Array.isArray(f.preferredTitles) && f.preferredTitles.length > 0
+            ? f.preferredTitles
+            : [],
+
+        salaryMin:
+          f.salaryMin === "" || f.salaryMin === null
+            ? null
+            : Number(f.salaryMin),
+        salaryMax:
+          f.salaryMax === "" || f.salaryMax === null
+            ? null
+            : Number(f.salaryMax),
+
+        currency: f.currency || "BDT",
+
+        salaryRangeKey: f.salaryRangeKey || "monthly",
+
+        preferredSkills: Array.isArray(f.preferredSkills)
+          ? f.preferredSkills
+          : [],
+        jobTypes: Array.isArray(f.jobTypes) ? f.jobTypes : [],
+        preferredLocations: Array.isArray(f.preferredLocations)
+          ? f.preferredLocations
+          : [],
+        relocationPreference: f.relocationPreference || "within_country",
         noticePeriodDays: Number(f.noticePeriodDays) || 0,
-        openToRelocation: f.openToRelocation,
+        openToRelocation: Boolean(f.openToRelocation),
       };
+
+      console.log(
+        "Saving job preferences payload:",
+        JSON.stringify(payload, null, 2),
+      );
 
       const result = await updateJobPreferences(payload);
 
       if (result?.success) {
         await loadProfile();
         togglePanel("addPref", false);
-        toast.success("Job preferences saved!");
+        toast.success("Job preferences saved successfully!");
+        setErrors({});
       } else {
+        console.error("Save error details:", result?.error);
         toast.error(result?.error || "Failed to save preferences");
+
+        if (result?.validationErrors) {
+          setErrors(result.validationErrors);
+        }
       }
 
       setSav("addPref", false);
     };
 
+    const JOB_TYPE_OPTIONS = [
+      { label: "Full Time", value: "full_time" },
+      { label: "Part Time", value: "part_time" },
+      { label: "Contract", value: "contract" },
+      { label: "Internship", value: "internship" },
+      { label: "Remote", value: "remote" },
+      { label: "Hybrid", value: "hybrid" },
+      { label: "Onsite", value: "onsite" },
+    ];
+
+    const RELOCATION_OPTIONS = [
+      { label: "Within Country", value: "within_country" },
+      { label: "International", value: "international" },
+      { label: "Not Open", value: "not_open" },
+    ];
+
+    const CURRENCY_OPTIONS = [
+      { label: "BDT (৳)", value: "BDT" },
+      { label: "USD ($)", value: "USD" },
+      { label: "EUR (€)", value: "EUR" },
+      { label: "GBP (£)", value: "GBP" },
+    ];
+
+    const SALARY_RANGE_OPTIONS = [
+      { label: "Monthly", value: "monthly" },
+      { label: "Yearly", value: "yearly" },
+      { label: "Hourly", value: "hourly" },
+    ];
+
     return (
       <FormPanel
         title="Job Preferences"
         open={panels.addPref}
-        onCancel={() => togglePanel("addPref", false)}
+        onCancel={() => {
+          togglePanel("addPref", false);
+          setErrors({});
+        }}
         onSave={save}
         saving={saving.addPref}
       >
-        <Field label="Desired Job Titles">
+
+        <Field label="Desired Job Titles *">
           <AddChipInput
-            placeholder="Add title & press Enter"
+            placeholder="Add title & press Enter (e.g., Software Engineer)"
             onAdd={(v) => addChip("preferredTitles", v)}
           />
           <div className="flex flex-wrap gap-2 mt-2">
@@ -1264,19 +1365,29 @@ const SeekerProfile = () => {
               />
             ))}
           </div>
+          {errors.preferredTitles && (
+            <p className="text-xs text-red-500 mt-1">
+              {errors.preferredTitles}
+            </p>
+          )}
+          <p className="text-xs text-gray-400 mt-1">
+            Add at least one job title you're interested in
+          </p>
         </Field>
 
         <div>
-          <label className={LABEL}>Salary Range</label>
+          <label className={LABEL}>Expected Salary Range</label>
           <div className="flex gap-2 items-center">
             <input
               className={INPUT}
               type="number"
               placeholder="Min"
               value={f.salaryMin}
-              onChange={(e) =>
-                setF((p) => ({ ...p, salaryMin: e.target.value }))
-              }
+              onChange={(e) => {
+                setF((p) => ({ ...p, salaryMin: e.target.value }));
+                if (errors.salaryRange)
+                  setErrors((prev) => ({ ...prev, salaryRange: null }));
+              }}
             />
             <span className="text-gray-300 font-light">–</span>
             <input
@@ -1284,9 +1395,11 @@ const SeekerProfile = () => {
               type="number"
               placeholder="Max"
               value={f.salaryMax}
-              onChange={(e) =>
-                setF((p) => ({ ...p, salaryMax: e.target.value }))
-              }
+              onChange={(e) => {
+                setF((p) => ({ ...p, salaryMax: e.target.value }));
+                if (errors.salaryRange)
+                  setErrors((prev) => ({ ...prev, salaryRange: null }));
+              }}
             />
             <select
               className={`${INPUT} w-28`}
@@ -1295,14 +1408,33 @@ const SeekerProfile = () => {
                 setF((p) => ({ ...p, currency: e.target.value }))
               }
             >
-              {["BDT", "USD", "EUR", "GBP"].map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {CURRENCY_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
                 </option>
               ))}
             </select>
           </div>
+          {errors.salaryRange && (
+            <p className="text-xs text-red-500 mt-1">{errors.salaryRange}</p>
+          )}
         </div>
+
+        <Field label="Salary Range Type">
+          <select
+            className={INPUT}
+            value={f.salaryRangeKey}
+            onChange={(e) =>
+              setF((p) => ({ ...p, salaryRangeKey: e.target.value }))
+            }
+          >
+            {SALARY_RANGE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </Field>
 
         <Field label="Job Types">
           <div className="flex flex-wrap gap-2">
@@ -1326,11 +1458,12 @@ const SeekerProfile = () => {
               </button>
             ))}
           </div>
+          <p className="text-xs text-gray-400 mt-1">Select all that apply</p>
         </Field>
 
         <Field label="Preferred Skills">
           <AddChipInput
-            placeholder="Add skill & press Enter"
+            placeholder="Add skill & press Enter (e.g., React, Node.js)"
             onAdd={(v) => addChip("preferredSkills", v)}
           />
           <div className="flex flex-wrap gap-2 mt-2">
@@ -1346,7 +1479,7 @@ const SeekerProfile = () => {
 
         <Field label="Preferred Locations">
           <AddChipInput
-            placeholder="Add location & press Enter"
+            placeholder="Add location & press Enter (e.g., Dhaka, Remote)"
             onAdd={(v) => addChip("preferredLocations", v)}
           />
           <div className="flex flex-wrap gap-2 mt-2">
@@ -1369,9 +1502,11 @@ const SeekerProfile = () => {
                 setF((p) => ({ ...p, relocationPreference: e.target.value }))
               }
             >
-              <option value="within_country">Within country</option>
-              <option value="international">International</option>
-              <option value="not_open">Not open</option>
+              {RELOCATION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </Field>
 
@@ -1380,11 +1515,15 @@ const SeekerProfile = () => {
               className={INPUT}
               type="number"
               min="0"
+              max="365"
               value={f.noticePeriodDays}
               onChange={(e) =>
                 setF((p) => ({ ...p, noticePeriodDays: e.target.value }))
               }
             />
+            <p className="text-xs text-gray-400 mt-1">
+              How many days notice do you need?
+            </p>
           </Field>
         </Row>
 
@@ -1399,6 +1538,14 @@ const SeekerProfile = () => {
           />
           Open to relocation
         </label>
+
+        <div className="mt-4 p-3 bg-emerald-50 rounded-xl">
+          <p className="text-xs text-emerald-700">
+            💡 <span className="font-semibold">Tip:</span> Adding accurate job
+            preferences helps employers find you faster and improves job
+            recommendations.
+          </p>
+        </div>
       </FormPanel>
     );
   };
@@ -1643,7 +1790,6 @@ const SeekerProfile = () => {
     }
   };
 
-  // LANGUAGE FORM
 
   const LanguageForm = ({
     initial = { language: "", proficiency: "" },

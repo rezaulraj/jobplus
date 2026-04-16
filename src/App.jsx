@@ -6,7 +6,7 @@ import axios from "axios";
 
 import Layout from "./components/Layout";
 import SeekerLayout from "./layout/SeekerLayout";
-import AuthGuard from "./store/AuthGuard";
+import { SeekerGuard, EmployerGuard } from "./store/AuthGuard";
 import ScrollToTop from "./components/ScrollToTop";
 import NotFoundPage from "./components/NotFoundPage";
 
@@ -45,11 +45,13 @@ import InterviewTips from "./pages/seeker/features/InterviewTips";
 import SkillDevelopment from "./pages/seeker/features/SkillDevelopment";
 
 import useAuthStore from "./store/authStore";
+import EmployerLayout from "./layout/EmployerLayout";
+import EmployerDashboard from "./pages/employer/EmployerDashboard";
 
 function App() {
-  const { isAuthenticated, tokens, setAuthHeader } = useAuthStore();
+  const { isAuthenticated, tokens, setAuthHeader, user } = useAuthStore();
 
-  // ── Sync axios Authorization header whenever token changes ──────────────
+  // ── Sync axios Authorization header whenever token changes ───────────────
   useEffect(() => {
     if (isAuthenticated && tokens?.accessToken) {
       setAuthHeader(tokens.accessToken);
@@ -57,6 +59,17 @@ function App() {
       setAuthHeader(null);
     }
   }, [isAuthenticated, tokens?.accessToken, setAuthHeader]);
+
+  // ── Role-aware redirect helper ───────────────────────────────────────────
+  // If already logged in, send user to their own dashboard based on role
+  const getAuthedRedirect = () => {
+    if (!isAuthenticated) return null;
+    return user?.role === "employer"
+      ? "/employer/dashboard"
+      : "/seeker/dashboard";
+  };
+
+  const authedHome = getAuthedRedirect();
 
   return (
     <>
@@ -76,15 +89,15 @@ function App() {
       <ScrollToTop />
 
       <Routes>
-        {/* ─── PUBLIC routes (accessible regardless of auth) ─────────────── */}
-        {/* We always render public routes; AuthGuard handles gating protected ones */}
-
-        {/* Auth / landing routes — redirect to dashboard if already signed in */}
+        {/* ─── AUTH routes ─────────────────────────────────────────────────
+            Already logged in? Redirect to their own dashboard.
+            Not logged in? Show the auth page.
+        ──────────────────────────────────────────────────────────────────── */}
         <Route
           path="/jobseeker/signup"
           element={
             isAuthenticated ? (
-              <Navigate to="/seeker/dashboard" replace />
+              <Navigate to={authedHome} replace />
             ) : (
               <JobSeekerAuth />
             )
@@ -94,7 +107,7 @@ function App() {
           path="/jobseeker/login"
           element={
             isAuthenticated ? (
-              <Navigate to="/seeker/dashboard" replace />
+              <Navigate to={authedHome} replace />
             ) : (
               <SeekerSignin />
             )
@@ -104,7 +117,7 @@ function App() {
           path="/employer/signup"
           element={
             isAuthenticated ? (
-              <Navigate to="/seeker/dashboard" replace />
+              <Navigate to={authedHome} replace />
             ) : (
               <EmployerAuth />
             )
@@ -114,7 +127,7 @@ function App() {
           path="/employer/login"
           element={
             isAuthenticated ? (
-              <Navigate to="/seeker/dashboard" replace />
+              <Navigate to={authedHome} replace />
             ) : (
               <EmployerLogin />
             )
@@ -124,10 +137,19 @@ function App() {
         {/* Google OAuth callback — always public */}
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
-        {/* Public layout routes */}
+        {/* ─── PUBLIC layout routes ─────────────────────────────────────────
+            Authenticated seekers get SeekerLayout (with sidebar/nav).
+            Guests get the plain public Layout.
+        ──────────────────────────────────────────────────────────────────── */}
         <Route
           path="/"
-          element={isAuthenticated ? <SeekerLayout /> : <Layout />}
+          element={
+            isAuthenticated && user?.role === "seeker" ? (
+              <SeekerLayout />
+            ) : (
+              <Layout />
+            )
+          }
         >
           <Route index element={<RootHome />} />
 
@@ -148,10 +170,14 @@ function App() {
           <Route path="freelancer/post-job" element={<FreelancerJobPost />} />
         </Route>
 
-        {/* ─── PROTECTED routes (wrapped in AuthGuard) ───────────────────── */}
-        <Route element={<AuthGuard />}>
+        {/* ─── SEEKER protected routes ──────────────────────────────────────
+            SeekerGuard:
+              • Not logged in           → /jobseeker/login
+              • Logged in as employer   → /employer/dashboard
+              • Logged in as seeker     → renders Outlet ✅
+        ──────────────────────────────────────────────────────────────────── */}
+        <Route element={<SeekerGuard />}>
           <Route path="/" element={<SeekerLayout />}>
-            {/* Seeker pages */}
             <Route path="seeker/dashboard" element={<SeekerDashboard />} />
             <Route path="seeker/profile" element={<SeekerProfile />} />
             <Route path="seeker/cv-upload" element={<SeekerCVUpload />} />
@@ -163,8 +189,6 @@ function App() {
               path="seeker/change-password"
               element={<SeekerChangePassword />}
             />
-
-            {/* Feature pages */}
             <Route path="features/cv-writing" element={<CVWriting />} />
             <Route path="features/career-tips" element={<CareerTips />} />
             <Route path="features/interview-tips" element={<InterviewTips />} />
@@ -175,7 +199,20 @@ function App() {
           </Route>
         </Route>
 
-        {/* ─── Catch-all ─────────────────────────────────────────────────── */}
+        {/* ─── EMPLOYER protected routes ────────────────────────────────────
+            EmployerGuard:
+              • Not logged in           → /employer/login
+              • Logged in as seeker     → /seeker/dashboard
+              • Logged in as employer   → renders Outlet ✅
+        ──────────────────────────────────────────────────────────────────── */}
+        <Route element={<EmployerGuard />}>
+          <Route path="/" element={<EmployerLayout />}>
+            <Route path="employer/dashboard" element={<EmployerDashboard />} />
+            <Route path="employer/company" element={<EmployerDashboard />} />
+          </Route>
+        </Route>
+
+        {/* ─── Catch-all ───────────────────────────────────────────────────── */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>

@@ -3,7 +3,7 @@ import useAuthStore from "./authStore";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-// ─── Smooth full-page loader ──────────────────────────────────────────────────
+// ── Splash Loader ────────────────────────────────────────────────────────────
 const SplashLoader = () => (
   <div
     style={{
@@ -20,11 +20,10 @@ const SplashLoader = () => (
     }}
   >
     <style>{`
-      @keyframes fadeIn   { from { opacity: 0 } to { opacity: 1 } }
-      @keyframes fadeOut  { from { opacity: 1 } to { opacity: 0 } }
-      @keyframes spinRing { to { stroke-dashoffset: 0 } }
-      @keyframes pulse    { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
-      @keyframes slideUp  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+      @keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
+      @keyframes pulse   { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+      @keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+      @keyframes spin    { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
     `}</style>
 
     {/* Spinner ring */}
@@ -37,7 +36,6 @@ const SplashLoader = () => (
         viewBox="0 0 80 80"
         style={{ animation: "pulse 2s ease-in-out infinite" }}
       >
-        {/* Track */}
         <circle
           cx="40"
           cy="40"
@@ -46,7 +44,6 @@ const SplashLoader = () => (
           stroke="#d1fae5"
           strokeWidth="5"
         />
-        {/* Spinner arc */}
         <circle
           cx="40"
           cy="40"
@@ -63,6 +60,7 @@ const SplashLoader = () => (
           }}
         />
       </svg>
+
       {/* Logo dot */}
       <div
         style={{
@@ -122,20 +120,12 @@ const SplashLoader = () => (
     >
       Please wait a moment
     </p>
-
-    <style>{`
-      @keyframes spin {
-        from { transform: rotate(-90deg); }
-        to   { transform: rotate(270deg); }
-      }
-    `}</style>
   </div>
 );
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// AUTH GUARD
-// ═══════════════════════════════════════════════════════════════════════════════
-const AuthGuard = () => {
+// ── Shared auth verify hook ──────────────────────────────────────────────────
+// Returns "checking" | "ok" | "fail"
+const useAuthVerify = () => {
   const {
     isAuthenticated,
     tokens,
@@ -144,7 +134,8 @@ const AuthGuard = () => {
     logoutLocal,
     setAuthHeader,
   } = useAuthStore();
-  const [status, setStatus] = useState("checking"); // "checking" | "ok" | "fail"
+
+  const [status, setStatus] = useState("checking");
 
   useEffect(() => {
     let cancelled = false;
@@ -161,9 +152,8 @@ const AuthGuard = () => {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${tokens.accessToken}`;
 
-      // Try to hit /me with current token
+      // Try /me with current token
       const meResult = await fetchMe();
-
       if (cancelled) return;
 
       if (meResult?.success) {
@@ -171,30 +161,27 @@ const AuthGuard = () => {
         return;
       }
 
-      // If 401 (token expired) → try refresh
+      // Token expired → try refresh
       if (meResult?.unauthorized) {
         const refreshResult = await refreshTokens();
-
         if (cancelled) return;
 
         if (refreshResult?.success) {
-          // Re-fetch me after refresh
           const meRetry = await fetchMe();
           if (cancelled) return;
+
           if (meRetry?.success) {
             setStatus("ok");
-          } else {
-            logoutLocal(false);
-            setStatus("fail");
+            return;
           }
-        } else {
-          logoutLocal(false);
-          setStatus("fail");
         }
+
+        logoutLocal(false);
+        setStatus("fail");
         return;
       }
 
-      // Network / server error — keep session if we're locally authenticated
+      // Network / server error — keep session if locally authenticated
       if (isAuthenticated) {
         setStatus("ok");
       } else {
@@ -208,9 +195,48 @@ const AuthGuard = () => {
     };
   }, []); // run once on mount
 
+  return status;
+};
+
+// ── Seeker Guard ─────────────────────────────────────────────────────────────
+// Allows only users with role === "seeker"
+// If employer tries to access → redirect to employer dashboard
+export const SeekerGuard = () => {
+  const status = useAuthVerify();
+  const user = useAuthStore((s) => s.user);
+
   if (status === "checking") return <SplashLoader />;
+
+  // Not authenticated at all
   if (status === "fail") return <Navigate to="/jobseeker/login" replace />;
+
+  // Authenticated but wrong role → send employer to their own dashboard
+  if (user?.role === "employer") {
+    return <Navigate to="/employer/dashboard" replace />;
+  }
+
   return <Outlet />;
 };
 
-export default AuthGuard;
+// ── Employer Guard ────────────────────────────────────────────────────────────
+// Allows only users with role === "employer"
+// If seeker tries to access → redirect to seeker dashboard
+export const EmployerGuard = () => {
+  const status = useAuthVerify();
+  const user = useAuthStore((s) => s.user);
+
+  if (status === "checking") return <SplashLoader />;
+
+  // Not authenticated at all
+  if (status === "fail") return <Navigate to="/employer/login" replace />;
+
+  // Authenticated but wrong role → send seeker to their own dashboard
+  if (user?.role === "seeker") {
+    return <Navigate to="/seeker/dashboard" replace />;
+  }
+
+  return <Outlet />;
+};
+
+// Default export kept for any legacy imports
+export default SeekerGuard;
