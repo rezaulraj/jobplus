@@ -52,6 +52,7 @@ import EmployerProfile from "./pages/employer/EmployerProfile";
 import PostedJobs from "./pages/employer/PostedJobs";
 import PostJob from "./pages/employer/PostJob";
 import EditJob from "./pages/employer/EditJob";
+import JobApplications from "./pages/employer/JobApplications";
 
 function App() {
   const { isAuthenticated, tokens, setAuthHeader, user } = useAuthStore();
@@ -218,6 +219,10 @@ function App() {
             <Route path="employer/jobs" element={<PostedJobs />} />
             <Route path="employer/post-job" element={<PostJob />} />
             <Route path="employer/edit-job/:id" element={<EditJob />} />
+            <Route
+              path="employer/jobs/:jobId/applications"
+              element={<JobApplications />}
+            />
           </Route>
         </Route>
 

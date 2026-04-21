@@ -47,12 +47,12 @@ const EmployerSidebar = ({
           path: "/employer/jobs",
           badge: 5,
         },
-        {
-          label: "Applications",
-          icon: <FaFileAlt />,
-          path: "#",
-          badge: 12,
-        },
+        // {
+        //   label: "Applications",
+        //   icon: <FaFileAlt />,
+        //   path: "#",
+        //   badge: 12,
+        // },
       ],
     },
     {
