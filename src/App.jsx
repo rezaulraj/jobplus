@@ -47,6 +47,11 @@ import SkillDevelopment from "./pages/seeker/features/SkillDevelopment";
 import useAuthStore from "./store/authStore";
 import EmployerLayout from "./layout/EmployerLayout";
 import EmployerDashboard from "./pages/employer/EmployerDashboard";
+import CompanyProfile from "./pages/employer/CompanyProfile";
+import EmployerProfile from "./pages/employer/EmployerProfile";
+import PostedJobs from "./pages/employer/PostedJobs";
+import PostJob from "./pages/employer/PostJob";
+import EditJob from "./pages/employer/EditJob";
 
 function App() {
   const { isAuthenticated, tokens, setAuthHeader, user } = useAuthStore();
@@ -208,7 +213,11 @@ function App() {
         <Route element={<EmployerGuard />}>
           <Route path="/" element={<EmployerLayout />}>
             <Route path="employer/dashboard" element={<EmployerDashboard />} />
-            <Route path="employer/company" element={<EmployerDashboard />} />
+            <Route path="employer/company" element={<CompanyProfile />} />
+            <Route path="employer/profile" element={<EmployerProfile />} />
+            <Route path="employer/jobs" element={<PostedJobs />} />
+            <Route path="employer/post-job" element={<PostJob />} />
+            <Route path="employer/edit-job/:id" element={<EditJob />} />
           </Route>
         </Route>
 

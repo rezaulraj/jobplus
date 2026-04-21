@@ -50,7 +50,7 @@ const EmployerSidebar = ({
         {
           label: "Applications",
           icon: <FaFileAlt />,
-          path: "/employer/applications",
+          path: "#",
           badge: 12,
         },
       ],
@@ -61,13 +61,13 @@ const EmployerSidebar = ({
         {
           label: "Share Access",
           icon: <FaShareAlt />,
-          path: "/employer/share-access",
+          path: "#",
           badge: "New",
         },
         {
           label: "Team Members",
           icon: <FaUsers />,
-          path: "/employer/team",
+          path: "#",
         },
       ],
     },
@@ -82,12 +82,12 @@ const EmployerSidebar = ({
         {
           label: "Change Password",
           icon: <FaKey />,
-          path: "/employer/change-password",
+          path: "#",
         },
         {
           label: "Account Overview",
           icon: <FaChartBar />,
-          path: "/employer/account-overview",
+          path: "#",
         },
         // {
         //   label: "Settings",
@@ -102,23 +102,23 @@ const EmployerSidebar = ({
         {
           label: "Messages",
           icon: <FaEnvelope />,
-          path: "/employer/messages",
+          path: "#",
           badge: 3,
         },
         {
           label: "Calendar",
           icon: <FaCalendarAlt />,
-          path: "/employer/calendar",
+          path: "#",
         },
         {
           label: "Saved Candidates",
           icon: <FaHeart />,
-          path: "/employer/saved-candidates",
+          path: "#",
         },
         {
           label: "Reviews",
           icon: <FaStar />,
-          path: "/employer/reviews",
+          path: "#",
         },
       ],
     },
