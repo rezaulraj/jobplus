@@ -21,8 +21,10 @@ import {
   Mail,
   Phone,
   Globe,
+  Loader2,
 } from "lucide-react";
-import jobData from "../../data/jobData.json";
+import jobDataPlaceholder from "../../data/jobData.json";
+import useJobStore from "../../store/JobStore";
 // import ApplyPopUps from "./ApplyPopUps";
 
 const AllJobs = () => {
@@ -35,7 +37,7 @@ const AllJobs = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [jobs, setJobs] = useState([]);
+  const { jobs, fetchJobs, isLoading } = useJobStore();
   const [selectedJob, setSelectedJob] = useState(null);
   const [showMobileDescription, setShowMobileDescription] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -115,13 +117,16 @@ const AllJobs = () => {
 
   // Map URL parameters to actual filter values
   useEffect(() => {
-    // Set jobs from actual jobData
-    setJobs(jobData);
-    if (jobData.length > 0) {
-      setSelectedJob(jobData[0]);
-    }
+    fetchJobs();
+  }, []);
 
-    // Set initial filters based on URL params
+  useEffect(() => {
+    if (jobs.length > 0 && !selectedJob) {
+      setSelectedJob(jobs[0]);
+    }
+  }, [jobs]);
+
+  useEffect(() => {
     if (cate) {
       const categoryMapping = {
         "accounting-finance": "Accounting/Finance",
@@ -175,7 +180,7 @@ const AllJobs = () => {
 
     if (companyParam) {
       const cleanCompany = companyParam.replace(/-/g, " ");
-      const companies = [...new Set(jobData.map((job) => job.company))];
+      const companies = [...new Set(jobs.map((job) => job.company))];
       const foundCompany = companies.find((company) =>
         company.toLowerCase().includes(cleanCompany.toLowerCase())
       );
@@ -254,14 +259,16 @@ const AllJobs = () => {
 
   // Get actual salary range from job data
   useEffect(() => {
-    const salaries = jobData
-      .map((job) => job.salary.max)
-      .filter((salary) => salary > 0);
-    if (salaries.length > 0) {
-      const maxSalary = Math.max(...salaries);
-      setSalaryRange([0, maxSalary]);
+    if (jobs.length > 0) {
+      const salaries = jobs
+        .map((job) => job.salary?.max || 0)
+        .filter((salary) => salary > 0);
+      if (salaries.length > 0) {
+        const maxSalary = Math.max(...salaries);
+        setSalaryRange([0, maxSalary]);
+      }
     }
-  }, []);
+  }, [jobs]);
 
   // Calculate days left until deadline
   const getDaysLeft = (job) => {
@@ -484,8 +491,8 @@ const AllJobs = () => {
     setSelectedSubcategories([]);
     setSearchTerm("");
     setSortBy("relevance");
-    if (jobData.length > 0) {
-      setSelectedJob(jobData[0]);
+    if (jobs.length > 0) {
+      setSelectedJob(jobs[0]);
     }
     navigate("/jobs");
   };
@@ -661,6 +668,17 @@ const AllJobs = () => {
       subcategories: selectedSubcategories,
     }).flat().length;
   };
+
+  if (isLoading && jobs.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Loading jobs...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen font-ubuntu" style={{ backgroundColor: colors.bgLight }}>

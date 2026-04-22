@@ -20,15 +20,17 @@ import {
   Users,
   TrendingUp,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
-import jobData from "../../data/jobData.json";
+import jobDataPlaceholder from "../../data/jobData.json";
 import seniorJobs from "../../data/senior.json";
+import useJobStore from "../../store/JobStore";
 // import ApplyPopUps from "./ApplyPopUps";
 
 const SingleJobDescription = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [job, setJob] = useState(null);
+  const { currentJob: job, fetchJobById, isLoading, jobs, fetchJobs } = useJobStore();
   const [relatedJobs, setRelatedJobs] = useState([]);
   const [isSaved, setIsSaved] = useState(false);
   // apply states
@@ -50,22 +52,25 @@ const SingleJobDescription = () => {
   };
 
   useEffect(() => {
-    // Find the job by ID
-    const foundJob = jobData.find((j) => j.id === parseInt(id));
-    if (foundJob) {
-      setJob(foundJob);
+    fetchJobById(id);
+    if (jobs.length === 0) {
+      fetchJobs();
+    }
+  }, [id]);
 
+  useEffect(() => {
+    if (job && jobs.length > 0) {
       // Find related jobs based on category
-      const related = jobData
+      const related = jobs
         .filter(
           (j) =>
-            j.id !== foundJob.id &&
-            (j.category === foundJob.category || j.company === foundJob.company)
+            j.id !== job.id &&
+            (j.category === job.category || j.company === job.company)
         )
         .slice(0, 6);
       setRelatedJobs(related);
     }
-  }, [id]);
+  }, [job, jobs]);
 
   // Format salary display
   const formatSalary = (salary) => {
@@ -132,6 +137,17 @@ const SingleJobDescription = () => {
       console.error("Error sharing:", error);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Loading job details...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!job) {
     return (
