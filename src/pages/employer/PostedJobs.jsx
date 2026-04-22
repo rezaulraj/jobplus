@@ -1,29 +1,26 @@
 // pages/employer/PostedJobs.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaBriefcase,
   FaMapMarkerAlt,
   FaClock,
-  FaEye,
   FaFileAlt,
   FaEdit,
   FaTrash,
-  FaChartLine,
   FaSearch,
   FaCalendarAlt,
   FaUsers,
   FaCheckCircle,
   FaTimesCircle,
   FaHourglassHalf,
-  FaEllipsisV,
   FaSpinner,
-  FaPlay,
-  FaPause,
   FaExclamationTriangle,
+  FaChevronDown,
 } from "react-icons/fa";
 import useJobPostStore from "../../store/jobPostStore";
 
+// ── Status display config ─────────────────────────────────────────────────────
 const getStatusConfig = (status) => {
   switch (status) {
     case "published":
@@ -32,7 +29,6 @@ const getStatusConfig = (status) => {
         text: "text-green-700",
         border: "border-green-200",
         dot: "bg-green-500",
-        icon: <FaCheckCircle size={10} />,
         label: "Published",
       };
     case "pending":
@@ -41,7 +37,6 @@ const getStatusConfig = (status) => {
         text: "text-amber-700",
         border: "border-amber-200",
         dot: "bg-amber-400",
-        icon: <FaHourglassHalf size={10} />,
         label: "Pending",
       };
     case "draft":
@@ -50,7 +45,6 @@ const getStatusConfig = (status) => {
         text: "text-gray-600",
         border: "border-gray-200",
         dot: "bg-gray-400",
-        icon: <FaFileAlt size={10} />,
         label: "Draft",
       };
     case "expired":
@@ -59,7 +53,6 @@ const getStatusConfig = (status) => {
         text: "text-orange-700",
         border: "border-orange-200",
         dot: "bg-orange-400",
-        icon: <FaClock size={10} />,
         label: "Expired",
       };
     case "closed":
@@ -68,7 +61,6 @@ const getStatusConfig = (status) => {
         text: "text-red-700",
         border: "border-red-200",
         dot: "bg-red-400",
-        icon: <FaTimesCircle size={10} />,
         label: "Closed",
       };
     case "rejected":
@@ -77,7 +69,6 @@ const getStatusConfig = (status) => {
         text: "text-red-700",
         border: "border-red-200",
         dot: "bg-red-500",
-        icon: <FaExclamationTriangle size={10} />,
         label: "Rejected",
       };
     default:
@@ -86,12 +77,113 @@ const getStatusConfig = (status) => {
         text: "text-gray-600",
         border: "border-gray-200",
         dot: "bg-gray-400",
-        icon: null,
         label: status,
       };
   }
 };
 
+// ── Only draft / pending / published are employer-changeable ──────────────────
+// closed / rejected / expired are set by system or admin — show as read-only badge
+const CHANGEABLE_STATUSES = [
+  { value: "draft", label: "Draft", dot: "bg-gray-400" },
+  { value: "pending", label: "Pending", dot: "bg-amber-400" },
+  { value: "published", label: "Published", dot: "bg-green-500" },
+];
+const READONLY_STATUSES = ["closed", "rejected", "expired"];
+
+// ── StatusSelector ────────────────────────────────────────────────────────────
+const StatusSelector = ({ job, jobId, isActionLoading, onStatusChange }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const cfg = getStatusConfig(job.status);
+  const isReadonly = READONLY_STATUSES.includes(job.status);
+
+  // Read-only statuses: just a badge, no interaction
+  if (isReadonly) {
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.bg} ${cfg.text} ${cfg.border}`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+        {cfg.label}
+      </span>
+    );
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((o) => !o);
+        }}
+        disabled={isActionLoading}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all hover:shadow-sm disabled:opacity-50 cursor-pointer ${cfg.bg} ${cfg.text} ${cfg.border}`}
+      >
+        {isActionLoading ? (
+          <FaSpinner size={9} className="animate-spin" />
+        ) : (
+          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+        )}
+        {cfg.label}
+        <FaChevronDown
+          size={8}
+          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute left-0 mt-1.5 w-44 bg-white rounded-xl shadow-xl border border-gray-100 z-30 py-1.5 overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="px-3 pb-1.5 pt-0.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-50 mb-1">
+            Change Status
+          </p>
+          {CHANGEABLE_STATUSES.map((opt) => {
+            const isCurrent = job.status === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  onStatusChange(jobId, opt.value);
+                  setOpen(false);
+                }}
+                disabled={isCurrent}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
+                  isCurrent
+                    ? "text-gray-400 cursor-default bg-gray-50/60"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full flex-shrink-0 ${opt.dot}`}
+                />
+                <span>{opt.label}</span>
+                {isCurrent && (
+                  <span className="ml-auto text-[10px] text-gray-400 font-medium">
+                    current
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── ConfirmModal ──────────────────────────────────────────────────────────────
 const ConfirmModal = ({ isOpen, message, onConfirm, onCancel, isLoading }) => {
   if (!isOpen) return null;
   return (
@@ -117,7 +209,7 @@ const ConfirmModal = ({ isOpen, message, onConfirm, onCancel, isLoading }) => {
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all disabled:opacity-60"
           >
             {isLoading ? (
-              <FaSpinner className="animate-spin" />
+              <FaSpinner className="animate-spin" size={12} />
             ) : (
               <FaTrash size={12} />
             )}
@@ -129,6 +221,7 @@ const ConfirmModal = ({ isOpen, message, onConfirm, onCancel, isLoading }) => {
   );
 };
 
+// ── Main Component ────────────────────────────────────────────────────────────
 const PostedJobs = () => {
   const { myJobs, isLoading, fetchMyJobs, updateJobStatus, deleteJobPost } =
     useJobPostStore();
@@ -136,7 +229,6 @@ const PostedJobs = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
-  const [openMenuId, setOpenMenuId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
 
@@ -144,18 +236,10 @@ const PostedJobs = () => {
     fetchMyJobs();
   }, []);
 
-  // Close menu on outside click
-  useEffect(() => {
-    const handler = () => setOpenMenuId(null);
-    document.addEventListener("click", handler);
-    return () => document.removeEventListener("click", handler);
-  }, []);
-
   const handleStatusChange = async (jobId, status) => {
     setActionLoading(jobId);
     await updateJobStatus(jobId, status);
     setActionLoading(null);
-    setOpenMenuId(null);
   };
 
   const handleDeleteConfirm = async () => {
@@ -166,7 +250,7 @@ const PostedJobs = () => {
     setConfirmDelete(null);
   };
 
-  // Filter options computed from real data
+  // Counts per status from real data
   const statusCounts = myJobs.reduce((acc, j) => {
     acc[j.status] = (acc[j.status] || 0) + 1;
     return acc;
@@ -200,14 +284,9 @@ const PostedJobs = () => {
       return true;
     })
     .sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        case "oldest":
-          return new Date(a.createdAt) - new Date(b.createdAt);
-        default:
-          return 0;
-      }
+      if (sortBy === "oldest")
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
   const totalActive = myJobs.filter((j) => j.status === "published").length;
@@ -220,7 +299,7 @@ const PostedJobs = () => {
         message={`Are you sure you want to delete "${confirmDelete?.title}"? This action cannot be undone.`}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDelete(null)}
-        isLoading={!!actionLoading}
+        isLoading={actionLoading !== null}
       />
 
       {/* Header */}
@@ -249,7 +328,7 @@ const PostedJobs = () => {
             value: myJobs.length,
             icon: <FaBriefcase />,
             color: "text-[#1E2558]",
-            bg: "bg-[#1E2558]/8",
+            bg: "bg-[#1E2558]/10",
           },
           {
             label: "Active",
@@ -284,7 +363,7 @@ const PostedJobs = () => {
                 </p>
                 <p className="text-2xl font-bold text-gray-800 mt-0.5">
                   {isLoading ? (
-                    <FaSpinner className="animate-spin text-base" />
+                    <FaSpinner className="animate-spin text-base text-gray-400" />
                   ) : (
                     stat.value
                   )}
@@ -300,7 +379,7 @@ const PostedJobs = () => {
         ))}
       </div>
 
-      {/* Filters */}
+      {/* Filters & Search */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex flex-wrap gap-2">
@@ -399,26 +478,23 @@ const PostedJobs = () => {
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((job) => {
                   const jobId = job.jobId || job._id;
-                  const statusCfg = getStatusConfig(job.status);
                   const isActionLoading = actionLoading === jobId;
+
                   return (
                     <tr
                       key={jobId}
-                      className="hover:bg-gray-50/60 transition-colors group"
+                      className="hover:bg-gray-50/60 transition-colors"
                     >
-                      {/* Job title */}
+                      {/* Job */}
                       <td className="px-4 py-4 max-w-xs">
                         <div className="flex items-start gap-3">
                           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1E2558] to-[#4EB956] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">
                             {job.jobTitle?.charAt(0) || "J"}
                           </div>
                           <div className="min-w-0">
-                            <Link
-                              to={`/employer/jobs/${jobId}/applications`}
-                              className="font-semibold text-gray-800 text-sm truncate max-w-[180px] hover:text-[#4EB956] transition-colors"
-                            >
+                            <p className="font-semibold text-gray-800 text-sm truncate">
                               {job.jobTitle}
-                            </Link>
+                            </p>
                             {job.salaryMin || job.salaryMax ? (
                               <p className="text-xs text-[#4EB956] font-medium mt-0.5">
                                 {job.salaryMin && job.salaryMax
@@ -441,16 +517,14 @@ const PostedJobs = () => {
                         </div>
                       </td>
 
-                      {/* Status */}
+                      {/* Status — changeable dropdown or read-only badge */}
                       <td className="px-4 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`}
-                          />
-                          {statusCfg.label}
-                        </span>
+                        <StatusSelector
+                          job={job}
+                          jobId={jobId}
+                          isActionLoading={isActionLoading}
+                          onStatusChange={handleStatusChange}
+                        />
                       </td>
 
                       {/* Type & Location */}
@@ -509,7 +583,10 @@ const PostedJobs = () => {
                               Exp:{" "}
                               {new Date(job.endDate).toLocaleDateString(
                                 "en-US",
-                                { month: "short", day: "numeric" },
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                },
                               )}
                             </div>
                           )}
@@ -543,95 +620,6 @@ const PostedJobs = () => {
                               <FaTrash size={13} />
                             )}
                           </button>
-
-                          {/* More menu */}
-                          <div className="relative">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenMenuId(
-                                  openMenuId === jobId ? null : jobId,
-                                );
-                              }}
-                              className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 transition-all"
-                            >
-                              <FaEllipsisV size={12} />
-                            </button>
-                            {openMenuId === jobId && (
-                              <div
-                                className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {job.status === "draft" && (
-                                  <button
-                                    onClick={() =>
-                                      handleStatusChange(jobId, "pending")
-                                    }
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                  >
-                                    <FaPlay
-                                      size={11}
-                                      className="text-[#4EB956]"
-                                    />{" "}
-                                    Submit for Review
-                                  </button>
-                                )}
-                                {job.status === "published" && (
-                                  <button
-                                    onClick={() =>
-                                      handleStatusChange(jobId, "closed")
-                                    }
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                  >
-                                    <FaPause
-                                      size={11}
-                                      className="text-orange-500"
-                                    />{" "}
-                                    Close Job
-                                  </button>
-                                )}
-                                {job.status === "closed" && (
-                                  <button
-                                    onClick={() =>
-                                      handleStatusChange(jobId, "pending")
-                                    }
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                  >
-                                    <FaPlay
-                                      size={11}
-                                      className="text-[#4EB956]"
-                                    />{" "}
-                                    Reopen Job
-                                  </button>
-                                )}
-                                {job.status === "rejected" && (
-                                  <button
-                                    onClick={() =>
-                                      handleStatusChange(jobId, "draft")
-                                    }
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                  >
-                                    <FaFileAlt
-                                      size={11}
-                                      className="text-gray-500"
-                                    />{" "}
-                                    Move to Draft
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() =>
-                                    setConfirmDelete({
-                                      id: jobId,
-                                      title: job.jobTitle,
-                                    })
-                                  }
-                                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                >
-                                  <FaTrash size={11} /> Delete
-                                </button>
-                              </div>
-                            )}
-                          </div>
                         </div>
                       </td>
                     </tr>
@@ -643,7 +631,7 @@ const PostedJobs = () => {
         )}
 
         {!isLoading && filtered.length > 0 && (
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+          <div className="px-4 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-500">
               Showing{" "}
               <span className="font-medium text-gray-700">

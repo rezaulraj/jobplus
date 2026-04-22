@@ -154,7 +154,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── Update Company Cover ───────────────────────────────────────────────
+  // ── Update Company Cover ───
   updateCompanyCover: async (file) => {
     set({ isUploading: true, error: null });
     try {
