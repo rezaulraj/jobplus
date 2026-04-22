@@ -14,7 +14,7 @@ const useCompanyStore = create((set, get) => ({
   isUploading: false,
   error: null,
 
-  // ── Auth config (mirrors seekerStore pattern) ──────────────────────────
+  // ── Auth config (mirrors seekerStore pattern) ───
   getAuthConfig: (extraConfig = {}) => {
     const { getBearerToken } = useAuthStore.getState();
     const token = getBearerToken();
@@ -28,7 +28,7 @@ const useCompanyStore = create((set, get) => ({
     };
   },
 
-  // ── Error handler (mirrors seekerStore pattern) ────────────────────────
+  // ── Error handler (mirrors seekerStore pattern) ──
   handleError: (error, fallbackMessage) => {
     const status = error?.response?.status;
     const message = error?.response?.data?.message || fallbackMessage;
@@ -43,7 +43,7 @@ const useCompanyStore = create((set, get) => ({
     return { success: false, error: message };
   },
 
-  // ── Create Company ─────────────────────────────────────────────────────
+  // ── Create Company ───
   createCompany: async (payload) => {
     set({ isLoading: true, error: null });
     try {
@@ -64,7 +64,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── Get My Company ─────────────────────────────────────────────────────
+  // ── Get My Company ───
   fetchMyCompany: async ({ silent = false } = {}) => {
     if (!silent) set({ isLoading: true, error: null });
     try {
@@ -88,7 +88,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── Update Company ─────────────────────────────────────────────────────
+  // ── Update Company ───
   updateCompany: async (payload) => {
     set({ isLoading: true, error: null });
     try {
@@ -109,7 +109,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── Update Company Logo ────────────────────────────────────────────────
+  // ── Update Company Logo ───
   updateCompanyLogo: async (file) => {
     set({ isUploading: true, error: null });
     try {
@@ -118,9 +118,7 @@ const useCompanyStore = create((set, get) => ({
       const response = await axios.patch(
         `${API_URL}/company/update/logo`,
         formData,
-        get().getAuthConfig({
-          headers: { "Content-Type": "multipart/form-data" },
-        }),
+        get().getAuthConfig(),
       );
       if (response.data?.success) {
         set({ company: response.data.data, isUploading: false });
@@ -134,7 +132,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── Remove Company Logo ────────────────────────────────────────────────
+  // ── Remove Company Logo ───
   removeCompanyLogo: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -179,7 +177,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── Remove Company Cover ───────────────────────────────────────────────
+  // ── Remove Company Cover ───
   removeCompanyCover: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -199,7 +197,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── List Companies (public/admin) ──────────────────────────────────────
+  // ── List Companies (public/admin) ──
   fetchCompanies: async (page = 1, limit = 10) => {
     set({ isLoading: true, error: null });
     try {
@@ -222,7 +220,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── Admin: Verify / Unverify Company ──────────────────────────────────
+  // ── Admin: Verify / Unverify Company ───
   setCompanyVerified: async (companyId, isVerified) => {
     set({ isLoading: true, error: null });
     try {
@@ -245,7 +243,7 @@ const useCompanyStore = create((set, get) => ({
     }
   },
 
-  // ── Helpers ────────────────────────────────────────────────────────────
+  // ── Helpers ────
   clearCompany: () => set({ company: null, error: null }),
   clearError: () => set({ error: null }),
 }));
