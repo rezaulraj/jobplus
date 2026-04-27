@@ -525,7 +525,7 @@ const EmployerDashboard = () => {
         />
       </div>
 
-      {/* ── Middle Row: Chart + Recent Activity ── */}
+      {/* ── Middle Row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Job Status Breakdown */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -627,7 +627,7 @@ const EmployerDashboard = () => {
         </div>
       </div>
 
-      {/* ── Top Performing Jobs ──────────────────────────────────────────────── */}
+      {/* ── Top Performing Jobs ── */}
       {topJobs.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-5">
@@ -689,7 +689,7 @@ const EmployerDashboard = () => {
         </div>
       )}
 
-      {/* ── All Jobs Table ───────────────────────────────────────────────────── */}
+      {/* ── All Jobs Table ─── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
           <div>

@@ -25,7 +25,6 @@ import {
   FaUndo,
   FaRedo,
 } from "react-icons/fa";
-import { Country, State, City } from "country-state-city";
 import useJobPostStore from "../../store/jobPostStore";
 
 // ── Job type options matching backend JOB_TYPES enum ─────────────────────────
@@ -53,11 +52,11 @@ const RichTextEditor = ({ value, onChange, error }) => {
     if (!editorRef.current) return;
     const html = editorRef.current.innerHTML;
     onChange(html);
-
     const text = editorRef.current.innerText || "";
     setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
   }, [onChange]);
 
+  // Sync initial value
   useEffect(() => {
     if (editorRef.current && value && editorRef.current.innerHTML !== value) {
       editorRef.current.innerHTML = value;
@@ -98,12 +97,9 @@ const RichTextEditor = ({ value, onChange, error }) => {
 
   return (
     <div
-      className={`border rounded-xl overflow-hidden transition-all duration-200 ${
-        error
-          ? "border-red-400 ring-2 ring-red-100"
-          : "border-gray-200 focus-within:border-[#4EB956] focus-within:ring-2 focus-within:ring-[#4EB956]/10"
-      }`}
+      className={`border rounded-xl overflow-hidden transition-all duration-200 ${error ? "border-red-400 ring-2 ring-red-100" : "border-gray-200 focus-within:border-[#4EB956] focus-within:ring-2 focus-within:ring-[#4EB956]/10"}`}
     >
+      {/* Toolbar */}
       <div className="flex items-center gap-0.5 px-3 py-2 bg-gray-50 border-b border-gray-100 flex-wrap">
         {toolbarBtns.map((btn, i) => (
           <button
@@ -119,12 +115,12 @@ const RichTextEditor = ({ value, onChange, error }) => {
             {btn.icon}
           </button>
         ))}
-
         <div className="ml-auto text-xs text-gray-400 font-medium">
           {wordCount} words
         </div>
       </div>
 
+      {/* Editable area */}
       <div
         ref={editorRef}
         contentEditable
@@ -152,6 +148,7 @@ const RichTextEditor = ({ value, onChange, error }) => {
   );
 };
 
+// ── Category Selector ────────────────────────────────────────────────────────
 const CategorySelector = ({ categories, loading, value, onChange, error }) => {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -161,7 +158,6 @@ const CategorySelector = ({ categories, loading, value, onChange, error }) => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
-
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
@@ -169,7 +165,7 @@ const CategorySelector = ({ categories, loading, value, onChange, error }) => {
   const filtered = categories.filter((c) =>
     c.title?.toLowerCase().includes(search.toLowerCase()),
   );
-
+  console.log("categories", categories);
   const selected = categories.find((c) => (c.jobCategoryId || c._id) === value);
 
   return (
@@ -187,11 +183,8 @@ const CategorySelector = ({ categories, loading, value, onChange, error }) => {
       >
         <div className="flex items-center gap-2">
           <FaTag
-            className={`text-sm ${
-              selected ? "text-[#4EB956]" : "text-gray-400"
-            }`}
+            className={`text-sm ${selected ? "text-[#4EB956]" : "text-gray-400"}`}
           />
-
           <span
             className={selected ? "text-gray-800 font-medium" : "text-gray-400"}
           >
@@ -202,11 +195,8 @@ const CategorySelector = ({ categories, loading, value, onChange, error }) => {
                 : "Select a job category"}
           </span>
         </div>
-
         <FaChevronDown
-          className={`text-gray-400 text-xs transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`text-gray-400 text-xs transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -215,7 +205,6 @@ const CategorySelector = ({ categories, loading, value, onChange, error }) => {
           <div className="p-2 border-b border-gray-50">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
-
               <input
                 type="text"
                 value={search}
@@ -226,7 +215,6 @@ const CategorySelector = ({ categories, loading, value, onChange, error }) => {
               />
             </div>
           </div>
-
           <div className="max-h-52 overflow-y-auto py-1">
             {loading ? (
               <div className="flex items-center justify-center py-8">
@@ -240,7 +228,6 @@ const CategorySelector = ({ categories, loading, value, onChange, error }) => {
               filtered.map((cat) => {
                 const catId = cat.jobCategoryId || cat._id;
                 const isSelected = catId === value;
-
                 return (
                   <button
                     key={catId}
@@ -271,6 +258,7 @@ const CategorySelector = ({ categories, loading, value, onChange, error }) => {
   );
 };
 
+// ── Field Error ──────────────────────────────────────────────────────────────
 const FieldError = ({ msg }) =>
   msg ? (
     <p className="flex items-center gap-1 text-red-500 text-xs mt-1">
@@ -279,132 +267,7 @@ const FieldError = ({ msg }) =>
     </p>
   ) : null;
 
-const LocationSelector = ({ form, setForm }) => {
-  const countries = Country.getAllCountries();
-  const states = form.country ? State.getStatesOfCountry(form.country) : [];
-  const cities =
-    form.country && form.state
-      ? City.getCitiesOfState(form.country, form.state)
-      : [];
-
-  return (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-        Job Location
-      </label>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="relative">
-          <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm z-10" />
-
-          <select
-            name="country"
-            value={form.country}
-            onChange={(e) => {
-              const countryCode = e.target.value;
-              const location = buildLocation({
-                city: "",
-                state: "",
-                country: countryCode,
-              });
-
-              setForm((p) => ({
-                ...p,
-                country: countryCode,
-                state: "",
-                city: "",
-                jobLocation: location || "Bangladesh",
-              }));
-            }}
-            className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all bg-white appearance-none"
-          >
-            <option value="">Select Country</option>
-            {countries.map((country) => (
-              <option key={country.isoCode} value={country.isoCode}>
-                {country.name}
-              </option>
-            ))}
-          </select>
-
-          <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
-        </div>
-
-        <div className="relative">
-          <select
-            name="state"
-            value={form.state}
-            disabled={!form.country}
-            onChange={(e) => {
-              const stateCode = e.target.value;
-              const location = buildLocation({
-                city: "",
-                state: stateCode,
-                country: form.country,
-              });
-
-              setForm((p) => ({
-                ...p,
-                state: stateCode,
-                city: "",
-                jobLocation: location || getCountryName(form.country),
-              }));
-            }}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all bg-white disabled:bg-gray-100 disabled:text-gray-400 appearance-none"
-          >
-            <option value="">Select State/Division</option>
-            {states.map((state) => (
-              <option key={state.isoCode} value={state.isoCode}>
-                {state.name}
-              </option>
-            ))}
-          </select>
-
-          <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
-        </div>
-
-        <div className="relative">
-          <select
-            name="city"
-            value={form.city}
-            disabled={!form.country || !form.state}
-            onChange={(e) => {
-              const cityName = e.target.value;
-              const location = buildLocation({
-                city: cityName,
-                state: form.state,
-                country: form.country,
-              });
-
-              setForm((p) => ({
-                ...p,
-                city: cityName,
-                jobLocation: location || getCountryName(form.country),
-              }));
-            }}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all bg-white disabled:bg-gray-100 disabled:text-gray-400 appearance-none"
-          >
-            <option value="">Select City</option>
-            {cities.map((city, index) => (
-              <option
-                key={`${city.name}-${city.latitude}-${city.longitude}-${index}`}
-                value={city.name}
-              >
-                {city.name}
-              </option>
-            ))}
-          </select>
-
-          <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
-        </div>
-      </div>
-
-      <p className="text-xs text-[#4EB956] mt-2 font-medium">
-        Selected Location: {form.jobLocation || "Bangladesh"}
-      </p>
-    </div>
-  );
-};
-
+// ── Step indicator ────────────────────────────────────────────────────────────
 const steps = ["Basic Info", "Details", "Description"];
 
 const StepIndicator = ({ current }) => (
@@ -423,25 +286,15 @@ const StepIndicator = ({ current }) => (
           >
             {i < current ? <FaCheck size={10} /> : i + 1}
           </div>
-
           <span
-            className={`text-sm font-medium transition-colors ${
-              i === current
-                ? "text-[#1E2558]"
-                : i < current
-                  ? "text-[#4EB956]"
-                  : "text-gray-400"
-            }`}
+            className={`text-sm font-medium transition-colors ${i === current ? "text-[#1E2558]" : i < current ? "text-[#4EB956]" : "text-gray-400"}`}
           >
             {step}
           </span>
         </div>
-
         {i < steps.length - 1 && (
           <div
-            className={`flex-1 h-0.5 mx-3 rounded transition-all duration-500 ${
-              i < current ? "bg-[#4EB956]" : "bg-gray-200"
-            }`}
+            className={`flex-1 h-0.5 mx-3 rounded transition-all duration-500 ${i < current ? "bg-[#4EB956]" : "bg-gray-200"}`}
             style={{ minWidth: 32 }}
           />
         )}
@@ -450,14 +303,12 @@ const StepIndicator = ({ current }) => (
   </div>
 );
 
+// ── Main Component ────────────────────────────────────────────────────────────
 const EMPTY_FORM = {
   jobCategoryId: "",
   jobTitle: "",
   vacancy: "",
-  country: DEFAULT_COUNTRY_CODE,
-  state: "",
-  city: "",
-  jobLocation: "Bangladesh",
+  jobLocation: "",
   jobType: "",
   jobDescription: "",
   salaryMin: "",
@@ -467,16 +318,12 @@ const EMPTY_FORM = {
 
 function validate(form, step) {
   const errs = {};
-
   if (step === 0) {
     if (!form.jobCategoryId) errs.jobCategoryId = "Please select a category";
-
     if (!form.jobTitle.trim()) errs.jobTitle = "Job title is required";
-    else if (form.jobTitle.trim().length < 2) {
+    else if (form.jobTitle.trim().length < 2)
       errs.jobTitle = "Title must be at least 2 characters";
-    }
   }
-
   if (step === 1) {
     if (
       form.salaryMin &&
@@ -486,22 +333,18 @@ function validate(form, step) {
       errs.salaryMax = "Max salary must be greater than min salary";
     }
   }
-
   if (step === 2) {
     const text = form.jobDescription?.replace(/<[^>]*>/g, "").trim() || "";
-
     if (!text) errs.jobDescription = "Job description is required";
-    else if (text.length < 20) {
+    else if (text.length < 20)
       errs.jobDescription = "Description must be at least 20 characters";
-    }
   }
-
   return errs;
 }
 
 const PostJob = () => {
   const navigate = useNavigate();
-  const { id: editJobId } = useParams();
+  const { id: editJobId } = useParams(); // for edit flow (optional)
 
   const {
     categories,
@@ -520,32 +363,18 @@ const PostJob = () => {
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+  }, []);
 
+  // Populate form when editing
   useEffect(() => {
     if (editJobId && myJobs.length > 0) {
       const job = myJobs.find((j) => (j.jobId || j._id) === editJobId);
-
       if (job) {
-        const countryCode = job.countryCode || DEFAULT_COUNTRY_CODE;
-        const stateCode = job.stateCode || "";
-        const cityName = job.city || "";
-
         setForm({
           jobCategoryId: job.jobCategoryId || "",
           jobTitle: job.jobTitle || "",
           vacancy: job.vacancy ?? "",
-          country: countryCode,
-          state: stateCode,
-          city: cityName,
-          jobLocation:
-            job.jobLocation ||
-            buildLocation({
-              city: cityName,
-              state: stateCode,
-              country: countryCode,
-            }) ||
-            "Bangladesh",
+          jobLocation: job.jobLocation || "",
           jobType: job.jobType || "",
           jobDescription: job.jobDescription || "",
           salaryMin: job.salaryMin ?? "",
@@ -558,7 +387,6 @@ const PostJob = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setForm((p) => ({ ...p, [name]: value }));
     setTouched((p) => ({ ...p, [name]: true }));
   };
@@ -566,61 +394,54 @@ const PostJob = () => {
   const handleBlur = (e) =>
     setTouched((p) => ({ ...p, [e.target.name]: true }));
 
+  // Live errors for touched fields
   const liveErrors = () => {
     const errs = {
       ...validate(form, 0),
       ...validate(form, 1),
       ...validate(form, 2),
     };
-
     const visible = {};
-
     Object.keys(touched).forEach((k) => {
       if (errs[k]) visible[k] = errs[k];
     });
-
     return visible;
   };
 
   const goNext = () => {
     const errs = validate(form, step);
-
     if (Object.keys(errs).length > 0) {
+      // mark all step fields as touched
       const allTouched = {};
-
       Object.keys(errs).forEach((k) => {
         allTouched[k] = true;
       });
-
       setTouched((p) => ({ ...p, ...allTouched }));
       setErrors(errs);
       return;
     }
-
     setErrors({});
     setStep((s) => s + 1);
   };
 
   const handleSubmit = async (isDraft = false) => {
+    // Validate all steps
     const allErrs = {
       ...validate(form, 0),
       ...validate(form, 1),
       ...validate(form, 2),
     };
-
     if (Object.keys(allErrs).length > 0) {
       setErrors(allErrs);
-
+      // Go back to first failing step
       if (allErrs.jobCategoryId || allErrs.jobTitle) {
         setStep(0);
         return;
       }
-
       if (allErrs.salaryMax) {
         setStep(1);
         return;
       }
-
       setStep(2);
       return;
     }
@@ -629,14 +450,7 @@ const PostJob = () => {
       jobCategoryId: form.jobCategoryId,
       jobTitle: form.jobTitle.trim(),
       vacancy: form.vacancy ? Number(form.vacancy) : null,
-
-      country: getCountryName(form.country) || "Bangladesh",
-      countryCode: form.country || DEFAULT_COUNTRY_CODE,
-      state: getStateName(form.state, form.country) || null,
-      stateCode: form.state || null,
-      city: form.city || null,
-      jobLocation: form.jobLocation.trim() || "Bangladesh",
-
+      jobLocation: form.jobLocation.trim() || null,
       jobType: form.jobType || undefined,
       jobDescription: form.jobDescription,
       salaryMin: form.salaryMin !== "" ? Number(form.salaryMin) : null,
@@ -646,7 +460,6 @@ const PostJob = () => {
     };
 
     let result;
-
     if (editJobId) {
       result = await updateJobPost(editJobId, payload);
     } else {
@@ -662,11 +475,11 @@ const PostJob = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">
           {editJobId ? "Edit Job Post" : "Post a New Job"}
         </h1>
-
         <p className="text-gray-500 text-sm mt-1">
           {editJobId
             ? "Update your job posting details"
@@ -674,10 +487,12 @@ const PostJob = () => {
         </p>
       </div>
 
+      {/* Step indicator */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
         <StepIndicator current={step} />
       </div>
 
+      {/* Form card */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div
           className="h-1 bg-gradient-to-r from-[#1E2558] to-[#4EB956]"
@@ -688,13 +503,13 @@ const PostJob = () => {
         />
 
         <div className="p-7 space-y-5">
+          {/* ── Step 0: Basic Info ─────────────────────────────────────── */}
           {step === 0 && (
             <>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Job Category <span className="text-red-400">*</span>
                 </label>
-
                 <CategorySelector
                   categories={categories}
                   loading={categoriesLoading}
@@ -705,7 +520,6 @@ const PostJob = () => {
                   }}
                   error={visibleErrors.jobCategoryId}
                 />
-
                 <FieldError msg={visibleErrors.jobCategoryId} />
               </div>
 
@@ -713,7 +527,6 @@ const PostJob = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Job Title <span className="text-red-400">*</span>
                 </label>
-
                 <input
                   type="text"
                   name="jobTitle"
@@ -727,7 +540,6 @@ const PostJob = () => {
                       : "border-gray-200 focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10"
                   }`}
                 />
-
                 <FieldError msg={visibleErrors.jobTitle} />
               </div>
 
@@ -736,7 +548,6 @@ const PostJob = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Job Type
                   </label>
-
                   <div className="relative">
                     <select
                       name="jobType"
@@ -751,19 +562,15 @@ const PostJob = () => {
                         </option>
                       ))}
                     </select>
-
                     <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Vacancies
                   </label>
-
                   <div className="relative">
                     <FaUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-
                     <input
                       type="number"
                       name="vacancy"
@@ -779,18 +586,32 @@ const PostJob = () => {
             </>
           )}
 
+          {/* ── Step 1: Details ────────────────────────────────────────── */}
           {step === 1 && (
             <>
-              <LocationSelector form={form} setForm={setForm} />
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Job Location
+                </label>
+                <div className="relative">
+                  <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    type="text"
+                    name="jobLocation"
+                    value={form.jobLocation}
+                    onChange={handleChange}
+                    placeholder="e.g. New York, NY or Remote"
+                    className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all"
+                  />
+                </div>
+              </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Experience Level
                 </label>
-
                 <div className="relative">
                   <FaBriefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-
                   <input
                     type="text"
                     name="experienceLevel"
@@ -806,11 +627,9 @@ const PostJob = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Salary Range
                 </label>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="relative">
                     <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-
                     <input
                       type="number"
                       name="salaryMin"
@@ -822,10 +641,8 @@ const PostJob = () => {
                       className="w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all"
                     />
                   </div>
-
                   <div className="relative">
                     <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-
                     <input
                       type="number"
                       name="salaryMax"
@@ -842,9 +659,7 @@ const PostJob = () => {
                     />
                   </div>
                 </div>
-
                 <FieldError msg={visibleErrors.salaryMax} />
-
                 <p className="text-xs text-gray-400 mt-1.5">
                   Leave blank if not specified
                 </p>
@@ -852,17 +667,16 @@ const PostJob = () => {
             </>
           )}
 
+          {/* ── Step 2: Description ────────────────────────────────────── */}
           {step === 2 && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Job Description <span className="text-red-400">*</span>
               </label>
-
               <p className="text-xs text-gray-400 mb-2">
                 Use the toolbar to format your description. Include
                 responsibilities, requirements, and benefits.
               </p>
-
               <RichTextEditor
                 value={form.jobDescription}
                 onChange={(v) => {
@@ -871,12 +685,12 @@ const PostJob = () => {
                 }}
                 error={visibleErrors.jobDescription}
               />
-
               <FieldError msg={visibleErrors.jobDescription} />
             </div>
           )}
         </div>
 
+        {/* Footer nav */}
         <div className="px-7 py-5 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
           <div className="flex gap-2">
             {step > 0 && (
@@ -888,7 +702,6 @@ const PostJob = () => {
                 ← Back
               </button>
             )}
-
             <button
               type="button"
               onClick={() => navigate("/employer/posted-jobs")}
@@ -914,7 +727,6 @@ const PostJob = () => {
                   )}
                   Save Draft
                 </button>
-
                 <button
                   type="button"
                   onClick={() => handleSubmit(false)}
@@ -926,7 +738,6 @@ const PostJob = () => {
                   ) : (
                     <FaPaperPlane size={12} />
                   )}
-
                   {editJobId ? "Update Job" : "Submit for Review"}
                 </button>
               </>

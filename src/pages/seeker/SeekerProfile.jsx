@@ -29,6 +29,7 @@ import {
 import useSeekerStore from "../../store/seekerStore";
 import useAuthStore from "../../store/authStore";
 import { toast } from "react-toastify";
+import GenerateCV from "../../components/GenerateCV";
 
 const MONTHS = [
   "Jan",
@@ -1350,7 +1351,6 @@ const SeekerProfile = () => {
         onSave={save}
         saving={saving.addPref}
       >
-
         <Field label="Desired Job Titles *">
           <AddChipInput
             placeholder="Add title & press Enter (e.g., Software Engineer)"
@@ -1789,7 +1789,6 @@ const SeekerProfile = () => {
       toast.error(result?.error || "Failed to delete");
     }
   };
-
 
   const LanguageForm = ({
     initial = { language: "", proficiency: "" },
@@ -2898,9 +2897,8 @@ const SeekerProfile = () => {
 
               {/* Download CV */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <button className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 text-white font-bold rounded-2xl hover:bg-emerald-600 active:scale-95 transition-all text-sm shadow-sm shadow-emerald-200">
-                  <FiDownload size={15} /> Download CV
-                </button>
+                <GenerateCV profile={profile} user={user} />
+
                 <p className="text-xs text-gray-400 text-center mt-2">
                   Keep your profile updated for better recommendations
                 </p>

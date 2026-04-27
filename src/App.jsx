@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect } from "react";
-import axios from "axios";
 
 import Layout from "./components/Layout";
 import SeekerLayout from "./layout/SeekerLayout";
@@ -53,6 +52,7 @@ import PostedJobs from "./pages/employer/PostedJobs";
 import PostJob from "./pages/employer/PostJob";
 import EditJob from "./pages/employer/EditJob";
 import JobApplications from "./pages/employer/JobApplications";
+import ForgotPassword from "./components/ForgotPassword";
 
 function App() {
   const { isAuthenticated, tokens, setAuthHeader, user } = useAuthStore();
@@ -120,6 +120,17 @@ function App() {
           }
         />
         <Route
+          path="/jobseeker/forgot-password"
+          element={
+            isAuthenticated ? (
+              <Navigate to={authedHome} replace />
+            ) : (
+              <ForgotPassword />
+            )
+          }
+        />
+
+        <Route
           path="/employer/signup"
           element={
             isAuthenticated ? (
@@ -136,6 +147,17 @@ function App() {
               <Navigate to={authedHome} replace />
             ) : (
               <EmployerLogin />
+            )
+          }
+        />
+
+        <Route
+          path="/employer/forgot-password"
+          element={
+            isAuthenticated ? (
+              <Navigate to={authedHome} replace />
+            ) : (
+              <ForgotPassword />
             )
           }
         />

@@ -81,12 +81,12 @@ const EmployerProfile = () => {
 
   const imageInputRef = useRef(null);
 
-  // ── Load on mount ──────────────────────────────────────────────────────
+  // ── Load on mount ──
   useEffect(() => {
     fetchEmployerProfile();
   }, []);
 
-  // ── Sync form when profile loads or edit starts ────────────────────────
+  // ── Sync form when profile loads or edit starts ──
   useEffect(() => {
     if (!isEditing && !isCreating) {
       setForm(mapProfileToForm(employerProfile));
@@ -95,7 +95,7 @@ const EmployerProfile = () => {
     }
   }, [employerProfile, isEditing, isCreating]);
 
-  // ── Live validation on touched fields ─────────────────────────────────
+  // ── Live validation on touched fields ───
   useEffect(() => {
     if (Object.keys(touched).length > 0) {
       const errs = validate(form);
@@ -158,7 +158,7 @@ const EmployerProfile = () => {
     e.target.value = "";
   };
 
-  // ── Loading state ──────────────────────────────────────────────────────
+  // ── Loading state ──
   if (isLoading && !employerProfile) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -170,7 +170,7 @@ const EmployerProfile = () => {
     );
   }
 
-  // ── No profile yet ─────────────────────────────────────────────────────
+  // ── No profile yet ───
   if (!employerProfile && !isCreating) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -208,7 +208,7 @@ const EmployerProfile = () => {
     );
   }
 
-  // ── Create form (full page) ────────────────────────────────────────────
+  // ── Create form (full page) ───
   if (isCreating) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -296,7 +296,7 @@ const EmployerProfile = () => {
     );
   }
 
-  // ── Main profile view / edit ───────────────────────────────────────────
+  // ── Main profile view / edit ───
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
@@ -386,7 +386,6 @@ const EmployerProfile = () => {
                 className="hidden"
                 onChange={handleImageChange}
               />
-              {/* Always show upload button, not just in editing */}
               <button
                 onClick={() => imageInputRef.current?.click()}
                 disabled={isUploading}
