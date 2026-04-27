@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.5",
+    "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.25",
     "lucide-react": "^0.555.0",

@@ -4,7 +4,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 axios.defaults.withCredentials = true;
-
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 let isRefreshing = false;
@@ -200,7 +199,7 @@ const useAuthStore = create(
         }
       },
 
-      // ── verifyOtp ────────────────────────────────────────────────────────
+      // ── verifyOtp ───
       verifyOtp: async (email, otp) => {
         set({ isLoading: true });
 
@@ -232,7 +231,7 @@ const useAuthStore = create(
         }
       },
 
-      // ── login ────────────────────────────────────────────────────────────
+      // ── login ──
       login: async (email, password) => {
         set({ isLoading: true });
 
@@ -277,7 +276,7 @@ const useAuthStore = create(
         }
       },
 
-      // ── googleAuth ───────────────────────────────────────────────────────
+      // ── googleAuth ───
       googleAuth: async (idToken) => {
         set({ isLoading: true });
 
@@ -319,7 +318,7 @@ const useAuthStore = create(
         }
       },
 
-      // ── refreshTokens ────────────────────────────────────────────────────
+      // ── refreshTokens ──
       refreshTokens: async () => {
         try {
           const response = await axios.post(`${API_URL}/auth/refresh-tokens`);
@@ -359,7 +358,7 @@ const useAuthStore = create(
         }
       },
 
-      // ── forgotPassword ───────────────────────────────────────────────────
+      // ── forgotPassword ───
       forgotPassword: async (email) => {
         set({ isLoading: true });
 
@@ -398,7 +397,7 @@ const useAuthStore = create(
         }
       },
 
-      // ── resetPassword ────────────────────────────────────────────────────
+      // ── resetPassword ──
       resetPassword: async (email, otp, newPassword) => {
         set({ isLoading: true });
 
@@ -431,7 +430,7 @@ const useAuthStore = create(
         }
       },
 
-      // ── resendOtp ────────────────────────────────────────────────────────
+      // ── resendOtp ─
       resendOtp: async (email) => {
         set({ isLoading: true });
 
@@ -461,7 +460,7 @@ const useAuthStore = create(
         }
       },
 
-      // ── logout ───────────────────────────────────────────────────────────
+      // ── logout ──
       logout: async (showToast = true) => {
         try {
           await axios.post(`${API_URL}/auth/logout`);
@@ -479,7 +478,7 @@ const useAuthStore = create(
     {
       name: "auth-storage",
       partialize: (state) => ({
-        user: state.user, // role is inside user object
+        user: state.user,
         tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
         otpTimer: state.otpTimer,
@@ -493,7 +492,7 @@ const useAuthStore = create(
   ),
 );
 
-// ── Axios response interceptor ────────────────────────────────────────────
+// ── Axios response ──
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
