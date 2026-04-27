@@ -27,7 +27,7 @@ import {
 } from "react-icons/fa";
 import useJobPostStore from "../../store/jobPostStore";
 
-// ── Job type options matching backend JOB_TYPES enum ─────────────────────────
+// ── Job type options matching ──
 const JOB_TYPE_OPTIONS = [
   { value: "full_time", label: "Full Time" },
   { value: "part_time", label: "Part Time" },
@@ -37,7 +37,7 @@ const JOB_TYPE_OPTIONS = [
   { value: "remote", label: "Remote" },
 ];
 
-// ── Minimal Rich Text Editor ───────────────────────────────────────────────
+// ── Minimal Rich Text Editor ──
 const RichTextEditor = ({ value, onChange, error }) => {
   const editorRef = useRef(null);
   const [wordCount, setWordCount] = useState(0);
@@ -56,7 +56,6 @@ const RichTextEditor = ({ value, onChange, error }) => {
     setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
   }, [onChange]);
 
-  // Sync initial value
   useEffect(() => {
     if (editorRef.current && value && editorRef.current.innerHTML !== value) {
       editorRef.current.innerHTML = value;

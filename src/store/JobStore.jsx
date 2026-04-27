@@ -16,7 +16,7 @@ const mapJob = (job) => {
     salary: {
       min: job.salaryMin || 0,
       max: job.salaryMax || 0,
-      default: (job.salaryMin || job.salaryMax) ? "" : "Negotiable",
+      default: job.salaryMin || job.salaryMax ? "" : "Negotiable",
     },
     vacancy: job.vacancy || 1,
     category: job.jobCategoryId?.nameCategory || "General",
