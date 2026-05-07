@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Filter,
@@ -20,13 +20,11 @@ import {
   User,
   Mail,
   Phone,
-  Globe,
   Loader2,
 } from "lucide-react";
-import jobDataPlaceholder from "../../data/jobData.json";
 import useJobStore from "../../store/JobStore";
 // import ApplyPopUps from "./ApplyPopUps";
-
+import DOMPurify from "dompurify";
 const AllJobs = () => {
   const {
     cate,
@@ -34,10 +32,12 @@ const AllJobs = () => {
     company: companyParam,
     function: functionParam,
   } = useParams();
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { jobs, fetchJobs, isLoading } = useJobStore();
+  const { jobs, meta, fetchJobs, isLoading } = useJobStore();
+
   const [selectedJob, setSelectedJob] = useState(null);
   const [showMobileDescription, setShowMobileDescription] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -52,16 +52,9 @@ const AllJobs = () => {
   const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [selectedEducation, setSelectedEducation] = useState([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
-
-  // apply states
-  // const [showApplyPopup, setShowApplyPopup] = useState(false);
-  // const [selectedJobForApply, setSelectedJobForApply] = useState(null);
-  // const handleApplyClick = (job) => {
-  //   setSelectedJobForApply(job);
-  //   setShowApplyPopup(true);
-  // };
 
   const colors = {
     primary: "#1e2558",
@@ -72,144 +65,89 @@ const AllJobs = () => {
     bgLight: "#f8fafc",
   };
 
-  // Format experience for display
-  const formatExperience = (experience) => {
-    if (Array.isArray(experience)) {
-      if (experience[0] === 0 && experience[1] <= 1) {
-        return "Fresher";
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+
+    return {
+      page: params.get("page") || 1,
+      limit: params.get("limit") || 10,
+      search: params.get("search") || "",
+      jobCategoryId: params.get("jobCategoryId") || "",
+      companyId: params.get("companyId") || "",
+      countryId: params.get("countryId") || "",
+      status: params.get("status") || "",
+      sortBy: params.get("sortBy") || "createdAt",
+      order: params.get("order") || "desc",
+
+      // old URL support
+      category: params.get("category") || "",
+      company: params.get("company") || "",
+      country: params.get("country") || "",
+      location: params.get("location") || "",
+      minSalary: params.get("minSalary") || "",
+      subcategory: params.get("subcategory") || "",
+      filter: params.get("filter") || "",
+    };
+  }, [location.search]);
+
+  const updateUrlParams = (updates = {}) => {
+    const params = new URLSearchParams(location.search);
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === "" || value === null || value === undefined) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
       }
-      return `${experience[0]}-${experience[1]} Years`;
-    }
-    return experience === 0 || experience === "0"
-      ? "Fresher"
-      : `${experience} Years`;
+    });
+
+    params.set("page", "1");
+    navigate(`/jobs?${params.toString()}`);
   };
 
-  // Check if experience matches filter
-  const experienceMatches = (jobExperience, filterExperience) => {
-    const jobExp = jobExperience;
-
-    if (filterExperience === "Fresher") {
-      if (Array.isArray(jobExp)) {
-        return jobExp[0] === 0 && jobExp[1] <= 1;
-      }
-      return jobExp === 0 || jobExp === "0";
-    }
-
-    if (Array.isArray(jobExp)) {
-      const minExp = jobExp[0];
-
-      if (filterExperience === "1-2 Years") {
-        return minExp >= 1 && minExp <= 2;
-      }
-      if (filterExperience === "3-5 Years") {
-        return minExp >= 3 && minExp <= 5;
-      }
-      if (filterExperience === "5-10 Years") {
-        return minExp >= 5 && minExp <= 10;
-      }
-      if (filterExperience === "10+ Years") {
-        return minExp >= 10;
-      }
-    }
-    return false;
-  };
-
-  // Map URL parameters to actual filter values
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    setSearchTerm(queryParams.search);
+
+    fetchJobs({
+      page: queryParams.page,
+      limit: queryParams.limit,
+      search: queryParams.search,
+      jobCategoryId: queryParams.jobCategoryId,
+      companyId: queryParams.companyId,
+      countryId: queryParams.countryId,
+      status: queryParams.status,
+      sortBy: queryParams.sortBy,
+      order: queryParams.order,
+    });
+  }, [
+    queryParams.page,
+    queryParams.limit,
+    queryParams.search,
+    queryParams.jobCategoryId,
+    queryParams.companyId,
+    queryParams.countryId,
+    queryParams.status,
+    queryParams.sortBy,
+    queryParams.order,
+    fetchJobs,
+  ]);
 
   useEffect(() => {
-    if (jobs.length > 0 && !selectedJob) {
+    if (jobs.length > 0) {
       setSelectedJob(jobs[0]);
+    } else {
+      setSelectedJob(null);
     }
   }, [jobs]);
 
   useEffect(() => {
-    if (cate) {
-      const categoryMapping = {
-        "accounting-finance": "Accounting/Finance",
-        "business-development": "Business Development",
-        "sales-marketing": "Sales/Marketing",
-        "it-telecommunication": "IT/Telecommunication",
-        "information-technology": "Information Technology",
-        engineering: "Engineering",
-        manufacturing: "Manufacturing",
-        services: "Services",
-        "recruitment-employment": "Recruitment/Employment Firms",
-        "data-entry-office-support": "Data Entry/Office Support",
-        "hospitality-travel-tourism": "Hospitality/Travel/Tourism",
-        "education-training": "Education/Training",
-        "customer-service-call-centre": "Customer/Service/Call Centre",
-        consultants: "Consultants",
-        "banking-financial-services": "Banking/Financial Services",
-        "ngo-social-services": "N.G.O./Social Services",
-        "ecommerce-ebusiness": "E-Commerce/E-Business",
-        "real-estate-property": "Real Estate/Property",
-        "healthcare-hospital-medical": "Healthcare/Hospital/Medical",
-        bpo: "BPO",
-        "construction-cement-metals": "Construction/Cement/Metals",
-        "architect-interior-design": "Architect/Interior Design",
-        "importers-distributors-exporters": "Importers/ Distributors/Exporters",
-      };
+    const filter = queryParams.filter;
 
-      const originalCategory = categoryMapping[cate];
-      if (originalCategory) {
-        setSelectedCategories([originalCategory]);
-      }
-    }
-
-    if (locationParam) {
-      const cleanLocation = locationParam.replace(/-/g, " ");
-      const locationMapping = {
-        dhaka: "Dhaka",
-        chattogram: "Chattogram",
-        kurigram: "Kurigram",
-        jashore: "Jashore",
-        bogra: "Bogra",
-        gazipur: "Gazipur",
-        savar: "Savar",
-        ashulia: "Ashulia",
-      };
-
-      const mappedLocation =
-        locationMapping[cleanLocation.toLowerCase()] || cleanLocation;
-      setSelectedLocations([mappedLocation]);
-    }
-
-    if (companyParam) {
-      const cleanCompany = companyParam.replace(/-/g, " ");
-      const companies = [...new Set(jobs.map((job) => job.company))];
-      const foundCompany = companies.find((company) =>
-        company.toLowerCase().includes(cleanCompany.toLowerCase())
-      );
-      if (foundCompany) {
-        setSelectedCompanies([foundCompany]);
-      }
-    }
-
-    if (functionParam) {
-      const cleanFunction = functionParam.replace(/-/g, " ");
-      setSelectedSubcategories([cleanFunction]);
-    }
-  }, [cate, locationParam, companyParam, functionParam]);
-
-  // Add this useEffect to handle URL search parameters
-  useEffect(() => {
-    // Parse URL search parameters
-    const searchParams = new URLSearchParams(location.search);
-    const searchQuery = searchParams.get("search");
-    const locationParam = searchParams.get("location");
-    const minSalary = searchParams.get("minSalary");
-    const subcategoryParam = searchParams.get("subcategory");
-    const filter = searchParams.get("filter");
-    // Update search states based on URL parameters
     if (filter) {
       switch (filter) {
         case "recent":
-          // Set to show recent jobs (posted in last 7 days)
           setSortBy("newest");
+          updateUrlParams({ sortBy: "createdAt", order: "desc" });
           break;
         case "deadline_tomorrow":
           setSelectedDeadline(["Within 24 Hours"]);
@@ -217,52 +155,56 @@ const AllJobs = () => {
         case "internship":
           setSearchTerm("intern");
           setSelectedJobTypes(["Internship"]);
+          updateUrlParams({ search: "intern" });
           break;
         case "contractual":
           setSearchTerm("contractual");
           setSelectedJobTypes(["Contractual"]);
+          updateUrlParams({ search: "contractual" });
           break;
         case "part_time":
           setSearchTerm("part time");
           setSelectedJobTypes(["Part Time"]);
+          updateUrlParams({ search: "part time" });
           break;
         case "overseas":
           setSearchTerm("overseas");
+          updateUrlParams({ search: "overseas" });
           break;
         case "remote":
           setSelectedJobTypes(["Remote", "Hybrid"]);
+          updateUrlParams({ search: "remote" });
           break;
         case "fresher":
           setSelectedExperience(["Fresher"]);
           break;
+        default:
+          break;
       }
     }
 
-    if (searchQuery) {
-      setSearchTerm(searchQuery);
+    if (queryParams.location) {
+      setSelectedLocations([queryParams.location]);
     }
 
-    if (locationParam) {
-      setSelectedLocations([locationParam]);
+    if (queryParams.minSalary) {
+      const minSalaryNum = parseInt(queryParams.minSalary, 10);
+      if (!Number.isNaN(minSalaryNum)) {
+        setSalaryRange([minSalaryNum, salaryRange[1]]);
+      }
     }
 
-    if (minSalary) {
-      const minSalaryNum = parseInt(minSalary);
-      setSalaryRange([minSalaryNum, salaryRange[1]]);
-    }
-
-    if (subcategoryParam) {
-      const subcategory = subcategoryParam.replace(/-/g, " ");
-      setSelectedSubcategories([subcategory]);
+    if (queryParams.subcategory) {
+      setSelectedSubcategories([queryParams.subcategory.replace(/-/g, " ")]);
     }
   }, [location.search]);
 
-  // Get actual salary range from job data
   useEffect(() => {
     if (jobs.length > 0) {
       const salaries = jobs
         .map((job) => job.salary?.max || 0)
         .filter((salary) => salary > 0);
+
       if (salaries.length > 0) {
         const maxSalary = Math.max(...salaries);
         setSalaryRange([0, maxSalary]);
@@ -270,19 +212,49 @@ const AllJobs = () => {
     }
   }, [jobs]);
 
-  // Calculate days left until deadline
+  const formatExperience = (experience) => {
+    if (Array.isArray(experience)) {
+      if (experience[0] === 0 && experience[1] <= 1) return "Fresher";
+      return `${experience[0]}-${experience[1]} Years`;
+    }
+
+    if (!experience || experience === 0 || experience === "0") return "Fresher";
+
+    return String(experience).includes("Year")
+      ? experience
+      : `${experience} Years`;
+  };
+
+  const experienceMatches = (jobExperience, filterExperience) => {
+    const jobExp = jobExperience;
+
+    if (filterExperience === "Fresher") {
+      if (Array.isArray(jobExp)) return jobExp[0] === 0 && jobExp[1] <= 1;
+      return jobExp === 0 || jobExp === "0" || !jobExp;
+    }
+
+    if (Array.isArray(jobExp)) {
+      const minExp = jobExp[0];
+
+      if (filterExperience === "1-2 Years") return minExp >= 1 && minExp <= 2;
+      if (filterExperience === "3-5 Years") return minExp >= 3 && minExp <= 5;
+      if (filterExperience === "5-10 Years") return minExp >= 5 && minExp <= 10;
+      if (filterExperience === "10+ Years") return minExp >= 10;
+    }
+
+    return false;
+  };
+
   const getDaysLeft = (job) => {
     if (!job.jobEndDate) return Infinity;
 
     const endDate = new Date(job.jobEndDate);
-    const today = new Date("2025-12-10");
+    const today = new Date();
     const diffTime = endDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    return diffDays;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // Check deadline filter
   const deadlineMatches = (job, deadlineFilter) => {
     const daysLeft = getDaysLeft(job);
 
@@ -302,30 +274,33 @@ const AllJobs = () => {
     }
   };
 
-  // Filter jobs based on all criteria
   const filterAndSortJobs = () => {
-    let filtered = jobs.filter((job) => {
-      // Search filter
+    let filtered = [...jobs];
+
+    filtered = filtered.filter((job) => {
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
+
         const jobMatches =
-          job.title.toLowerCase().includes(term) ||
-          (job.company && job.company.toLowerCase().includes(term)) ||
-          (job.description && job.description.toLowerCase().includes(term)) ||
-          (job.skills &&
-            job.skills.some((skill) => skill.toLowerCase().includes(term))) ||
-          (job.category && job.category.toLowerCase().includes(term));
+          job.title?.toLowerCase().includes(term) ||
+          job.company?.toLowerCase().includes(term) ||
+          job.description?.toLowerCase().includes(term) ||
+          job.category?.toLowerCase().includes(term) ||
+          job.country?.toLowerCase().includes(term) ||
+          job.skills?.some((skill) => skill.toLowerCase().includes(term));
+
         if (!jobMatches) return false;
       }
 
-      // Salary filter
       const jobMinSalary = job.salary?.min || 0;
       const jobMaxSalary = job.salary?.max || 0;
-      if (jobMaxSalary < salaryRange[0] || jobMinSalary > salaryRange[1]) {
-        return false;
+
+      if (jobMaxSalary > 0 || jobMinSalary > 0) {
+        if (jobMaxSalary < salaryRange[0] || jobMinSalary > salaryRange[1]) {
+          return false;
+        }
       }
 
-      // Category filter
       if (
         selectedCategories.length > 0 &&
         (!job.category || !selectedCategories.includes(job.category))
@@ -333,15 +308,13 @@ const AllJobs = () => {
         return false;
       }
 
-      // Experience filter
       if (selectedExperience.length > 0) {
         const matchesExperience = selectedExperience.some((exp) =>
-          experienceMatches(job.experience, exp)
+          experienceMatches(job.experience, exp),
         );
         if (!matchesExperience) return false;
       }
 
-      // Job type filter
       if (
         selectedJobTypes.length > 0 &&
         !selectedJobTypes.includes(job.jobType)
@@ -349,21 +322,18 @@ const AllJobs = () => {
         return false;
       }
 
-      // Location filter
       if (selectedLocations.length > 0) {
         const jobLocation = job.location ? job.location.toLowerCase() : "";
         const matchesLocation = selectedLocations.some((loc) =>
-          jobLocation.includes(loc.toLowerCase())
+          jobLocation.includes(loc.toLowerCase()),
         );
         if (!matchesLocation) return false;
       }
 
-      // Gender filter
       if (selectedGenders.length > 0 && !selectedGenders.includes(job.gender)) {
         return false;
       }
 
-      // Company filter
       if (
         selectedCompanies.length > 0 &&
         (!job.company || !selectedCompanies.includes(job.company))
@@ -371,28 +341,25 @@ const AllJobs = () => {
         return false;
       }
 
-      // Education filter
       if (selectedEducation.length > 0) {
         const jobEducation = job.education || "";
         const matchesEducation = selectedEducation.some((edu) =>
-          jobEducation.toLowerCase().includes(edu.toLowerCase())
+          jobEducation.toLowerCase().includes(edu.toLowerCase()),
         );
         if (!matchesEducation) return false;
       }
 
-      // Subcategory filter
       if (selectedSubcategories.length > 0) {
         const jobSubcategory = job.subCategory || "";
         const matchesSubcategory = selectedSubcategories.some((subcat) =>
-          jobSubcategory.toLowerCase().includes(subcat.toLowerCase())
+          jobSubcategory.toLowerCase().includes(subcat.toLowerCase()),
         );
         if (!matchesSubcategory) return false;
       }
 
-      // Deadline filter
       if (selectedDeadline.length > 0) {
         const matchesDeadline = selectedDeadline.some((deadline) =>
-          deadlineMatches(job, deadline)
+          deadlineMatches(job, deadline),
         );
         if (!matchesDeadline) return false;
       }
@@ -400,35 +367,34 @@ const AllJobs = () => {
       return true;
     });
 
-    // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case "newest":
-          // Sort by posted date (newest first)
+        case "newest": {
           const dateA = new Date(a.jobPostedDate || 0);
           const dateB = new Date(b.jobPostedDate || 0);
           return dateB - dateA;
+        }
 
-        case "salary-high":
-          // Sort by max salary (highest first)
+        case "salary-high": {
           const salaryA = a.salary?.max || 0;
           const salaryB = b.salary?.max || 0;
           return salaryB - salaryA;
+        }
 
-        case "deadline":
-          // Sort by deadline (closest first)
+        case "deadline": {
           const deadlineA = getDaysLeft(a);
           const deadlineB = getDaysLeft(b);
+
           if (deadlineA === Infinity && deadlineB === Infinity) return 0;
           if (deadlineA === Infinity) return 1;
           if (deadlineB === Infinity) return -1;
+
           return deadlineA - deadlineB;
+        }
 
         case "relevance":
         default:
-          // Default: Sort by ID or keep original order
-          // You can add more sophisticated relevance algorithm here
-          return a.id - b.id;
+          return 0;
       }
     });
 
@@ -437,47 +403,30 @@ const AllJobs = () => {
 
   const filteredJobs = filterAndSortJobs();
 
-  // Update selected job when filters change
   useEffect(() => {
     if (filteredJobs.length > 0) {
-      // Check if current selectedJob is in filteredJobs
       const isSelectedJobInFiltered =
         selectedJob && filteredJobs.some((job) => job.id === selectedJob.id);
 
-      // If selectedJob is not in filtered results OR no job is selected, select the first one
       if (!isSelectedJobInFiltered || !selectedJob) {
         setSelectedJob(filteredJobs[0]);
       }
     } else {
-      // No jobs found, clear selected job
       setSelectedJob(null);
     }
-  }, [filteredJobs]);
+  }, [filteredJobs.length]);
 
-  // Handle search input
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
 
-    // When user types in search, clear selected job if it doesn't match
-    if (value.trim() !== "" && selectedJob) {
-      const term = value.toLowerCase();
-      const selectedMatches =
-        (selectedJob.title && selectedJob.title.toLowerCase().includes(term)) ||
-        (selectedJob.company &&
-          selectedJob.company.toLowerCase().includes(term)) ||
-        (selectedJob.description &&
-          selectedJob.description.toLowerCase().includes(term)) ||
-        (selectedJob.category &&
-          selectedJob.category.toLowerCase().includes(term));
+    const timer = setTimeout(() => {
+      updateUrlParams({ search: value.trim() });
+    }, 400);
 
-      if (!selectedMatches) {
-        setSelectedJob(null);
-      }
-    }
+    return () => clearTimeout(timer);
   };
 
-  // Clear all filters
   const clearFilters = () => {
     setSalaryRange([0, 200000]);
     setSelectedCategories([]);
@@ -491,9 +440,6 @@ const AllJobs = () => {
     setSelectedSubcategories([]);
     setSearchTerm("");
     setSortBy("relevance");
-    if (jobs.length > 0) {
-      setSelectedJob(jobs[0]);
-    }
     navigate("/jobs");
   };
 
@@ -501,41 +447,45 @@ const AllJobs = () => {
     ...new Set(
       jobs
         .flatMap((job) => {
-          let location = job.location;
-          if (location && location.includes("(")) {
-            location = location.split("(")[0].trim();
+          let jobLocation = job.location;
+
+          if (jobLocation && jobLocation.includes("(")) {
+            jobLocation = jobLocation.split("(")[0].trim();
           }
-          if (location && location.includes("Dhaka")) {
-            location = "Dhaka";
+
+          if (jobLocation && jobLocation.includes("Dhaka")) {
+            jobLocation = "Dhaka";
           }
-          return location || "Not specified";
+
+          return jobLocation || "Not specified";
         })
-        .filter((loc) => loc)
+        .filter(Boolean),
     ),
   ].sort();
 
   const uniqueCompanies = [
-    ...new Set(jobs.map((job) => job.company).filter((company) => company)),
+    ...new Set(jobs.map((job) => job.company).filter(Boolean)),
   ].sort();
 
   const uniqueCategories = [
-    ...new Set(jobs.map((job) => job.category).filter((category) => category)),
+    ...new Set(jobs.map((job) => job.category).filter(Boolean)),
   ].sort();
 
   const uniqueJobTypes = [
-    ...new Set(jobs.map((job) => job.jobType).filter((type) => type)),
+    ...new Set(jobs.map((job) => job.jobType).filter(Boolean)),
   ].sort();
 
   const uniqueGenders = [
-    ...new Set(jobs.map((job) => job.gender).filter((gender) => gender)),
+    ...new Set(jobs.map((job) => job.gender).filter(Boolean)),
   ].sort();
 
   const uniqueSubcategories = [
-    ...new Set(jobs.map((job) => job.subCategory).filter((subcat) => subcat)),
+    ...new Set(jobs.map((job) => job.subCategory).filter(Boolean)),
   ].sort();
 
   const handleJobSelect = (job) => {
     setSelectedJob(job);
+
     if (window.innerWidth < 1024) {
       setShowMobileDescription(true);
     }
@@ -573,34 +523,42 @@ const AllJobs = () => {
     subcategories: uniqueSubcategories,
   };
 
-  // Format salary display
   const formatSalary = (salary) => {
     if (!salary) return "Not specified";
 
     if (salary.min === 0 && salary.max === 0 && salary.default) {
       return salary.default;
     }
+
     if (salary.min > 0 && salary.max > 0) {
       return `৳${salary.min.toLocaleString()} - ৳${salary.max.toLocaleString()}`;
     }
+
+    if (salary.min > 0) {
+      return `৳${salary.min.toLocaleString()}+`;
+    }
+
+    if (salary.max > 0) {
+      return `Up to ৳${salary.max.toLocaleString()}`;
+    }
+
     return "Negotiable";
   };
 
-  // Calculate days ago from posted date
   const getPostedDate = (job) => {
     if (!job.jobPostedDate) return "Recently posted";
 
     const postedDate = new Date(job.jobPostedDate);
-    const today = new Date("2025-12-10");
+    const today = new Date();
     const diffTime = Math.abs(today - postedDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
+
     return `${diffDays} days ago`;
   };
 
-  // Calculate deadline display
   const getDeadline = (job) => {
     if (!job.jobEndDate) return "No deadline";
 
@@ -609,10 +567,10 @@ const AllJobs = () => {
     if (daysLeft < 0) return "Deadline passed";
     if (daysLeft === 0) return "Today";
     if (daysLeft === 1) return "Tomorrow";
+
     return `${daysLeft} days left`;
   };
 
-  // Filter checkbox component
   const FilterCheckbox = ({ label, checked, onChange, count, icon }) => (
     <label className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
       <div className="relative">
@@ -626,12 +584,14 @@ const AllJobs = () => {
           <CheckCircle className="absolute top-0 left-0 w-5 h-5 text-blue-600 pointer-events-none" />
         )}
       </div>
+
       <div className="flex-1 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {icon &&
             React.createElement(icon, { className: "w-4 h-4 text-gray-400" })}
           <span className="text-gray-700">{label}</span>
         </div>
+
         {count !== undefined && (
           <span className="text-gray-400 text-sm">({count})</span>
         )}
@@ -639,7 +599,6 @@ const AllJobs = () => {
     </label>
   );
 
-  // Check if job is urgent/featured
   const isUrgent = (job) => {
     const daysLeft = getDaysLeft(job);
     return daysLeft <= 3 && daysLeft >= 0;
@@ -647,14 +606,15 @@ const AllJobs = () => {
 
   const isFeatured = (job) => {
     if (!job.jobPostedDate) return false;
+
     const postedDate = new Date(job.jobPostedDate);
-    const today = new Date("2025-12-10");
+    const today = new Date();
     const diffTime = Math.abs(today - postedDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
     return diffDays <= 7;
   };
 
-  // Get active filters count
   const getActiveFiltersCount = () => {
     return Object.values({
       categories: selectedCategories,
@@ -666,6 +626,10 @@ const AllJobs = () => {
       education: selectedEducation,
       deadlines: selectedDeadline,
       subcategories: selectedSubcategories,
+      apiCategory: queryParams.jobCategoryId ? [queryParams.jobCategoryId] : [],
+      apiCompany: queryParams.companyId ? [queryParams.companyId] : [],
+      apiCountry: queryParams.countryId ? [queryParams.countryId] : [],
+      search: queryParams.search ? [queryParams.search] : [],
     }).flat().length;
   };
 
@@ -681,7 +645,10 @@ const AllJobs = () => {
   }
 
   return (
-    <div className="min-h-screen font-ubuntu" style={{ backgroundColor: colors.bgLight }}>
+    <div
+      className="min-h-screen font-ubuntu"
+      style={{ backgroundColor: colors.bgLight }}
+    >
       <div
         className="sticky top-0 z-40 bg-white shadow-sm border-b"
         style={{ borderColor: colors.border }}
@@ -698,6 +665,7 @@ const AllJobs = () => {
               <span>/</span>
               <p className="text-gray-600 text-sm">All Jobs</p>
             </div>
+
             <div className="relative w-96">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -730,11 +698,12 @@ const AllJobs = () => {
                   Filters
                 </span>
                 <span className="text-gray-500 text-sm ml-2">
-                  ({filteredJobs.length} jobs • {getActiveFiltersCount()}{" "}
-                  filters)
+                  ({meta?.total ?? filteredJobs.length} jobs •{" "}
+                  {getActiveFiltersCount()} filters)
                 </span>
               </div>
             </div>
+
             {isFilterOpen ? (
               <ChevronUp className="w-5 h-5" />
             ) : (
@@ -746,9 +715,9 @@ const AllJobs = () => {
         <div className="flex gap-6">
           <div
             className={`
-            ${isFilterOpen ? "block" : "hidden"}
-            lg:block lg:w-1/4
-          `}
+              ${isFilterOpen ? "block" : "hidden"}
+              lg:block lg:w-1/4
+            `}
           >
             <div
               className="bg-white rounded-xl shadow-sm border p-6 sticky top-24"
@@ -765,6 +734,7 @@ const AllJobs = () => {
                 >
                   Filter Jobs
                 </h2>
+
                 <button
                   onClick={clearFilters}
                   className="text-sm px-3 py-1 rounded hover:bg-gray-100 transition-colors"
@@ -774,7 +744,6 @@ const AllJobs = () => {
                 </button>
               </div>
 
-              {/* Salary Range */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <DollarSign
@@ -785,6 +754,7 @@ const AllJobs = () => {
                     Salary Range (৳)
                   </h3>
                 </div>
+
                 <div className="space-y-4 px-1">
                   <input
                     type="range"
@@ -793,11 +763,15 @@ const AllJobs = () => {
                     step="10000"
                     value={salaryRange[0]}
                     onChange={(e) =>
-                      setSalaryRange([parseInt(e.target.value), salaryRange[1]])
+                      setSalaryRange([
+                        parseInt(e.target.value, 10),
+                        salaryRange[1],
+                      ])
                     }
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--thumb-color)]"
                     style={{ "--thumb-color": colors.primary }}
                   />
+
                   <input
                     type="range"
                     min="0"
@@ -805,11 +779,15 @@ const AllJobs = () => {
                     step="10000"
                     value={salaryRange[1]}
                     onChange={(e) =>
-                      setSalaryRange([salaryRange[0], parseInt(e.target.value)])
+                      setSalaryRange([
+                        salaryRange[0],
+                        parseInt(e.target.value, 10),
+                      ])
                     }
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--thumb-color)]"
                     style={{ "--thumb-color": colors.primary }}
                   />
+
                   <div className="flex justify-between items-center pt-2">
                     <div className="text-center">
                       <div className="text-sm text-gray-600">Min</div>
@@ -820,7 +798,9 @@ const AllJobs = () => {
                         ৳{salaryRange[0].toLocaleString()}
                       </div>
                     </div>
+
                     <div className="text-gray-400">—</div>
+
                     <div className="text-center">
                       <div className="text-sm text-gray-600">Max</div>
                       <div
@@ -844,6 +824,7 @@ const AllJobs = () => {
                     Experience Level
                   </h3>
                 </div>
+
                 <div className="space-y-1">
                   {filterOptions.experiences.map((exp) => (
                     <FilterCheckbox
@@ -854,7 +835,7 @@ const AllJobs = () => {
                         setSelectedExperience((prev) =>
                           prev.includes(exp)
                             ? prev.filter((e) => e !== exp)
-                            : [...prev, exp]
+                            : [...prev, exp],
                         );
                       }}
                     />
@@ -862,7 +843,6 @@ const AllJobs = () => {
                 </div>
               </div>
 
-              {/* Job Category */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <Briefcase
@@ -871,6 +851,7 @@ const AllJobs = () => {
                   />
                   <h3 className="font-semibold text-gray-900">Job Category</h3>
                 </div>
+
                 <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
                   {filterOptions.categories.map((category) => (
                     <FilterCheckbox
@@ -881,7 +862,7 @@ const AllJobs = () => {
                         setSelectedCategories((prev) =>
                           prev.includes(category)
                             ? prev.filter((c) => c !== category)
-                            : [...prev, category]
+                            : [...prev, category],
                         );
                       }}
                     />
@@ -889,7 +870,6 @@ const AllJobs = () => {
                 </div>
               </div>
 
-              {/* Subcategory */}
               {selectedCategories.length > 0 &&
                 filterOptions.subcategories.length > 0 && (
                   <div className="mb-8">
@@ -902,6 +882,7 @@ const AllJobs = () => {
                         Subcategory
                       </h3>
                     </div>
+
                     <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
                       {filterOptions.subcategories.map((subcategory) => (
                         <FilterCheckbox
@@ -912,7 +893,7 @@ const AllJobs = () => {
                             setSelectedSubcategories((prev) =>
                               prev.includes(subcategory)
                                 ? prev.filter((c) => c !== subcategory)
-                                : [...prev, subcategory]
+                                : [...prev, subcategory],
                             );
                           }}
                         />
@@ -921,7 +902,6 @@ const AllJobs = () => {
                   </div>
                 )}
 
-              {/* Location */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <MapPin
@@ -930,17 +910,18 @@ const AllJobs = () => {
                   />
                   <h3 className="font-semibold text-gray-900">Location</h3>
                 </div>
+
                 <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
-                  {filterOptions.locations.map((location) => (
+                  {filterOptions.locations.map((loc) => (
                     <FilterCheckbox
-                      key={location}
-                      label={location}
-                      checked={selectedLocations.includes(location)}
+                      key={loc}
+                      label={loc}
+                      checked={selectedLocations.includes(loc)}
                       onChange={() => {
                         setSelectedLocations((prev) =>
-                          prev.includes(location)
-                            ? prev.filter((l) => l !== location)
-                            : [...prev, location]
+                          prev.includes(loc)
+                            ? prev.filter((l) => l !== loc)
+                            : [...prev, loc],
                         );
                       }}
                     />
@@ -948,7 +929,6 @@ const AllJobs = () => {
                 </div>
               </div>
 
-              {/* Job Type */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <Clock
@@ -957,6 +937,7 @@ const AllJobs = () => {
                   />
                   <h3 className="font-semibold text-gray-900">Job Type</h3>
                 </div>
+
                 <div className="space-y-1">
                   {filterOptions.jobTypes.map((type) => (
                     <FilterCheckbox
@@ -967,7 +948,7 @@ const AllJobs = () => {
                         setSelectedJobTypes((prev) =>
                           prev.includes(type)
                             ? prev.filter((t) => t !== type)
-                            : [...prev, type]
+                            : [...prev, type],
                         );
                       }}
                     />
@@ -975,12 +956,12 @@ const AllJobs = () => {
                 </div>
               </div>
 
-              {/* Gender */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <User className="w-5 h-5" style={{ color: colors.primary }} />
                   <h3 className="font-semibold text-gray-900">Gender</h3>
                 </div>
+
                 <div className="space-y-1">
                   {filterOptions.genders.map((gender) => (
                     <FilterCheckbox
@@ -991,7 +972,7 @@ const AllJobs = () => {
                         setSelectedGenders((prev) =>
                           prev.includes(gender)
                             ? prev.filter((g) => g !== gender)
-                            : [...prev, gender]
+                            : [...prev, gender],
                         );
                       }}
                     />
@@ -999,7 +980,6 @@ const AllJobs = () => {
                 </div>
               </div>
 
-              {/* Education */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <Award
@@ -1008,6 +988,7 @@ const AllJobs = () => {
                   />
                   <h3 className="font-semibold text-gray-900">Education</h3>
                 </div>
+
                 <div className="space-y-1">
                   {filterOptions.education.map((edu) => (
                     <FilterCheckbox
@@ -1018,7 +999,7 @@ const AllJobs = () => {
                         setSelectedEducation((prev) =>
                           prev.includes(edu)
                             ? prev.filter((e) => e !== edu)
-                            : [...prev, edu]
+                            : [...prev, edu],
                         );
                       }}
                     />
@@ -1026,7 +1007,6 @@ const AllJobs = () => {
                 </div>
               </div>
 
-              {/* Application Deadline */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <Calendar
@@ -1037,6 +1017,7 @@ const AllJobs = () => {
                     Application Deadline
                   </h3>
                 </div>
+
                 <div className="space-y-1">
                   {filterOptions.deadlines.map((deadline) => (
                     <FilterCheckbox
@@ -1047,7 +1028,7 @@ const AllJobs = () => {
                         setSelectedDeadline((prev) =>
                           prev.includes(deadline)
                             ? prev.filter((d) => d !== deadline)
-                            : [...prev, deadline]
+                            : [...prev, deadline],
                         );
                       }}
                     />
@@ -1055,7 +1036,6 @@ const AllJobs = () => {
                 </div>
               </div>
 
-              {/* Companies */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <Building
@@ -1064,6 +1044,7 @@ const AllJobs = () => {
                   />
                   <h3 className="font-semibold text-gray-900">Companies</h3>
                 </div>
+
                 <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
                   {filterOptions.companies.map((company) => (
                     <FilterCheckbox
@@ -1074,7 +1055,7 @@ const AllJobs = () => {
                         setSelectedCompanies((prev) =>
                           prev.includes(company)
                             ? prev.filter((c) => c !== company)
-                            : [...prev, company]
+                            : [...prev, company],
                         );
                       }}
                     />
@@ -1084,10 +1065,8 @@ const AllJobs = () => {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="flex-1">
             <div className="flex flex-col lg:flex-row gap-6">
-              {/* Left - Job Cards */}
               <div className="lg:w-2/5">
                 <div
                   className="bg-white rounded-xl shadow-sm border overflow-hidden mb-4"
@@ -1102,13 +1081,38 @@ const AllJobs = () => {
                         className="font-semibold"
                         style={{ color: colors.primary }}
                       >
-                        Jobs Found: {filteredJobs.length}
+                        Jobs Found: {meta?.total ?? filteredJobs.length}
                       </h3>
+
                       <select
                         className="border rounded-lg px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         style={{ borderColor: colors.border }}
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setSortBy(value);
+
+                          if (value === "newest") {
+                            updateUrlParams({
+                              sortBy: "createdAt",
+                              order: "desc",
+                            });
+                          }
+
+                          if (value === "salary-high") {
+                            updateUrlParams({
+                              sortBy: "salaryMax",
+                              order: "desc",
+                            });
+                          }
+
+                          if (value === "deadline") {
+                            updateUrlParams({
+                              sortBy: "endDate",
+                              order: "asc",
+                            });
+                          }
+                        }}
                       >
                         <option value="relevance">Sort by: Relevance</option>
                         <option value="newest">Sort by: Newest</option>
@@ -1158,12 +1162,14 @@ const AllJobs = () => {
                                   {job.company}
                                 </p>
                               </div>
+
                               <div className="flex flex-col items-end gap-1">
                                 {isFeatured(job) && (
                                   <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                     Featured
                                   </span>
                                 )}
+
                                 {isUrgent(job) && (
                                   <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                                     Urgent
@@ -1178,15 +1184,18 @@ const AllJobs = () => {
                                   <MapPin className="w-4 h-4" />
                                   {job.location || "Not specified"}
                                 </span>
+
                                 <span className="flex items-center gap-1">
                                   <Briefcase className="w-4 h-4" />
                                   {job.jobType || "Not specified"}
                                 </span>
+
                                 <span className="flex items-center gap-1">
                                   <Award className="w-4 h-4" />
                                   {formatExperience(job.experience)}
                                 </span>
                               </div>
+
                               <div
                                 className="font-bold text-lg"
                                 style={{ color: colors.primary }}
@@ -1196,24 +1205,15 @@ const AllJobs = () => {
                             </div>
 
                             <div className="flex items-center justify-between">
-                              <div className="">
-                                {/* <span
-                                  className="px-2 py-1 text-xs rounded font-medium"
-                                  style={{
-                                    backgroundColor: colors.lightPrimary,
-                                    color: colors.primary,
-                                  }}
-                                >
-                                  {job.category || "N/A"}
-                                </span> */}
-                                <span className="font-bold text-base text-green-700 uppercase">
-                                  Vacancy: {job.vacancy || "N/A"}
-                                </span>
-                              </div>
+                              <span className="font-bold text-base text-green-700 uppercase">
+                                Vacancy: {job.vacancy || "N/A"}
+                              </span>
+
                               <div className="text-right">
                                 <div className="text-xs text-gray-500">
                                   {getPostedDate(job)}
                                 </div>
+
                                 <div
                                   className="text-xs font-medium"
                                   style={{ color: colors.secondary }}
@@ -1234,6 +1234,7 @@ const AllJobs = () => {
                         <p className="text-gray-500 mb-4">
                           Try adjusting your filters
                         </p>
+
                         <button
                           onClick={clearFilters}
                           className="px-6 py-2 rounded-lg font-medium transition-colors"
@@ -1250,7 +1251,6 @@ const AllJobs = () => {
                 </div>
               </div>
 
-              {/* Right - Job Description */}
               <div className="hidden md:block lg:w-3/5">
                 {selectedJob ? (
                   <div className="sticky top-24">
@@ -1276,6 +1276,7 @@ const AllJobs = () => {
                             >
                               {selectedJob.title}
                             </h2>
+
                             <div className="flex items-center flex-wrap gap-4 mb-3">
                               {selectedJob.clogo && (
                                 <img
@@ -1284,9 +1285,11 @@ const AllJobs = () => {
                                   className="h-8 w-8 object-contain"
                                 />
                               )}
+
                               <span className="font-semibold text-gray-800">
                                 {selectedJob.company}
                               </span>
+
                               <div className="flex gap-2">
                                 <span
                                   className="px-3 py-1 text-sm rounded-full font-medium"
@@ -1297,26 +1300,31 @@ const AllJobs = () => {
                                 >
                                   {selectedJob.jobType || "Full Time"}
                                 </span>
+
                                 <span className="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-700">
                                   {selectedJob.gender || "Any"}
                                 </span>
                               </div>
                             </div>
+
                             <div className="flex items-center gap-6 text-sm text-gray-600">
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-4 h-4" />
                                 {selectedJob.location || "Not specified"}
                               </span>
+
                               <span className="flex items-center gap-1">
                                 <Award className="w-4 h-4" />
                                 {formatExperience(selectedJob.experience)}
                               </span>
+
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4" />
                                 {getPostedDate(selectedJob)}
                               </span>
                             </div>
                           </div>
+
                           <div className="flex gap-2">
                             <button
                               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -1324,6 +1332,7 @@ const AllJobs = () => {
                             >
                               <Heart className="w-5 h-5 text-gray-400 hover:text-red-500" />
                             </button>
+
                             <button
                               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                               title="Share"
@@ -1333,7 +1342,6 @@ const AllJobs = () => {
                           </div>
                         </div>
 
-                        {/* Salary and Apply */}
                         <div
                           className="flex items-center justify-between pt-4 border-t"
                           style={{ borderColor: colors.border }}
@@ -1349,6 +1357,7 @@ const AllJobs = () => {
                               {formatSalary(selectedJob.salary)}
                             </div>
                           </div>
+
                           <div className="flex gap-3">
                             <button
                               className="px-6 py-3 rounded-lg font-semibold border transition-colors cursor-pointer"
@@ -1359,8 +1368,8 @@ const AllJobs = () => {
                             >
                               Save Job
                             </button>
+
                             <button
-                              // onClick={() => handleApplyClick(selectedJob)}
                               className="px-8 py-3 rounded-lg font-semibold transition-colors hover:shadow-lg cursor-pointer"
                               style={{
                                 backgroundColor: colors.secondary,
@@ -1373,14 +1382,12 @@ const AllJobs = () => {
                         </div>
                       </div>
 
-                      {/* Job Details - Scrollable Content */}
                       <div
                         className="flex-1 overflow-y-auto"
                         style={{ maxHeight: "calc(100vh - 350px)" }}
                       >
                         <div className="p-6">
                           <div className="space-y-8">
-                            {/* Job Summary */}
                             <div className="flex items-start gap-4">
                               <div className="p-3 rounded-lg bg-gray-50">
                                 <div className="text-sm text-gray-600">
@@ -1390,6 +1397,7 @@ const AllJobs = () => {
                                   {selectedJob.vacancy || "N/A"}
                                 </div>
                               </div>
+
                               <div className="p-3 rounded-lg bg-gray-50 flex-1">
                                 <div className="text-sm text-gray-600">
                                   Education
@@ -1400,7 +1408,6 @@ const AllJobs = () => {
                               </div>
                             </div>
 
-                            {/* Requirements */}
                             <div>
                               <h3
                                 className="text-xl font-semibold mb-4 pb-2 border-b"
@@ -1411,8 +1418,10 @@ const AllJobs = () => {
                               >
                                 Requirements
                               </h3>
+
                               <ul className="space-y-3">
                                 {selectedJob.requirements &&
+                                selectedJob.requirements.length > 0 ? (
                                   selectedJob.requirements.map((req, index) => (
                                     <li
                                       key={index}
@@ -1426,11 +1435,15 @@ const AllJobs = () => {
                                         {req}
                                       </span>
                                     </li>
-                                  ))}
+                                  ))
+                                ) : (
+                                  <li className="text-gray-500">
+                                    Not specified
+                                  </li>
+                                )}
                               </ul>
                             </div>
 
-                            {/* Job Description */}
                             <div>
                               <h3
                                 className="text-xl font-semibold mb-4 pb-2 border-b"
@@ -1441,12 +1454,18 @@ const AllJobs = () => {
                               >
                                 Job Description
                               </h3>
-                              <div className="prose max-w-none text-gray-700 leading-relaxed">
-                                {selectedJob.description}
-                              </div>
+
+                              <div
+                                className="prose max-w-none text-gray-700 leading-relaxed"
+                                dangerouslySetInnerHTML={{
+                                  __html: DOMPurify.sanitize(
+                                    selectedJob.description ||
+                                      "No description found.",
+                                  ),
+                                }}
+                              />
                             </div>
 
-                            {/* Benefits */}
                             {selectedJob.benefits &&
                               selectedJob.benefits.length > 0 && (
                                 <div>
@@ -1459,6 +1478,7 @@ const AllJobs = () => {
                                   >
                                     Benefits & Perks
                                   </h3>
+
                                   <div className="grid grid-cols-2 gap-3">
                                     {selectedJob.benefits.map(
                                       (benefit, index) => (
@@ -1478,13 +1498,12 @@ const AllJobs = () => {
                                             {benefit}
                                           </span>
                                         </div>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
                               )}
 
-                            {/* Skills */}
                             {selectedJob.skills &&
                               selectedJob.skills.length > 0 && (
                                 <div>
@@ -1497,6 +1516,7 @@ const AllJobs = () => {
                                   >
                                     Required Skills
                                   </h3>
+
                                   <div className="flex flex-wrap gap-2">
                                     {selectedJob.skills.map((skill, index) => (
                                       <span
@@ -1514,7 +1534,6 @@ const AllJobs = () => {
                                 </div>
                               )}
 
-                            {/* Company Contact Info */}
                             {selectedJob.compnay && (
                               <div
                                 className="p-4 rounded-lg border"
@@ -1526,6 +1545,7 @@ const AllJobs = () => {
                                 >
                                   Company Information
                                 </h3>
+
                                 <div className="space-y-3">
                                   {selectedJob.compnay.email && (
                                     <div className="flex items-center gap-3">
@@ -1533,12 +1553,14 @@ const AllJobs = () => {
                                       <span>{selectedJob.compnay.email}</span>
                                     </div>
                                   )}
+
                                   {selectedJob.compnay.phone && (
                                     <div className="flex items-center gap-3">
                                       <Phone className="w-5 h-5 text-gray-400" />
                                       <span>{selectedJob.compnay.phone}</span>
                                     </div>
                                   )}
+
                                   {selectedJob.compnay.address && (
                                     <div className="flex items-center gap-3">
                                       <MapPin className="w-5 h-5 text-gray-400" />
@@ -1549,7 +1571,6 @@ const AllJobs = () => {
                               </div>
                             )}
 
-                            {/* Apply Section */}
                             <div
                               className="p-6 rounded-lg text-center"
                               style={{ backgroundColor: colors.lightSecondary }}
@@ -1560,11 +1581,12 @@ const AllJobs = () => {
                               >
                                 Ready to Apply?
                               </h4>
+
                               <p className="text-gray-600 mb-4">
                                 Don't miss this opportunity!
                               </p>
+
                               <button
-                                // onClick={() => handleApplyClick(selectedJob)}
                                 className="px-8 py-3 rounded-lg font-semibold text-lg transition-transform hover:scale-105 cursor-pointer"
                                 style={{
                                   backgroundColor: colors.primary,
@@ -1588,16 +1610,19 @@ const AllJobs = () => {
                       className="w-20 h-20 mx-auto mb-6"
                       style={{ color: colors.lightPrimary }}
                     />
+
                     <h3
                       className="text-2xl font-bold mb-3"
                       style={{ color: colors.primary }}
                     >
                       Select a Job
                     </h3>
+
                     <p className="text-gray-600 mb-6 max-w-md mx-auto">
                       Choose a job from the list on the left to view detailed
                       information, requirements, and application details here.
                     </p>
+
                     <div
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg"
                       style={{ backgroundColor: colors.lightSecondary }}
@@ -1619,13 +1644,13 @@ const AllJobs = () => {
         </div>
       </div>
 
-      {/* Mobile Job Description Modal */}
       {showMobileDescription && selectedJob && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
             className="absolute inset-0 bg-black bg-opacity-50"
             onClick={() => setShowMobileDescription(false)}
           />
+
           <div className="absolute inset-0 bg-white overflow-y-auto">
             <div
               className="sticky top-0 z-10 bg-white border-b p-4 flex items-center justify-between"
@@ -1634,6 +1659,7 @@ const AllJobs = () => {
               <h3 className="font-bold" style={{ color: colors.primary }}>
                 Job Details
               </h3>
+
               <button onClick={() => setShowMobileDescription(false)}>
                 <X className="w-6 h-6" />
               </button>
@@ -1648,6 +1674,7 @@ const AllJobs = () => {
                   >
                     {selectedJob.title}
                   </h2>
+
                   <div className="flex flex-wrap items-start gap-4">
                     {selectedJob.clogo && (
                       <img
@@ -1656,20 +1683,24 @@ const AllJobs = () => {
                         className="h-8 w-8"
                       />
                     )}
+
                     <p className="font-semibold text-gray-800 mb-3">
                       {selectedJob.company}
                     </p>
                   </div>
+
                   <div className="flex items-center gap-3 text-sm text-gray-600 mb-4">
                     <span className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
                       {selectedJob.location || "Not specified"}
                     </span>
+
                     <span className="flex items-center gap-1">
                       <Briefcase className="w-4 h-4" />
                       {selectedJob.jobType || "Full Time"}
                     </span>
                   </div>
+
                   <div
                     className="text-2xl font-bold mb-6"
                     style={{ color: colors.primary }}
@@ -1685,8 +1716,10 @@ const AllJobs = () => {
                   >
                     Requirements
                   </h3>
+
                   <ul className="space-y-2">
                     {selectedJob.requirements &&
+                    selectedJob.requirements.length > 0 ? (
                       selectedJob.requirements.slice(0, 3).map((req, index) => (
                         <li key={index} className="flex items-start gap-2">
                           <CheckCircle
@@ -1695,7 +1728,10 @@ const AllJobs = () => {
                           />
                           <span className="text-gray-700">{req}</span>
                         </li>
-                      ))}
+                      ))
+                    ) : (
+                      <li className="text-gray-500">Not specified</li>
+                    )}
                   </ul>
                 </div>
 
@@ -1706,9 +1742,12 @@ const AllJobs = () => {
                   >
                     Description
                   </h3>
-                  <p className="text-gray-700">{selectedJob.description}</p>
+
+                  <p className="text-gray-700 whitespace-pre-line">
+                    {selectedJob.description || "No description found."}
+                  </p>
                 </div>
-                {/* Benefits */}
+
                 {selectedJob.benefits && selectedJob.benefits.length > 0 && (
                   <div>
                     <h3
@@ -1720,6 +1759,7 @@ const AllJobs = () => {
                     >
                       Benefits & Perks
                     </h3>
+
                     <div className="grid grid-cols-2 gap-3">
                       {selectedJob.benefits.map((benefit, index) => (
                         <div
@@ -1740,7 +1780,6 @@ const AllJobs = () => {
                   </div>
                 )}
 
-                {/* Skills */}
                 {selectedJob.skills && selectedJob.skills.length > 0 && (
                   <div>
                     <h3
@@ -1752,6 +1791,7 @@ const AllJobs = () => {
                     >
                       Required Skills
                     </h3>
+
                     <div className="flex flex-wrap gap-2">
                       {selectedJob.skills.map((skill, index) => (
                         <span
@@ -1769,7 +1809,6 @@ const AllJobs = () => {
                   </div>
                 )}
 
-                {/* Company Contact Info */}
                 {selectedJob.compnay && (
                   <div
                     className="p-4 rounded-lg border"
@@ -1781,6 +1820,7 @@ const AllJobs = () => {
                     >
                       Company Information
                     </h3>
+
                     <div className="space-y-3">
                       {selectedJob.compnay.email && (
                         <div className="flex items-center gap-3">
@@ -1788,12 +1828,14 @@ const AllJobs = () => {
                           <span>{selectedJob.compnay.email}</span>
                         </div>
                       )}
+
                       {selectedJob.compnay.phone && (
                         <div className="flex items-center gap-3">
                           <Phone className="w-5 h-5 text-gray-400" />
                           <span>{selectedJob.compnay.phone}</span>
                         </div>
                       )}
+
                       {selectedJob.compnay.address && (
                         <div className="flex items-center gap-3">
                           <MapPin className="w-5 h-5 text-gray-400" />
@@ -1806,7 +1848,6 @@ const AllJobs = () => {
               </div>
             </div>
 
-            {/* Apply Button for Mobile */}
             <div
               className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg"
               style={{ borderColor: colors.border }}
@@ -1818,8 +1859,8 @@ const AllJobs = () => {
                 >
                   Save
                 </button>
+
                 <button
-                  // onClick={() => handleApplyClick(selectedJob)}
                   className="flex-1 py-3 rounded-lg font-semibold cursor-pointer"
                   style={{ backgroundColor: colors.secondary, color: "white" }}
                 >
@@ -1830,6 +1871,7 @@ const AllJobs = () => {
           </div>
         </div>
       )}
+
       {/* {showApplyPopup && selectedJobForApply && (
         <ApplyPopUps
           isOpen={showApplyPopup}

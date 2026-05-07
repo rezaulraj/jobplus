@@ -37,7 +37,7 @@ const JOB_TYPE_OPTIONS = [
   { value: "freelance", label: "Freelance" },
   { value: "remote", label: "Remote" },
 ];
-
+let DEFAULT_COUNTRY_CODE = "BD";
 // ── Minimal Rich Text Editor ───────────────────────────────────────────────
 const RichTextEditor = ({ value, onChange, error }) => {
   const editorRef = useRef(null);
