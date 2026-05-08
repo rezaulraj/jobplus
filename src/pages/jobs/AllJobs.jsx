@@ -22,9 +22,9 @@ import {
   Phone,
   Loader2,
 } from "lucide-react";
-import useJobStore from "../../store/JobStore";
-// import ApplyPopUps from "./ApplyPopUps";
 import DOMPurify from "dompurify";
+import useJobStore from "../../store/JobStore";
+
 const AllJobs = () => {
   const {
     cate,
@@ -36,20 +36,27 @@ const AllJobs = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { jobs, meta, fetchJobs, isLoading } = useJobStore();
+  const {
+    jobs,
+    meta,
+    fetchJobs,
+    fetchJobFilters,
+    jobTypes,
+    companies,
+    categories,
+    countries,
+    isLoading,
+  } = useJobStore();
 
   const [selectedJob, setSelectedJob] = useState(null);
   const [showMobileDescription, setShowMobileDescription] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [salaryRange, setSalaryRange] = useState([0, 200000]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedExperience, setSelectedExperience] = useState([]);
-  const [selectedJobTypes, setSelectedJobTypes] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedGenders, setSelectedGenders] = useState([]);
   const [selectedDeadline, setSelectedDeadline] = useState([]);
-  const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [selectedEducation, setSelectedEducation] = useState([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState([]);
 
@@ -75,14 +82,10 @@ const AllJobs = () => {
       jobCategoryId: params.get("jobCategoryId") || "",
       companyId: params.get("companyId") || "",
       countryId: params.get("countryId") || "",
+      jobTypeId: params.get("jobTypeId") || "",
       status: params.get("status") || "",
       sortBy: params.get("sortBy") || "createdAt",
       order: params.get("order") || "desc",
-
-      // old URL support
-      category: params.get("category") || "",
-      company: params.get("company") || "",
-      country: params.get("country") || "",
       location: params.get("location") || "",
       minSalary: params.get("minSalary") || "",
       subcategory: params.get("subcategory") || "",
@@ -102,8 +105,14 @@ const AllJobs = () => {
     });
 
     params.set("page", "1");
-    navigate(`/jobs?${params.toString()}`);
+
+    const query = params.toString();
+    navigate(`/jobs${query ? `?${query}` : ""}`);
   };
+
+  useEffect(() => {
+    fetchJobFilters();
+  }, [fetchJobFilters]);
 
   useEffect(() => {
     setSearchTerm(queryParams.search);
@@ -115,6 +124,7 @@ const AllJobs = () => {
       jobCategoryId: queryParams.jobCategoryId,
       companyId: queryParams.companyId,
       countryId: queryParams.countryId,
+      jobTypeId: queryParams.jobTypeId,
       status: queryParams.status,
       sortBy: queryParams.sortBy,
       order: queryParams.order,
@@ -126,6 +136,7 @@ const AllJobs = () => {
     queryParams.jobCategoryId,
     queryParams.companyId,
     queryParams.countryId,
+    queryParams.jobTypeId,
     queryParams.status,
     queryParams.sortBy,
     queryParams.order,
@@ -141,46 +152,13 @@ const AllJobs = () => {
   }, [jobs]);
 
   useEffect(() => {
-    const filter = queryParams.filter;
+    if (queryParams.filter === "recent") {
+      setSortBy("newest");
+      updateUrlParams({ sortBy: "createdAt", order: "desc", filter: "" });
+    }
 
-    if (filter) {
-      switch (filter) {
-        case "recent":
-          setSortBy("newest");
-          updateUrlParams({ sortBy: "createdAt", order: "desc" });
-          break;
-        case "deadline_tomorrow":
-          setSelectedDeadline(["Within 24 Hours"]);
-          break;
-        case "internship":
-          setSearchTerm("intern");
-          setSelectedJobTypes(["Internship"]);
-          updateUrlParams({ search: "intern" });
-          break;
-        case "contractual":
-          setSearchTerm("contractual");
-          setSelectedJobTypes(["Contractual"]);
-          updateUrlParams({ search: "contractual" });
-          break;
-        case "part_time":
-          setSearchTerm("part time");
-          setSelectedJobTypes(["Part Time"]);
-          updateUrlParams({ search: "part time" });
-          break;
-        case "overseas":
-          setSearchTerm("overseas");
-          updateUrlParams({ search: "overseas" });
-          break;
-        case "remote":
-          setSelectedJobTypes(["Remote", "Hybrid"]);
-          updateUrlParams({ search: "remote" });
-          break;
-        case "fresher":
-          setSelectedExperience(["Fresher"]);
-          break;
-        default:
-          break;
-      }
+    if (queryParams.filter === "deadline_tomorrow") {
+      setSelectedDeadline(["Within 24 Hours"]);
     }
 
     if (queryParams.location) {
@@ -198,52 +176,6 @@ const AllJobs = () => {
       setSelectedSubcategories([queryParams.subcategory.replace(/-/g, " ")]);
     }
   }, [location.search]);
-
-  useEffect(() => {
-    if (jobs.length > 0) {
-      const salaries = jobs
-        .map((job) => job.salary?.max || 0)
-        .filter((salary) => salary > 0);
-
-      if (salaries.length > 0) {
-        const maxSalary = Math.max(...salaries);
-        setSalaryRange([0, maxSalary]);
-      }
-    }
-  }, [jobs]);
-
-  const formatExperience = (experience) => {
-    if (Array.isArray(experience)) {
-      if (experience[0] === 0 && experience[1] <= 1) return "Fresher";
-      return `${experience[0]}-${experience[1]} Years`;
-    }
-
-    if (!experience || experience === 0 || experience === "0") return "Fresher";
-
-    return String(experience).includes("Year")
-      ? experience
-      : `${experience} Years`;
-  };
-
-  const experienceMatches = (jobExperience, filterExperience) => {
-    const jobExp = jobExperience;
-
-    if (filterExperience === "Fresher") {
-      if (Array.isArray(jobExp)) return jobExp[0] === 0 && jobExp[1] <= 1;
-      return jobExp === 0 || jobExp === "0" || !jobExp;
-    }
-
-    if (Array.isArray(jobExp)) {
-      const minExp = jobExp[0];
-
-      if (filterExperience === "1-2 Years") return minExp >= 1 && minExp <= 2;
-      if (filterExperience === "3-5 Years") return minExp >= 3 && minExp <= 5;
-      if (filterExperience === "5-10 Years") return minExp >= 5 && minExp <= 10;
-      if (filterExperience === "10+ Years") return minExp >= 10;
-    }
-
-    return false;
-  };
 
   const getDaysLeft = (job) => {
     if (!job.jobEndDate) return Infinity;
@@ -274,22 +206,64 @@ const AllJobs = () => {
     }
   };
 
-  const filterAndSortJobs = () => {
+  const formatExperience = (experience) => {
+    if (Array.isArray(experience)) {
+      if (experience[0] === 0 && experience[1] <= 1) return "Fresher";
+      return `${experience[0]}-${experience[1]} Years`;
+    }
+
+    if (!experience || experience === 0 || experience === "0") return "Fresher";
+
+    return String(experience).includes("Year")
+      ? experience
+      : `${experience} Years`;
+  };
+
+  const experienceMatches = (jobExperience, filterExperience) => {
+    const jobExp = jobExperience;
+
+    if (filterExperience === "Fresher") {
+      if (Array.isArray(jobExp)) return jobExp[0] === 0 && jobExp[1] <= 1;
+      return (
+        jobExp === 0 ||
+        jobExp === "0" ||
+        !jobExp ||
+        String(jobExp).toLowerCase().includes("fresher")
+      );
+    }
+
+    if (Array.isArray(jobExp)) {
+      const minExp = jobExp[0];
+
+      if (filterExperience === "1-2 Years") return minExp >= 1 && minExp <= 2;
+      if (filterExperience === "3-5 Years") return minExp >= 3 && minExp <= 5;
+      if (filterExperience === "5-10 Years") return minExp >= 5 && minExp <= 10;
+      if (filterExperience === "10+ Years") return minExp >= 10;
+    }
+
+    return String(jobExp || "")
+      .toLowerCase()
+      .includes(filterExperience.toLowerCase());
+  };
+
+  const filteredJobs = useMemo(() => {
     let filtered = [...jobs];
 
     filtered = filtered.filter((job) => {
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
+      if (queryParams.location) {
+        const jobLocation = job.location ? job.location.toLowerCase() : "";
+        if (!jobLocation.includes(queryParams.location.toLowerCase())) {
+          return false;
+        }
+      }
 
-        const jobMatches =
-          job.title?.toLowerCase().includes(term) ||
-          job.company?.toLowerCase().includes(term) ||
-          job.description?.toLowerCase().includes(term) ||
-          job.category?.toLowerCase().includes(term) ||
-          job.country?.toLowerCase().includes(term) ||
-          job.skills?.some((skill) => skill.toLowerCase().includes(term));
+      if (queryParams.minSalary) {
+        const minSalary = Number(queryParams.minSalary);
+        const jobMaxSalary = job.salary?.max || 0;
 
-        if (!jobMatches) return false;
+        if (jobMaxSalary > 0 && jobMaxSalary < minSalary) {
+          return false;
+        }
       }
 
       const jobMinSalary = job.salary?.min || 0;
@@ -301,25 +275,11 @@ const AllJobs = () => {
         }
       }
 
-      if (
-        selectedCategories.length > 0 &&
-        (!job.category || !selectedCategories.includes(job.category))
-      ) {
-        return false;
-      }
-
       if (selectedExperience.length > 0) {
         const matchesExperience = selectedExperience.some((exp) =>
           experienceMatches(job.experience, exp),
         );
         if (!matchesExperience) return false;
-      }
-
-      if (
-        selectedJobTypes.length > 0 &&
-        !selectedJobTypes.includes(job.jobType)
-      ) {
-        return false;
       }
 
       if (selectedLocations.length > 0) {
@@ -331,13 +291,6 @@ const AllJobs = () => {
       }
 
       if (selectedGenders.length > 0 && !selectedGenders.includes(job.gender)) {
-        return false;
-      }
-
-      if (
-        selectedCompanies.length > 0 &&
-        (!job.company || !selectedCompanies.includes(job.company))
-      ) {
         return false;
       }
 
@@ -392,23 +345,32 @@ const AllJobs = () => {
           return deadlineA - deadlineB;
         }
 
-        case "relevance":
         default:
           return 0;
       }
     });
 
     return filtered;
-  };
-
-  const filteredJobs = filterAndSortJobs();
+  }, [
+    jobs,
+    queryParams.location,
+    queryParams.minSalary,
+    salaryRange,
+    selectedExperience,
+    selectedLocations,
+    selectedGenders,
+    selectedEducation,
+    selectedSubcategories,
+    selectedDeadline,
+    sortBy,
+  ]);
 
   useEffect(() => {
     if (filteredJobs.length > 0) {
-      const isSelectedJobInFiltered =
+      const exists =
         selectedJob && filteredJobs.some((job) => job.id === selectedJob.id);
 
-      if (!isSelectedJobInFiltered || !selectedJob) {
+      if (!exists) {
         setSelectedJob(filteredJobs[0]);
       }
     } else {
@@ -419,22 +381,14 @@ const AllJobs = () => {
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-
-    const timer = setTimeout(() => {
-      updateUrlParams({ search: value.trim() });
-    }, 400);
-
-    return () => clearTimeout(timer);
+    updateUrlParams({ search: value.trim() });
   };
 
   const clearFilters = () => {
     setSalaryRange([0, 200000]);
-    setSelectedCategories([]);
     setSelectedExperience([]);
-    setSelectedJobTypes([]);
     setSelectedLocations([]);
     setSelectedGenders([]);
-    setSelectedCompanies([]);
     setSelectedEducation([]);
     setSelectedDeadline([]);
     setSelectedSubcategories([]);
@@ -446,14 +400,14 @@ const AllJobs = () => {
   const uniqueLocations = [
     ...new Set(
       jobs
-        .flatMap((job) => {
-          let jobLocation = job.location;
+        .map((job) => {
+          let jobLocation = job.location || job.country || "";
 
-          if (jobLocation && jobLocation.includes("(")) {
+          if (jobLocation.includes("(")) {
             jobLocation = jobLocation.split("(")[0].trim();
           }
 
-          if (jobLocation && jobLocation.includes("Dhaka")) {
+          if (jobLocation.includes("Dhaka")) {
             jobLocation = "Dhaka";
           }
 
@@ -461,18 +415,6 @@ const AllJobs = () => {
         })
         .filter(Boolean),
     ),
-  ].sort();
-
-  const uniqueCompanies = [
-    ...new Set(jobs.map((job) => job.company).filter(Boolean)),
-  ].sort();
-
-  const uniqueCategories = [
-    ...new Set(jobs.map((job) => job.category).filter(Boolean)),
-  ].sort();
-
-  const uniqueJobTypes = [
-    ...new Set(jobs.map((job) => job.jobType).filter(Boolean)),
   ].sort();
 
   const uniqueGenders = [
@@ -483,18 +425,12 @@ const AllJobs = () => {
     ...new Set(jobs.map((job) => job.subCategory).filter(Boolean)),
   ].sort();
 
-  const handleJobSelect = (job) => {
-    setSelectedJob(job);
-
-    if (window.innerWidth < 1024) {
-      setShowMobileDescription(true);
-    }
-  };
-
   const filterOptions = {
-    categories: uniqueCategories,
+    categories: categories.filter((item) => item.isActive !== false),
+    countries: countries.filter((item) => item.isActive !== false),
+    companies: companies,
+    jobTypes: jobTypes.filter((item) => item.isActive !== false),
     locations: uniqueLocations,
-    companies: uniqueCompanies,
     experiences: [
       "Fresher",
       "1-2 Years",
@@ -502,7 +438,6 @@ const AllJobs = () => {
       "5-10 Years",
       "10+ Years",
     ],
-    jobTypes: uniqueJobTypes,
     genders: uniqueGenders,
     deadlines: [
       "Within 24 Hours",
@@ -571,34 +506,6 @@ const AllJobs = () => {
     return `${daysLeft} days left`;
   };
 
-  const FilterCheckbox = ({ label, checked, onChange, count, icon }) => (
-    <label className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
-      <div className="relative">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={onChange}
-          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-        />
-        {checked && (
-          <CheckCircle className="absolute top-0 left-0 w-5 h-5 text-blue-600 pointer-events-none" />
-        )}
-      </div>
-
-      <div className="flex-1 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {icon &&
-            React.createElement(icon, { className: "w-4 h-4 text-gray-400" })}
-          <span className="text-gray-700">{label}</span>
-        </div>
-
-        {count !== undefined && (
-          <span className="text-gray-400 text-sm">({count})</span>
-        )}
-      </div>
-    </label>
-  );
-
   const isUrgent = (job) => {
     const daysLeft = getDaysLeft(job);
     return daysLeft <= 3 && daysLeft >= 0;
@@ -617,21 +524,57 @@ const AllJobs = () => {
 
   const getActiveFiltersCount = () => {
     return Object.values({
-      categories: selectedCategories,
       locations: selectedLocations,
       experiences: selectedExperience,
-      jobTypes: selectedJobTypes,
       genders: selectedGenders,
-      companies: selectedCompanies,
       education: selectedEducation,
       deadlines: selectedDeadline,
       subcategories: selectedSubcategories,
       apiCategory: queryParams.jobCategoryId ? [queryParams.jobCategoryId] : [],
       apiCompany: queryParams.companyId ? [queryParams.companyId] : [],
       apiCountry: queryParams.countryId ? [queryParams.countryId] : [],
+      apiJobType: queryParams.jobTypeId ? [queryParams.jobTypeId] : [],
       search: queryParams.search ? [queryParams.search] : [],
     }).flat().length;
   };
+
+  const handleJobSelect = (job) => {
+    setSelectedJob(job);
+
+    if (window.innerWidth < 1024) {
+      setShowMobileDescription(true);
+    }
+  };
+
+  const FilterCheckbox = ({ label, checked, onChange, count, icon }) => (
+    <label className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
+      <div className="relative">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+
+        {checked && (
+          <CheckCircle className="absolute top-0 left-0 w-5 h-5 text-blue-600 pointer-events-none" />
+        )}
+      </div>
+
+      <div className="flex-1 flex items-center justify-between min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          {icon &&
+            React.createElement(icon, { className: "w-4 h-4 text-gray-400" })}
+
+          <span className="text-gray-700 truncate">{label}</span>
+        </div>
+
+        {count !== undefined && (
+          <span className="text-gray-400 text-sm">({count})</span>
+        )}
+      </div>
+    </label>
+  );
 
   if (isLoading && jobs.length === 0) {
     return (
@@ -654,7 +597,7 @@ const AllJobs = () => {
         style={{ borderColor: colors.border }}
       >
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <a
                 href="/"
@@ -666,8 +609,9 @@ const AllJobs = () => {
               <p className="text-gray-600 text-sm">All Jobs</p>
             </div>
 
-            <div className="relative w-96">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative w-full max-w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+
               <input
                 type="text"
                 placeholder="Search jobs, companies, keywords..."
@@ -690,6 +634,7 @@ const AllJobs = () => {
           >
             <div className="flex items-center gap-3">
               <Filter className="w-5 h-5" style={{ color: colors.primary }} />
+
               <div>
                 <span
                   className="font-semibold"
@@ -697,6 +642,7 @@ const AllJobs = () => {
                 >
                   Filters
                 </span>
+
                 <span className="text-gray-500 text-sm ml-2">
                   ({meta?.total ?? filteredJobs.length} jobs •{" "}
                   {getActiveFiltersCount()} filters)
@@ -768,8 +714,7 @@ const AllJobs = () => {
                         salaryRange[1],
                       ])
                     }
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--thumb-color)]"
-                    style={{ "--thumb-color": colors.primary }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
 
                   <input
@@ -784,8 +729,7 @@ const AllJobs = () => {
                         parseInt(e.target.value, 10),
                       ])
                     }
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--thumb-color)]"
-                    style={{ "--thumb-color": colors.primary }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
 
                   <div className="flex justify-between items-center pt-2">
@@ -853,54 +797,85 @@ const AllJobs = () => {
                 </div>
 
                 <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
-                  {filterOptions.categories.map((category) => (
-                    <FilterCheckbox
-                      key={category}
-                      label={category}
-                      checked={selectedCategories.includes(category)}
-                      onChange={() => {
-                        setSelectedCategories((prev) =>
-                          prev.includes(category)
-                            ? prev.filter((c) => c !== category)
-                            : [...prev, category],
-                        );
-                      }}
-                    />
-                  ))}
+                  {filterOptions.categories.map((category) => {
+                    const id = category.jobCategoryId || category._id;
+                    const checked = queryParams.jobCategoryId === id;
+
+                    return (
+                      <FilterCheckbox
+                        key={id}
+                        label={category.title}
+                        checked={checked}
+                        onChange={() =>
+                          updateUrlParams({
+                            jobCategoryId: checked ? "" : id,
+                          })
+                        }
+                      />
+                    );
+                  })}
                 </div>
               </div>
 
-              {selectedCategories.length > 0 &&
-                filterOptions.subcategories.length > 0 && (
-                  <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Briefcase
-                        className="w-5 h-5"
-                        style={{ color: colors.secondary }}
-                      />
-                      <h3 className="font-semibold text-gray-900">
-                        Subcategory
-                      </h3>
-                    </div>
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <Clock
+                    className="w-5 h-5"
+                    style={{ color: colors.secondary }}
+                  />
+                  <h3 className="font-semibold text-gray-900">Job Type</h3>
+                </div>
 
-                    <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
-                      {filterOptions.subcategories.map((subcategory) => (
-                        <FilterCheckbox
-                          key={subcategory}
-                          label={subcategory}
-                          checked={selectedSubcategories.includes(subcategory)}
-                          onChange={() => {
-                            setSelectedSubcategories((prev) =>
-                              prev.includes(subcategory)
-                                ? prev.filter((c) => c !== subcategory)
-                                : [...prev, subcategory],
-                            );
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
+                  {filterOptions.jobTypes.map((type) => {
+                    const id = type.jobTypeId || type._id;
+                    const checked = queryParams.jobTypeId === id;
+
+                    return (
+                      <FilterCheckbox
+                        key={id}
+                        label={type.title}
+                        checked={checked}
+                        onChange={() =>
+                          updateUrlParams({
+                            jobTypeId: checked ? "" : id,
+                          })
+                        }
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <MapPin
+                    className="w-5 h-5"
+                    style={{ color: colors.primary }}
+                  />
+                  <h3 className="font-semibold text-gray-900">Country</h3>
+                </div>
+
+                <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
+                  {filterOptions.countries.map((country) => {
+                    const id = country.countryId || country._id;
+                    const checked = queryParams.countryId === id;
+
+                    return (
+                      <FilterCheckbox
+                        key={id}
+                        label={country.name}
+                        checked={checked}
+                        onChange={() =>
+                          updateUrlParams({
+                            countryId: checked ? "" : id,
+                          })
+                        }
+                      />
+                    );
+                  })}
+                </div>
+              </div>
 
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
@@ -922,33 +897,6 @@ const AllJobs = () => {
                           prev.includes(loc)
                             ? prev.filter((l) => l !== loc)
                             : [...prev, loc],
-                        );
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <Clock
-                    className="w-5 h-5"
-                    style={{ color: colors.secondary }}
-                  />
-                  <h3 className="font-semibold text-gray-900">Job Type</h3>
-                </div>
-
-                <div className="space-y-1">
-                  {filterOptions.jobTypes.map((type) => (
-                    <FilterCheckbox
-                      key={type}
-                      label={type}
-                      checked={selectedJobTypes.includes(type)}
-                      onChange={() => {
-                        setSelectedJobTypes((prev) =>
-                          prev.includes(type)
-                            ? prev.filter((t) => t !== type)
-                            : [...prev, type],
                         );
                       }}
                     />
@@ -1046,20 +994,27 @@ const AllJobs = () => {
                 </div>
 
                 <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
-                  {filterOptions.companies.map((company) => (
-                    <FilterCheckbox
-                      key={company}
-                      label={company}
-                      checked={selectedCompanies.includes(company)}
-                      onChange={() => {
-                        setSelectedCompanies((prev) =>
-                          prev.includes(company)
-                            ? prev.filter((c) => c !== company)
-                            : [...prev, company],
-                        );
-                      }}
-                    />
-                  ))}
+                  {filterOptions.companies.map((company) => {
+                    const id = company.companyId || company._id;
+                    const name =
+                      company.nameCompany ||
+                      company.companyName ||
+                      company.name;
+                    const checked = queryParams.companyId === id;
+
+                    return (
+                      <FilterCheckbox
+                        key={id}
+                        label={name}
+                        checked={checked}
+                        onChange={() =>
+                          updateUrlParams({
+                            companyId: checked ? "" : id,
+                          })
+                        }
+                      />
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -1131,11 +1086,7 @@ const AllJobs = () => {
                           <div
                             key={job.id}
                             onClick={() => handleJobSelect(job)}
-                            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 hover:shadow-md ${
-                              selectedJob?.id === job.id
-                                ? "border-l-6"
-                                : "border"
-                            }`}
+                            className="p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 hover:shadow-md"
                             style={{
                               borderColor:
                                 selectedJob?.id === job.id
@@ -1179,7 +1130,7 @@ const AllJobs = () => {
                             </div>
 
                             <div className="mb-4">
-                              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2 flex-wrap">
                                 <span className="flex items-center gap-1">
                                   <MapPin className="w-4 h-4" />
                                   {job.location || "Not specified"}
@@ -1307,7 +1258,7 @@ const AllJobs = () => {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-6 text-sm text-gray-600">
+                            <div className="flex items-center gap-6 text-sm text-gray-600 flex-wrap">
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-4 h-4" />
                                 {selectedJob.location || "Not specified"}
@@ -1350,6 +1301,7 @@ const AllJobs = () => {
                             <div className="text-sm text-gray-600">
                               Monthly Salary
                             </div>
+
                             <div
                               className="text-2xl font-bold"
                               style={{ color: colors.primary }}
@@ -1393,6 +1345,7 @@ const AllJobs = () => {
                                 <div className="text-sm text-gray-600">
                                   Vacancy
                                 </div>
+
                                 <div className="font-bold text-lg">
                                   {selectedJob.vacancy || "N/A"}
                                 </div>
@@ -1402,6 +1355,7 @@ const AllJobs = () => {
                                 <div className="text-sm text-gray-600">
                                   Education
                                 </div>
+
                                 <div className="font-bold text-lg">
                                   {selectedJob.education || "Not specified"}
                                 </div>
@@ -1431,6 +1385,7 @@ const AllJobs = () => {
                                         className="w-5 h-5 mt-0.5 shrink-0"
                                         style={{ color: colors.secondary }}
                                       />
+
                                       <span className="text-gray-700">
                                         {req}
                                       </span>
@@ -1494,6 +1449,7 @@ const AllJobs = () => {
                                             className="w-4 h-4"
                                             style={{ color: colors.secondary }}
                                           />
+
                                           <span className="text-gray-700">
                                             {benefit}
                                           </span>
@@ -1620,7 +1576,7 @@ const AllJobs = () => {
 
                     <p className="text-gray-600 mb-6 max-w-md mx-auto">
                       Choose a job from the list on the left to view detailed
-                      information, requirements, and application details here.
+                      information.
                     </p>
 
                     <div
@@ -1631,6 +1587,7 @@ const AllJobs = () => {
                         className="w-4 h-4"
                         style={{ color: colors.secondary }}
                       />
+
                       <span style={{ color: colors.primary }}>
                         {jobs.filter((j) => isFeatured(j)).length} Featured Jobs
                         Available
@@ -1689,7 +1646,7 @@ const AllJobs = () => {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm text-gray-600 mb-4">
+                  <div className="flex items-center gap-3 text-sm text-gray-600 mb-4 flex-wrap">
                     <span className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
                       {selectedJob.location || "Not specified"}
@@ -1714,137 +1671,18 @@ const AllJobs = () => {
                     className="text-lg font-semibold mb-3"
                     style={{ color: colors.primary }}
                   >
-                    Requirements
-                  </h3>
-
-                  <ul className="space-y-2">
-                    {selectedJob.requirements &&
-                    selectedJob.requirements.length > 0 ? (
-                      selectedJob.requirements.slice(0, 3).map((req, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <CheckCircle
-                            className="w-4 h-4 mt-0.5"
-                            style={{ color: colors.secondary }}
-                          />
-                          <span className="text-gray-700">{req}</span>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="text-gray-500">Not specified</li>
-                    )}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3
-                    className="text-lg font-semibold mb-3"
-                    style={{ color: colors.primary }}
-                  >
                     Description
                   </h3>
 
-                  <p className="text-gray-700 whitespace-pre-line">
-                    {selectedJob.description || "No description found."}
-                  </p>
-                </div>
-
-                {selectedJob.benefits && selectedJob.benefits.length > 0 && (
-                  <div>
-                    <h3
-                      className="text-xl font-semibold mb-4 pb-2 border-b"
-                      style={{
-                        color: colors.primary,
-                        borderColor: colors.border,
-                      }}
-                    >
-                      Benefits & Perks
-                    </h3>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      {selectedJob.benefits.map((benefit, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center gap-3 p-3 rounded-lg"
-                          style={{
-                            backgroundColor: colors.lightSecondary,
-                          }}
-                        >
-                          <CheckCircle
-                            className="w-4 h-4"
-                            style={{ color: colors.secondary }}
-                          />
-                          <span className="text-gray-700">{benefit}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedJob.skills && selectedJob.skills.length > 0 && (
-                  <div>
-                    <h3
-                      className="text-xl font-semibold mb-4 pb-2 border-b"
-                      style={{
-                        color: colors.primary,
-                        borderColor: colors.border,
-                      }}
-                    >
-                      Required Skills
-                    </h3>
-
-                    <div className="flex flex-wrap gap-2">
-                      {selectedJob.skills.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="px-4 py-2 rounded-lg font-medium"
-                          style={{
-                            backgroundColor: colors.lightPrimary,
-                            color: colors.primary,
-                          }}
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedJob.compnay && (
                   <div
-                    className="p-4 rounded-lg border"
-                    style={{ borderColor: colors.border }}
-                  >
-                    <h3
-                      className="text-xl font-semibold mb-4"
-                      style={{ color: colors.primary }}
-                    >
-                      Company Information
-                    </h3>
-
-                    <div className="space-y-3">
-                      {selectedJob.compnay.email && (
-                        <div className="flex items-center gap-3">
-                          <Mail className="w-5 h-5 text-gray-400" />
-                          <span>{selectedJob.compnay.email}</span>
-                        </div>
-                      )}
-
-                      {selectedJob.compnay.phone && (
-                        <div className="flex items-center gap-3">
-                          <Phone className="w-5 h-5 text-gray-400" />
-                          <span>{selectedJob.compnay.phone}</span>
-                        </div>
-                      )}
-
-                      {selectedJob.compnay.address && (
-                        <div className="flex items-center gap-3">
-                          <MapPin className="w-5 h-5 text-gray-400" />
-                          <span>{selectedJob.compnay.address}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                    className="prose max-w-none text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(
+                        selectedJob.description || "No description found.",
+                      ),
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -1871,18 +1709,6 @@ const AllJobs = () => {
           </div>
         </div>
       )}
-
-      {/* {showApplyPopup && selectedJobForApply && (
-        <ApplyPopUps
-          isOpen={showApplyPopup}
-          onClose={() => {
-            setShowApplyPopup(false);
-            setSelectedJobForApply(null);
-          }}
-          jobTitle={selectedJobForApply.title}
-          company={selectedJobForApply.company}
-        />
-      )} */}
     </div>
   );
 };

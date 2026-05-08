@@ -7,6 +7,12 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 const mapJob = (job) => {
   if (!job) return null;
 
+  const jobTypeId =
+    job.jobTypeId?.jobTypeId || job.jobTypeId?._id || job.jobTypeId || "";
+
+  const jobTypeTitle =
+    job.jobTypeId?.title || job.jobType?.title || job.jobType || "";
+
   return {
     id: job.jobId || job._id,
 
@@ -26,7 +32,7 @@ const mapJob = (job) => {
       job.jobCategoryId?.title || job.jobCategoryId?.nameCategory || "General",
 
     countryId: job.countryId?.countryId || job.countryId?._id || job.countryId,
-    country: job.countryId?.name || "",
+    country: job.countryId?.name || job.country || "",
     countryFlag: job.countryId?.flag || "",
 
     location: job.jobLocation || "Remote",
@@ -39,8 +45,10 @@ const mapJob = (job) => {
 
     vacancy: job.vacancy || 1,
     experience: job.experienceLevel || "Fresher",
-    type: job.jobType,
-    jobType: job.jobType,
+
+    jobTypeId,
+    type: jobTypeTitle,
+    jobType: jobTypeTitle,
 
     status: job.status,
     jobPostedDate: job.publishedAt || job.createdAt,
@@ -73,10 +81,12 @@ const useJobStore = create((set, get) => ({
   categories: [],
   countries: [],
   companies: [],
+  jobTypes: [],
 
   selectedCategoryId: "",
   selectedCompanyId: "",
   selectedCountryId: "",
+  selectedJobTypeId: "",
 
   isLoading: false,
   error: null,
@@ -121,6 +131,7 @@ const useJobStore = create((set, get) => ({
         ...(query.jobCategoryId ? { jobCategoryId: query.jobCategoryId } : {}),
         ...(query.companyId ? { companyId: query.companyId } : {}),
         ...(query.countryId ? { countryId: query.countryId } : {}),
+        ...(query.jobTypeId ? { jobTypeId: query.jobTypeId } : {}),
         ...(query.search ? { search: query.search } : {}),
       };
 
@@ -155,6 +166,7 @@ const useJobStore = create((set, get) => ({
 
   fetchJobsByCategory: async (jobCategoryId, extraQuery = {}) => {
     set({ selectedCategoryId: jobCategoryId });
+
     return get().fetchJobs({
       ...extraQuery,
       jobCategoryId,
@@ -164,6 +176,7 @@ const useJobStore = create((set, get) => ({
 
   fetchJobsByCompany: async (companyId, extraQuery = {}) => {
     set({ selectedCompanyId: companyId });
+
     return get().fetchJobs({
       ...extraQuery,
       companyId,
@@ -173,9 +186,20 @@ const useJobStore = create((set, get) => ({
 
   fetchJobsByCountry: async (countryId, extraQuery = {}) => {
     set({ selectedCountryId: countryId });
+
     return get().fetchJobs({
       ...extraQuery,
       countryId,
+      page: extraQuery.page || 1,
+    });
+  },
+
+  fetchJobsByJobType: async (jobTypeId, extraQuery = {}) => {
+    set({ selectedJobTypeId: jobTypeId });
+
+    return get().fetchJobs({
+      ...extraQuery,
+      jobTypeId,
       page: extraQuery.page || 1,
     });
   },
@@ -214,8 +238,12 @@ const useJobStore = create((set, get) => ({
       });
 
       if (response.data?.success) {
-        set({ categories: response.data.data || [] });
-        return { success: true, data: response.data.data || [] };
+        const active = (response.data.data || []).filter(
+          (item) => item.isActive !== false,
+        );
+
+        set({ categories: active });
+        return { success: true, data: active };
       }
 
       return { success: false };
@@ -232,13 +260,39 @@ const useJobStore = create((set, get) => ({
       });
 
       if (response.data?.success) {
-        set({ countries: response.data.data || [] });
-        return { success: true, data: response.data.data || [] };
+        const active = (response.data.data || []).filter(
+          (item) => item.isActive !== false,
+        );
+
+        set({ countries: active });
+        return { success: true, data: active };
       }
 
       return { success: false };
     } catch (error) {
       console.error("Failed to fetch countries:", error);
+      return { success: false };
+    }
+  },
+
+  fetchJobTypes: async () => {
+    try {
+      const response = await axios.get(`${API_URL}/job-types`, {
+        withCredentials: true,
+      });
+
+      if (response.data?.success) {
+        const active = (response.data.data || []).filter(
+          (item) => item.isActive !== false,
+        );
+
+        set({ jobTypes: active });
+        return { success: true, data: active };
+      }
+
+      return { success: false };
+    } catch (error) {
+      console.error("Failed to fetch job types:", error);
       return { success: false };
     }
   },
@@ -265,25 +319,41 @@ const useJobStore = create((set, get) => ({
   },
 
   fetchJobFilters: async () => {
-    const [categories, countries, companies] = await Promise.all([
+    const [categories, countries, companies, jobTypes] = await Promise.all([
       get().fetchCategories(),
       get().fetchCountries(),
       get().fetchCompanies(),
+      get().fetchJobTypes(),
     ]);
 
     return {
-      success: categories.success || countries.success || companies.success,
+      success:
+        categories.success ||
+        countries.success ||
+        companies.success ||
+        jobTypes.success,
       categories,
       countries,
       companies,
+      jobTypes,
     };
   },
+
+  setSelectedCategoryId: (jobCategoryId) =>
+    set({ selectedCategoryId: jobCategoryId }),
+
+  setSelectedCompanyId: (companyId) => set({ selectedCompanyId: companyId }),
+
+  setSelectedCountryId: (countryId) => set({ selectedCountryId: countryId }),
+
+  setSelectedJobTypeId: (jobTypeId) => set({ selectedJobTypeId: jobTypeId }),
 
   clearFilters: () =>
     set({
       selectedCategoryId: "",
       selectedCompanyId: "",
       selectedCountryId: "",
+      selectedJobTypeId: "",
     }),
 
   clearError: () => set({ error: null }),

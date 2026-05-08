@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FaSearch,
@@ -10,13 +10,25 @@ import {
   FaArrowRight,
   FaUsers,
 } from "react-icons/fa";
-import heroBgImage from "/images/rootpage/banner_bg.webp";
 import { BsBuildingsFill } from "react-icons/bs";
 import { MdOutlineWifiProtectedSetup } from "react-icons/md";
-import jobData from "../../data/jobData.json";
+import heroBgImage from "/images/rootpage/banner_bg.webp";
+import useJobStore from "../../store/jobStore";
 
 const HeroHome = () => {
   const navigate = useNavigate();
+
+  const {
+    jobs,
+    meta,
+    categories,
+    countries,
+    companies,
+    jobTypes,
+    fetchJobs,
+    fetchJobFilters,
+  } = useJobStore();
+
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState({
     jobTitleSkillsCompany: "",
@@ -27,224 +39,162 @@ const HeroHome = () => {
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [showSalaryDropdown, setShowSalaryDropdown] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
-  const [quickLinks, setQuickLinks] = useState([]);
-  const [jobStats, setJobStats] = useState([]);
 
   const searchInputRef = useRef(null);
   const locationInputRef = useRef(null);
   const salaryInputRef = useRef(null);
 
-  const calculateDeadlineTomorrowCount = () => {
-    const today = new Date("2025-12-10");
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+  useEffect(() => {
+    fetchJobFilters();
+    fetchJobs({
+      page: 1,
+      limit: 100,
+      sortBy: "createdAt",
+      order: "desc",
+    });
+  }, [fetchJobFilters, fetchJobs]);
 
-    return jobData.filter((job) => {
-      const jobEndDate = new Date(job.jobEndDate);
-      // Check if deadline
-      const diffTime = jobEndDate - tomorrow;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 1 && diffDays >= 0;
-    }).length;
-  };
+  const totalJobs = meta?.total || jobs.length || 0;
 
-  const calculateInternshipCount = () => {
-    return jobData.filter(
-      (job) =>
-        job.title.toLowerCase().includes("internship") ||
-        (job.employeeStatus &&
-          job.employeeStatus.toLowerCase().includes("internship")) ||
-        (job.description &&
-          job.description.toLowerCase().includes("internship")) ||
-        (job.jobType && job.jobType.toLowerCase().includes("internship")),
-    ).length;
-  };
+  const totalVacancies = useMemo(() => {
+    return jobs.reduce((sum, job) => {
+      const vacancy = Number(job.vacancy) || 0;
+      return sum + vacancy;
+    }, 0);
+  }, [jobs]);
 
-  const calculateContractualCount = () => {
-    return jobData.filter(
-      (job) =>
-        (job.employeeStatus &&
-          job.employeeStatus.toLowerCase().includes("contractual")) ||
-        (job.employeeStatus &&
-          job.employeeStatus.toLowerCase().includes("contract")) ||
-        (job.jobType && job.jobType.toLowerCase().includes("contractual")) ||
-        (job.jobType && job.jobType.toLowerCase().includes("contract")),
-    ).length;
-  };
-
-  const calculatePartTimeCount = () => {
-    return jobData.filter(
-      (job) =>
-        (job.employeeStatus &&
-          job.employeeStatus.toLowerCase().includes("part time")) ||
-        (job.employeeStatus &&
-          job.employeeStatus.toLowerCase().includes("part-time")) ||
-        (job.description &&
-          job.description.toLowerCase().includes("part time")) ||
-        (job.jobType && job.jobType.toLowerCase().includes("part time")),
-    ).length;
-  };
-
-  const calculateOverseasCount = () => {
-    return jobData.filter(
-      (job) =>
-        (job.description &&
-          job.description.toLowerCase().includes("overseas")) ||
-        (job.description && job.description.toLowerCase().includes("abroad")) ||
-        (job.title && job.title.toLowerCase().includes("overseas")) ||
-        (job.location && job.location.toLowerCase().includes("overseas")) ||
-        (job.title && job.title.toLowerCase().includes("migration")) ||
-        (job.description &&
-          job.description.toLowerCase().includes("migration")),
-    ).length;
-  };
-
-  const calculateRemoteCount = () => {
-    return jobData.filter(
-      (job) =>
-        (job.jobType && job.jobType.toLowerCase().includes("remote")) ||
-        (job.jobType && job.jobType.toLowerCase().includes("hybrid")) ||
-        (job.description && job.description.toLowerCase().includes("remote")) ||
-        (job.description &&
-          job.description.toLowerCase().includes("work from home")) ||
-        (job.description && job.description.toLowerCase().includes("wfh")),
-    ).length;
-  };
-
-  const calculateFresherCount = () => {
-    return jobData.filter((job) => {
-      if (Array.isArray(job.experience)) {
-        return job.experience[0] === 0 && job.experience[1] <= 1;
-      }
-      // Check if experience is 0 or "Fresher"
-      return (
-        job.experience === 0 ||
-        job.experience === "0" ||
-        (typeof job.experience === "string" &&
-          job.experience.toLowerCase().includes("fresher")) ||
-        (job.title && job.title.toLowerCase().includes("fresher")) ||
-        (job.description && job.description.toLowerCase().includes("fresher"))
-      );
-    }).length;
-  };
-
-  const calculateNewJobsCount = () => {
-    const today = new Date("2025-12-10");
+  const newJobsCount = useMemo(() => {
+    const today = new Date();
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    return jobData.filter((job) => {
-      const jobDate = new Date(job.jobPostedDate);
-      return jobDate >= sevenDaysAgo;
+    return jobs.filter((job) => {
+      const date = new Date(job.jobPostedDate);
+      return !Number.isNaN(date.getTime()) && date >= sevenDaysAgo;
     }).length;
-  };
+  }, [jobs]);
 
-  useEffect(() => {
-    // Calculate total vacancies
-    const totalVacancies = jobData.reduce((sum, job) => {
-      const vacancy = parseInt(job.vacancy) || 0;
-      return sum + vacancy;
-    }, 0);
+  const deadlineTomorrowCount = useMemo(() => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const uniqueCompanies = [
-      ...new Set(jobData.map((job) => job.company).filter(Boolean)),
-    ].length;
+    const tomorrowDate = tomorrow.toISOString().slice(0, 10);
 
-    setJobStats([
+    return jobs.filter((job) => {
+      if (!job.jobEndDate) return false;
+      const endDate = new Date(job.jobEndDate).toISOString().slice(0, 10);
+      return endDate === tomorrowDate;
+    }).length;
+  }, [jobs]);
+
+  const jobTypeCountMap = useMemo(() => {
+    const map = {};
+
+    jobs.forEach((job) => {
+      const id =
+        job.jobTypeId ||
+        job.raw?.jobTypeId?.jobTypeId ||
+        job.raw?.jobTypeId?._id ||
+        job.raw?.jobTypeId;
+
+      const title = job.jobType || job.type;
+
+      if (id) {
+        map[id] = (map[id] || 0) + 1;
+      } else if (title) {
+        map[title.toLowerCase()] = (map[title.toLowerCase()] || 0) + 1;
+      }
+    });
+
+    return map;
+  }, [jobs]);
+
+  const jobStats = useMemo(() => {
+    return [
       {
         label: "Vacancy Open",
-        count: totalVacancies.toLocaleString(),
+        count: totalVacancies || totalJobs,
         icon: FaUsers,
         bgColor: "bg-gradient-to-r from-purple-500 to-indigo-500",
       },
       {
         label: "Companies",
-        count: `${uniqueCompanies}+`,
+        count: `${companies.length || 0}+`,
         icon: BsBuildingsFill,
         bgColor: "bg-gradient-to-r from-green-400 to-teal-500",
       },
       {
         label: "New Jobs",
-        count: calculateNewJobsCount(),
+        count: newJobsCount,
         icon: MdOutlineWifiProtectedSetup,
         bgColor: "bg-gradient-to-r from-pink-500 to-red-500",
       },
-    ]);
+    ];
+  }, [totalVacancies, totalJobs, companies.length, newJobsCount]);
 
-    const calculatedQuickLinks = [
+  const quickLinks = useMemo(() => {
+    const baseLinks = [
       {
         label: "All jobs",
-        count: totalVacancies.toLocaleString(),
+        count: totalJobs,
         path: "/jobs",
       },
       {
         label: "Company List",
-        count: uniqueCompanies,
+        count: companies.length || 0,
         path: "/companys",
       },
       {
         label: "New Jobs",
-        count: calculateNewJobsCount(),
+        count: newJobsCount,
         path: "/jobs?filter=recent",
       },
       {
         label: "Deadline Tomorrow",
-        count: calculateDeadlineTomorrowCount(),
+        count: deadlineTomorrowCount,
         path: "/jobs?filter=deadline_tomorrow",
-      },
-      {
-        label: "Internship Opportunity",
-        count: calculateInternshipCount(),
-        path: "/jobs?filter=internship",
-      },
-      {
-        label: "Contractual Jobs",
-        count: calculateContractualCount(),
-        path: "/jobs?filter=contractual",
-      },
-      {
-        label: "Part time Jobs",
-        count: calculatePartTimeCount(),
-        path: "/jobs?filter=part_time",
-      },
-      {
-        label: "Overseas Jobs",
-        count: calculateOverseasCount(),
-        path: "/jobs?filter=overseas",
-      },
-      {
-        label: "Work From Home",
-        count: calculateRemoteCount(),
-        path: "/jobs?filter=remote",
-      },
-      {
-        label: "Fresher Jobs",
-        count: calculateFresherCount(),
-        path: "/jobs?filter=fresher",
       },
     ];
 
-    setQuickLinks(calculatedQuickLinks);
-  }, []);
+    const jobTypeLinks = jobTypes
+      .filter((type) => type.isActive !== false)
+      .map((type) => {
+        const id = type.jobTypeId || type._id;
+        const titleKey = type.title?.toLowerCase();
 
-  const getUniqueLocations = () => {
-    const locations = new Set();
-    jobData.forEach((job) => {
-      if (job.location) {
-        let cleanLocation = job.location;
-        if (cleanLocation.includes("(")) {
-          cleanLocation = cleanLocation.split("(")[0].trim();
-        }
-        if (cleanLocation.includes("Dhaka")) {
-          cleanLocation = "Dhaka";
-        }
-        locations.add(cleanLocation);
-      }
-    });
-    return Array.from(locations).sort();
-  };
+        return {
+          label: `${type.title} Jobs`,
+          count: jobTypeCountMap[id] || jobTypeCountMap[titleKey] || 0,
+          path: `/jobs?jobTypeId=${id}`,
+        };
+      });
 
-  const bangladeshCities = getUniqueLocations();
+    return [...baseLinks, ...jobTypeLinks];
+  }, [
+    totalJobs,
+    companies.length,
+    newJobsCount,
+    deadlineTomorrowCount,
+    jobTypes,
+    jobTypeCountMap,
+  ]);
+
+  const locationOptions = useMemo(() => {
+    const apiCountries = countries
+      .map((country) => country.name)
+      .filter(Boolean);
+
+    const jobLocations = jobs
+      .map((job) => job.location || job.country)
+      .filter(Boolean)
+      .map((location) => {
+        if (location.includes(",")) return location.split(",")[0].trim();
+        return location.trim();
+      });
+
+    return [...new Set([...apiCountries, ...jobLocations])].sort();
+  }, [countries, jobs]);
 
   const salaryRanges = [
     { value: "", label: "Min Salary" },
@@ -260,6 +210,7 @@ const HeroHome = () => {
 
   const handleSearchClick = () => {
     setIsSearchExpanded(true);
+
     setTimeout(() => {
       searchInputRef.current?.focus();
     }, 300);
@@ -295,9 +246,62 @@ const HeroHome = () => {
     }
 
     const queryString = params.toString();
-    navigate(`/jobs${queryString ? `?${queryString}` : ""}`);
 
+    navigate(`/jobs${queryString ? `?${queryString}` : ""}`);
     handleCloseSearch();
+  };
+
+  const generateSearchSuggestions = (query) => {
+    const lowerQuery = query.toLowerCase();
+    const suggestions = new Set();
+
+    jobs.forEach((job) => {
+      if (job.title?.toLowerCase().includes(lowerQuery)) {
+        suggestions.add(job.title);
+      }
+
+      if (job.company?.toLowerCase().includes(lowerQuery)) {
+        suggestions.add(job.company);
+      }
+
+      if (job.category?.toLowerCase().includes(lowerQuery)) {
+        suggestions.add(job.category);
+      }
+
+      if (job.jobType?.toLowerCase().includes(lowerQuery)) {
+        suggestions.add(job.jobType);
+      }
+
+      if (Array.isArray(job.skills)) {
+        job.skills.forEach((skill) => {
+          if (skill?.toLowerCase().includes(lowerQuery)) {
+            suggestions.add(skill);
+          }
+        });
+      }
+    });
+
+    categories.forEach((category) => {
+      if (category.title?.toLowerCase().includes(lowerQuery)) {
+        suggestions.add(category.title);
+      }
+    });
+
+    companies.forEach((company) => {
+      const name = company.nameCompany || company.companyName || company.name;
+
+      if (name?.toLowerCase().includes(lowerQuery)) {
+        suggestions.add(name);
+      }
+    });
+
+    jobTypes.forEach((type) => {
+      if (type.title?.toLowerCase().includes(lowerQuery)) {
+        suggestions.add(type.title);
+      }
+    });
+
+    return Array.from(suggestions).slice(0, 8);
   };
 
   const handleInputChange = (field, value) => {
@@ -306,44 +310,17 @@ const HeroHome = () => {
       [field]: value,
     }));
 
-    if (field === "location" && value.length > 0) {
-      setShowLocationSuggestions(true);
-    } else if (field === "location" && value.length === 0) {
-      setShowLocationSuggestions(false);
+    if (field === "location") {
+      setShowLocationSuggestions(value.length > 0);
     }
 
-    if (field === "jobTitleSkillsCompany" && value.length > 0) {
-      const suggestions = generateSearchSuggestions(value);
-      setSearchSuggestions(suggestions);
-    } else if (field === "jobTitleSkillsCompany" && value.length === 0) {
-      setSearchSuggestions([]);
+    if (field === "jobTitleSkillsCompany") {
+      if (value.length > 0) {
+        setSearchSuggestions(generateSearchSuggestions(value));
+      } else {
+        setSearchSuggestions([]);
+      }
     }
-  };
-
-  const generateSearchSuggestions = (query) => {
-    const lowerQuery = query.toLowerCase();
-    const suggestions = new Set();
-
-    jobData.forEach((job) => {
-      if (job.title.toLowerCase().includes(lowerQuery)) {
-        suggestions.add(job.title);
-      }
-      if (job.company && job.company.toLowerCase().includes(lowerQuery)) {
-        suggestions.add(job.company);
-      }
-      if (job.skills) {
-        job.skills.forEach((skill) => {
-          if (skill.toLowerCase().includes(lowerQuery)) {
-            suggestions.add(skill);
-          }
-        });
-      }
-      if (job.category && job.category.toLowerCase().includes(lowerQuery)) {
-        suggestions.add(job.category);
-      }
-    });
-
-    return Array.from(suggestions).slice(0, 8);
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -351,6 +328,7 @@ const HeroHome = () => {
       ...prev,
       jobTitleSkillsCompany: suggestion,
     }));
+
     setSearchSuggestions([]);
   };
 
@@ -359,6 +337,7 @@ const HeroHome = () => {
       ...prev,
       location: city,
     }));
+
     setShowLocationSuggestions(false);
   };
 
@@ -367,11 +346,12 @@ const HeroHome = () => {
       ...prev,
       minSalary: value,
     }));
+
     setShowSalaryDropdown(false);
   };
 
-  const filteredCities = bangladeshCities.filter((city) =>
-    city.toLowerCase().includes(searchQuery.location.toLowerCase()),
+  const filteredLocations = locationOptions.filter((location) =>
+    location.toLowerCase().includes(searchQuery.location.toLowerCase()),
   );
 
   useEffect(() => {
@@ -405,23 +385,25 @@ const HeroHome = () => {
           alt="Background"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-linear-to-r from-[#1E2558]/20 to-[#4EB956]/70"></div>
+
+        <div className="absolute inset-0 bg-linear-to-r from-[#1E2558]/20 to-[#4EB956]/70" />
       </div>
 
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
           <div className="flex flex-col items-center lg:flex-row gap-6 lg:gap-8">
-            <div className="w-full lg:w-9/12  py-8">
+            <div className="w-full lg:w-9/12 py-8">
               <div className="lg:text-left mb-8 lg:mb-12">
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 leading-tight uppercase text-center">
                   Find Your <span className="text-[#4EB956]">Dream Job</span>{" "}
                   With Us!
                 </h1>
+
                 <div className="mt-6 flex items-center justify-center gap-2 md:gap-6">
-                  {jobStats.map((stat, indx) => (
+                  {jobStats.map((stat, index) => (
                     <div
-                      key={indx}
-                      className={`${stat.bgColor} px-2 md:px-6 py-4 rounded-xl shadow-lg flex  items-center space-x-1 md:space-x-3 transform hover:scale-105 transition duration-300`}
+                      key={index}
+                      className={`${stat.bgColor} px-2 md:px-6 py-4 rounded-xl shadow-lg flex items-center space-x-1 md:space-x-3 transform hover:scale-105 transition duration-300`}
                     >
                       <div className="text-white">
                         <stat.icon className="text-xl md:text-3xl" />
@@ -429,8 +411,9 @@ const HeroHome = () => {
 
                       <div className="flex flex-col items-center">
                         <span className="text-sm md:text-xl font-bold text-white">
-                          {stat.count}
+                          {Number(stat.count || 0).toLocaleString()}
                         </span>
+
                         <span className="text-xs md:text-sm text-white/90">
                           {stat.label}
                         </span>
@@ -450,11 +433,17 @@ const HeroHome = () => {
                       <div className="flex-1 pl-4 sm:pl-6 h-full">
                         <input
                           className="text-sm sm:text-base text-gray-600 w-full h-full outline-none"
-                          placeholder="Search by job title, location, or salary"
+                          placeholder="Search by job title, company, location, or salary"
+                          readOnly
                         />
                       </div>
-                      <button className="bg-linear-to-r from-[#1E2558] to-[#2d377a] text-white rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center h-full px-6 sm:px-10 cursor-pointer">
+
+                      <button
+                        type="button"
+                        className="bg-linear-to-r from-[#1E2558] to-[#2d377a] text-white rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center h-full px-6 sm:px-10 cursor-pointer"
+                      >
                         <FaSearch className="text-base sm:text-lg" />
+
                         <span className="ml-2 hidden sm:inline text-sm sm:text-base">
                           Search
                         </span>
@@ -476,10 +465,11 @@ const HeroHome = () => {
                               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                                 <FaBriefcase className="text-base" />
                               </div>
+
                               <input
                                 ref={searchInputRef}
                                 type="text"
-                                placeholder="Job title, skills, or company"
+                                placeholder="Job title, skills, company, type"
                                 value={searchQuery.jobTitleSkillsCompany}
                                 onChange={(e) =>
                                   handleInputChange(
@@ -504,6 +494,7 @@ const HeroHome = () => {
                                         className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center border-b border-gray-100 last:border-0 cursor-pointer"
                                       >
                                         <FaBriefcase className="text-gray-400 mr-2 text-sm" />
+
                                         <span className="text-sm">
                                           {suggestion}
                                         </span>
@@ -524,6 +515,7 @@ const HeroHome = () => {
                               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                                 <FaMapMarkerAlt className="text-base" />
                               </div>
+
                               <input
                                 type="text"
                                 placeholder="Location"
@@ -536,21 +528,26 @@ const HeroHome = () => {
                               />
 
                               {showLocationSuggestions &&
-                                filteredCities.length > 0 && (
+                                filteredLocations.length > 0 && (
                                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-40 overflow-y-auto animate-fadeIn">
-                                    {filteredCities.map((city, index) => (
-                                      <button
-                                        key={index}
-                                        type="button"
-                                        onClick={() =>
-                                          handleLocationSelect(city)
-                                        }
-                                        className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center border-b border-gray-100 last:border-0 cursor-pointer"
-                                      >
-                                        <FaMapMarkerAlt className="text-gray-400 mr-2 text-sm" />
-                                        <span className="text-sm">{city}</span>
-                                      </button>
-                                    ))}
+                                    {filteredLocations.map(
+                                      (location, index) => (
+                                        <button
+                                          key={index}
+                                          type="button"
+                                          onClick={() =>
+                                            handleLocationSelect(location)
+                                          }
+                                          className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center border-b border-gray-100 last:border-0 cursor-pointer"
+                                        >
+                                          <FaMapMarkerAlt className="text-gray-400 mr-2 text-sm" />
+
+                                          <span className="text-sm">
+                                            {location}
+                                          </span>
+                                        </button>
+                                      ),
+                                    )}
                                   </div>
                                 )}
                             </div>
@@ -565,6 +562,7 @@ const HeroHome = () => {
                               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                                 <FaDollarSign className="text-base" />
                               </div>
+
                               <button
                                 type="button"
                                 onClick={() =>
@@ -581,6 +579,7 @@ const HeroHome = () => {
                                     : "Min Salary"}
                                 </span>
                               </button>
+
                               <FaChevronDown
                                 className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-transform duration-300 ${
                                   showSalaryDropdown ? "rotate-180" : ""
@@ -655,7 +654,7 @@ const HeroHome = () => {
             </div>
 
             <div className="w-full lg:w-3/12 py-6 md:py-0">
-              <div className="bg-white h-full w-full">
+              <div className="bg-white h-full w-full overflow-hidden shadow-lg">
                 <div className="border-b border-gray-200">
                   <div className="px-4 sm:px-6 py-2">
                     <h3 className="text-lg font-semibold text-gray-800">
@@ -677,18 +676,20 @@ const HeroHome = () => {
                           e.preventDefault();
                           navigate(link.path);
                         }}
-                        className="group flex items-center justify-between py-2 px-2 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 last:border-0 cursor-pointer"
+                        className="group flex items-center justify-between py-2 px-2 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 last:border-0 cursor-pointer w-full"
                       >
-                        <div className="flex items-center">
+                        <div className="flex items-center min-w-0">
                           <span className="text-[#4EB956] mr-2 text-xs group-hover:mr-3 transition-all duration-200">
                             <FaArrowRight />
                           </span>
-                          <span className="text-sm text-primary group-hover:text-gray-900 transition-colors duration-200">
+
+                          <span className="text-sm text-primary group-hover:text-gray-900 transition-colors duration-200 truncate">
                             {link.label}
                           </span>
                         </div>
-                        <span className="text-xs font-medium bg-[#4EB956]/10 text-[#4EB956] px-2 py-1 rounded">
-                          {link.count > 0 ? link.count : "0"}
+
+                        <span className="text-xs font-medium bg-[#4EB956]/10 text-[#4EB956] px-2 py-1 rounded shrink-0 ml-2">
+                          {Number(link.count || 0).toLocaleString()}
                         </span>
                       </Link>
                     ))}
@@ -745,10 +746,6 @@ const HeroHome = () => {
         .animate-slideInRight {
           animation: slideInRight 0.4s ease-out forwards;
           opacity: 0;
-        }
-
-        .max-h-48 {
-          max-height: 12rem;
         }
 
         .overflow-y-auto {
