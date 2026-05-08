@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import {
-  FaBriefcase,
-  FaSearch,
-  FaMapMarkerAlt,
-  FaEnvelope,
-  FaPhone,
-  FaGlobe,
-  FaBuilding,
-} from "react-icons/fa";
+import { FaBriefcase, FaSearch, FaBuilding } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import useJobStore from "../../store/JobStore";
 
@@ -44,6 +36,7 @@ const Company = () => {
 
   useEffect(() => {
     fetchCompanies();
+
     fetchJobs({
       page: 1,
       limit: 200,
@@ -86,14 +79,8 @@ const Company = () => {
         id,
         name,
         logo: getCompanyLogo(company),
-        email: company.emailCompany || company.email || "",
-        phone: company.phoneCompany || company.phone || "",
-        website: company.website || "",
-        address: company.address || company.companyAddress || "",
-        description: company.description || company.companyDescription || "",
         totalJobs:
           jobCountByCompany[id] || jobCountByCompany[name.toLowerCase()] || 0,
-        raw: company,
       };
     });
   }, [companies, jobCountByCompany]);
@@ -101,17 +88,9 @@ const Company = () => {
   const filteredCompanies = useMemo(() => {
     if (!searchTerm.trim()) return processedCompanies;
 
-    const term = searchTerm.toLowerCase();
-
-    return processedCompanies.filter((company) => {
-      return (
-        company.name.toLowerCase().includes(term) ||
-        company.email.toLowerCase().includes(term) ||
-        company.phone.toLowerCase().includes(term) ||
-        company.address.toLowerCase().includes(term) ||
-        company.website.toLowerCase().includes(term)
-      );
-    });
+    return processedCompanies.filter((company) =>
+      company.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
   }, [searchTerm, processedCompanies]);
 
   const totalOpenJobs = processedCompanies.reduce(
@@ -125,147 +104,125 @@ const Company = () => {
 
   if (isLoading && companies.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#4EB956] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading companies...</p>
+          <div className="w-14 h-14 border-4 border-[#4EB956] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+
+          <p className="text-gray-600 font-medium text-lg">
+            Loading companies...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 py-8 px-4 md:px-8">
       <div className="container mx-auto">
-        <div className="text-center mb-8 md:mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#4EB956]/10 text-[#4EB956] mb-4">
+        <div className="text-center mb-10 md:mb-14">
+          <div className="inline-flex items-center justify-center w-18 h-18 rounded-3xl bg-[#4EB956]/10 text-[#4EB956] mb-5 shadow-sm">
             <FaBuilding className="text-3xl" />
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-            Companies
+          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-800 mb-3 tracking-tight">
+            Explore Companies
           </h1>
 
-          <p className="text-gray-600">
-            {processedCompanies.length} companies • {totalOpenJobs} open
-            positions
+          <p className="text-gray-500 text-sm md:text-lg">
+            {processedCompanies.length} Companies • {totalOpenJobs} Active Job
+            Posts
           </p>
         </div>
 
-        <div className="mb-6 md:mb-8 max-w-2xl mx-auto">
+        <div className="mb-8 md:mb-12 max-w-2xl mx-auto">
           <div className="relative">
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
 
             <input
               type="text"
-              placeholder="Search companies by name, email, phone, address..."
+              placeholder="Search company name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#4EB956]/30 focus:border-[#4EB956] shadow-sm"
+              className="w-full pl-14 pr-5 py-4 bg-white rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#4EB956]/30 focus:border-[#4EB956] shadow-sm text-gray-700"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-7">
           {filteredCompanies.map((company, index) => (
             <motion.div
               key={company.id || company.name}
-              initial={{ opacity: 0, scale: 0.9, y: 12 }}
+              initial={{ opacity: 0, scale: 0.92, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: index * 0.03 }}
-              whileHover={{ y: -4, scale: 1.02 }}
+              transition={{ duration: 0.25, delay: index * 0.025 }}
+              whileHover={{ y: -8, scale: 1.03 }}
               onClick={() => handleCompanyClick(company)}
-              className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 group cursor-pointer"
+              className="relative bg-white rounded-3xl p-5 shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 group cursor-pointer overflow-hidden"
             >
-              <div className="flex justify-center mb-4">
-                <motion.div
-                  whileHover={{ rotate: [0, 8, -8, 0] }}
-                  transition={{ duration: 0.5 }}
-                  className="w-20 h-20 md:w-28 md:h-28 rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50"
-                >
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#1E2558] via-[#3949ab] to-[#4EB956]" />
+
+              <div className="flex justify-center mb-5">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-100 shadow-inner flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
                   <img
                     src={company.logo}
                     alt={company.name}
-                    className="w-full h-full object-contain p-2"
+                    className="w-full h-full object-contain p-4"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
+
                       e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
                         company.name,
                       )}&background=4f46e5&color=fff&bold=true`;
                     }}
                   />
-                </motion.div>
+                </div>
               </div>
 
-              <h3 className="text-center font-bold text-gray-800 text-sm md:text-base mb-2 line-clamp-2 min-h-[40px] group-hover:text-[#4EB956] transition-colors">
+              <h3 className="text-center font-bold text-gray-800 text-sm md:text-base mb-4 line-clamp-2 min-h-[44px] group-hover:text-[#4EB956] transition-colors">
                 {company.name}
               </h3>
 
-              <div className="flex items-center justify-center gap-1 text-xs md:text-sm mb-3">
-                <FaBriefcase className="text-[#4EB956]" />
+              <div className="flex justify-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#4EB956]/10 text-[#4EB956] shadow-sm">
+                  <FaBriefcase className="text-sm" />
 
-                <span className="font-bold text-[#4EB956]">
-                  {company.totalJobs}
-                </span>
+                  <span className="text-sm md:text-base font-extrabold">
+                    {company.totalJobs}
+                  </span>
 
-                <span className="text-gray-500">jobs</span>
+                  <span className="text-xs md:text-sm font-medium">
+                    Job Posts
+                  </span>
+                </div>
               </div>
-
-              <div className="space-y-2 text-xs text-gray-500 border-t border-gray-100 pt-3">
-                {company.email && (
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FaEnvelope className="text-gray-400 shrink-0" />
-                    <span className="truncate">{company.email}</span>
-                  </div>
-                )}
-
-                {company.phone && (
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FaPhone className="text-gray-400 shrink-0" />
-                    <span className="truncate">{company.phone}</span>
-                  </div>
-                )}
-
-                {company.website && (
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FaGlobe className="text-gray-400 shrink-0" />
-                    <span className="truncate">{company.website}</span>
-                  </div>
-                )}
-
-                {company.address && (
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FaMapMarkerAlt className="text-gray-400 shrink-0" />
-                    <span className="truncate">{company.address}</span>
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="button"
-                className="w-full mt-4 py-2 rounded-xl text-sm font-semibold bg-[#1E2558]/5 text-[#1E2558] group-hover:bg-[#4EB956] group-hover:text-white transition-all"
-              >
-                View Jobs
-              </button>
             </motion.div>
           ))}
         </div>
 
         {filteredCompanies.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-5xl mb-4">🏢</div>
+          <div className="text-center py-20">
+            <div className="text-gray-300 text-6xl mb-4">🏢</div>
 
-            <h3 className="text-xl font-bold text-gray-600 mb-2">
-              No companies found
+            <h3 className="text-2xl font-bold text-gray-600 mb-2">
+              No Companies Found
             </h3>
 
-            <p className="text-gray-500">Try a different search term</p>
+            <p className="text-gray-500">
+              Try searching with another company name
+            </p>
           </div>
         )}
 
         {filteredCompanies.length > 0 && (
-          <div className="mt-8 text-center text-gray-500 text-sm">
-            Showing {filteredCompanies.length} of {processedCompanies.length}{" "}
+          <div className="mt-10 text-center text-gray-500 text-sm md:text-base">
+            Showing{" "}
+            <span className="font-bold text-[#1E2558]">
+              {filteredCompanies.length}
+            </span>{" "}
+            of{" "}
+            <span className="font-bold text-[#4EB956]">
+              {processedCompanies.length}
+            </span>{" "}
             companies
           </div>
         )}
