@@ -353,6 +353,7 @@ const LocationSelector = ({
             setForm((p) => ({
               ...p,
               country: countryCode,
+              countryId: country?.countryId || country?._id || "",
               state: "",
               city: "",
               jobLocation: location || "",
@@ -509,6 +510,7 @@ const EMPTY_FORM = {
   jobTitle: "",
   vacancy: "",
   country: DEFAULT_COUNTRY_CODE,
+  countryId: "",
   state: "",
   city: "",
   jobLocation: "Bangladesh",
@@ -624,6 +626,7 @@ const PostJob = () => {
               city: cityName,
               state: stateCode,
               country: countryCode,
+              countryId: job.countryId || "",
               countries,
             }) ||
             "Bangladesh",
@@ -716,7 +719,8 @@ const PostJob = () => {
       jobCategoryId: form.jobCategoryId,
       jobTitle: form.jobTitle.trim(),
       vacancy: form.vacancy ? Number(form.vacancy) : null,
-
+      
+      countryId: form.countryId,
       country: getCountryNameFromApi(countries, form.country) || "Bangladesh",
       countryCode: form.country || DEFAULT_COUNTRY_CODE,
       state: getStateName(form.state, form.country) || null,

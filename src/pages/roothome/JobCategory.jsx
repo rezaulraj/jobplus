@@ -97,6 +97,11 @@ const JobCategory = () => {
                   >
                     <span className="truncate flex-1">{category.title}</span>
                   </Link>
+                  <div>
+                    <span className="truncate flex-1">
+                      {category.totalJobs}
+                    </span>
+                  </div>
                 </motion.div>
               ))}
 
@@ -159,6 +164,9 @@ const JobCategory = () => {
                 >
                   <span className="truncate flex-1">{company.nameCompany}</span>
                 </Link>
+                <div>
+                  <span className="truncate flex-1">{company.totalJobs}</span>
+                </div>
               </motion.div>
             ))}
 
@@ -178,7 +186,7 @@ const JobCategory = () => {
 
       case "country":
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-source">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 font-source">
             {activeCountries.map((country) => (
               <motion.div
                 key={country.countryId || country._id}
@@ -203,6 +211,9 @@ const JobCategory = () => {
                 >
                   <span className="truncate flex-1">{country.name}</span>
                 </Link>
+                <div>
+                  <span className="truncate flex-1">{country.totalJobs}</span>
+                </div>
               </motion.div>
             ))}
 
