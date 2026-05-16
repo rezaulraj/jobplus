@@ -1,10 +1,10 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import freelanceJobs from "../../data/freelanceJob.json";
 import { Link, useNavigate } from "react-router-dom";
+import useJobStore from "../../store/jobStore";
 
 const FreelanceSection = () => {
   const swiperRef = useRef(null);
@@ -12,36 +12,68 @@ const FreelanceSection = () => {
   const nextRef = useRef(null);
   const navigate = useNavigate();
 
+  const { fetchJobTypes, fetchJobsByJobType, jobs, jobTypes, isLoading } =
+    useJobStore();
+  const [freelanceJobs, setFreelanceJobs] = useState([]);
+
+  useEffect(() => {
+    const loadFreelanceJobs = async () => {
+      // Fetch job types to find the Freelance type ID
+      const typesResult = await fetchJobTypes();
+      const types = typesResult?.data || useJobStore.getState().jobTypes;
+
+      const freelanceType = types.find(
+        (t) => t.title?.toLowerCase() === "freelance",
+      );
+
+      if (freelanceType?.jobTypeId) {
+        const result = await fetchJobsByJobType(freelanceType.jobTypeId, {
+          status: "published",
+          limit: 20,
+        });
+
+        if (result?.success && result?.data) {
+          setFreelanceJobs(result.data);
+        }
+      }
+    };
+
+    loadFreelanceJobs();
+  }, []);
+
   const createJobUrl = (job) => {
     if (!job || !job.title) return "/freelance";
-
     const slug = job.title
       .toLowerCase()
       .replace(/[^\w\s]/gi, "")
       .replace(/\s+/g, "-")
       .substring(0, 100);
-
-    return `/freelance/${slug}-${job.id}`;
+    return `/freelance/${slug}-${job.jobId || job.id}`;
   };
 
-  const handleJobClick = (job) => {
-    const url = createJobUrl(job);
-    navigate(url);
-  };
+  const handleJobClick = (job) => navigate(createJobUrl(job));
+  const handleViewAll = () => navigate("/jobs");
+  const handleHireFreelancer = () => navigate("/freelancer/post-job");
 
-  const handleViewAll = () => {
-    navigate("/jobs");
-  };
+  if (isLoading && freelanceJobs.length === 0) {
+    return (
+      <section className="py-8 bg-gray-100 hidden md:block font-source">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center h-40">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-  const handleHireFreelancer = () => {
-    navigate("/freelancer/post-job");
-  };
+  if (!isLoading && freelanceJobs.length === 0) return null;
 
   return (
     <section className="py-8 bg-gray-100 hidden md:block font-source">
       <div className="container mx-auto px-4">
         <div className="border-b border-gray-300 mb-4 flex items-center justify-center">
-          <h2 className="flex-1 text-xl lg:text-2xl font-bold text-center mb-8 text-gray-700 ">
+          <h2 className="flex-1 text-xl lg:text-2xl font-bold text-center mb-8 text-gray-700">
             Freelance Side Hustles - Make Extra Income
           </h2>
           <div className="block md:flex items-center justify-center gap-4">
@@ -66,22 +98,16 @@ const FreelanceSection = () => {
             spaceBetween={20}
             slidesPerView={1}
             breakpoints={{
-              640: {
-                slidesPerView: 1,
-              },
-              768: {
-                slidesPerView: 2,
-              },
-              1024: {
-                slidesPerView: 4,
-              },
+              640: { slidesPerView: 1 },
+              768: { slidesPerView: 2 },
+              1024: { slidesPerView: 4 },
             }}
             autoplay={{
               delay: 3000,
               disableOnInteraction: false,
               pauseOnMouseEnter: true,
             }}
-            loop={true}
+            loop={freelanceJobs.length > 4}
             onBeforeInit={(swiper) => {
               swiperRef.current = swiper;
               swiper.params.navigation.prevEl = prevRef.current;
@@ -91,71 +117,84 @@ const FreelanceSection = () => {
           >
             {freelanceJobs.map((job, index) => {
               const jobUrl = createJobUrl(job);
+              const salary =
+                job.salary?.min && job.salary?.max
+                  ? `$${job.salary.min.toLocaleString()} - $${job.salary.max.toLocaleString()}`
+                  : job.salary?.min
+                    ? `From $${job.salary.min.toLocaleString()}`
+                    : job.salary?.max
+                      ? `Up to $${job.salary.max.toLocaleString()}`
+                      : "Negotiable";
 
               return (
-                <SwiperSlide key={job.id || index}>
+                <SwiperSlide key={job.jobId || job.id || index}>
                   <div
                     className="bg-white rounded-lg shadow-lg overflow-hidden h-72 transition-transform duration-300 hover:scale-105 flex flex-col cursor-pointer"
                     onClick={() => handleJobClick(job)}
                   >
                     <div className="p-4 flex flex-col h-full">
-                      {/* Job Title with Link */}
+                      {/* Company Logo + Name */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <img
+                          src={job.companyLogo}
+                          alt={job.company}
+                          className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                          onError={(e) => {
+                            e.target.src = "/images/default-company.png";
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 font-lato truncate">
+                          {job.company}
+                        </span>
+                      </div>
+
+                      {/* Job Title */}
                       <Link
                         to={jobUrl}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-sm font-semibold font-lato text-gray-950 mb-2 line-clamp-1 hover:underline hover:text-blue-600 transition-colors block"
+                        className="text-sm font-semibold font-lato text-gray-950 mb-2 line-clamp-2 hover:underline hover:text-blue-600 transition-colors block"
                       >
                         {job.title}
                       </Link>
 
-                      <p className="text-gray-600 mb-3 font-lato">
-                        {job.company}
+                      {/* Salary */}
+                      <p className="text-[#46B749] font-medium mb-3 font-lato text-sm">
+                        {salary}
                       </p>
 
-                      <p className="text-[#46B749] font-medium mb-4 font-lato">
-                        {job.rate}
-                      </p>
-
-                      <div className="mb-4 grow overflow-y-auto">
-                        <h4 className="text-[15px] font-medium text-gray-500 mb-2 font-lato">
-                          Skills Required:
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {job.skills?.slice(0, 3).map(
-                            (skill, skillIndex) =>
-                              skill && (
-                                <span
-                                  key={skillIndex}
-                                  className="px-3 py-1 font-lato bg-blue-100 text-blue-800 text-xs rounded-full transition-colors"
-                                >
-                                  {skill}
-                                </span>
-                              )
-                          )}
-                        </div>
+                      {/* Category + Location */}
+                      <div className="mb-3 grow overflow-hidden">
+                        {job.category && (
+                          <span className="inline-block px-2 py-0.5 bg-green-50 text-green-700 text-xs rounded-full font-lato mb-2">
+                            {job.category}
+                          </span>
+                        )}
+                        {job.location && (
+                          <p className="text-xs text-gray-400 font-lato truncate">
+                            📍 {job.location}
+                          </p>
+                        )}
                       </div>
 
-                      {/* Project Details Link */}
+                      {/* CTA Button */}
                       <Link
                         to={jobUrl}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-full flex items-center justify-center cursor-pointer py-2 font-lato bg-[#4EB956] text-white font-medium rounded-lg hover:bg-[#3da745] transition-colors duration-300 mt-auto group-hover:bg-gray-800"
+                        className="w-full flex items-center justify-center cursor-pointer py-2 font-lato bg-[#4EB956] text-white font-medium rounded-lg hover:bg-[#3da745] transition-colors duration-300 mt-auto"
                       >
                         Project Details
                       </Link>
                     </div>
-
-                    {/* Hover Overlay Effect */}
-                    <div className="absolute inset-0 bg-blue-500 bg-opacity-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg pointer-events-none" />
                   </div>
                 </SwiperSlide>
               );
             })}
           </Swiper>
 
+          {/* Prev Button */}
           <div
             ref={prevRef}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-5 z-10 cursor-pointer bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors duration-300 swiper-button-prev-custom"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-5 z-10 cursor-pointer bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors duration-300"
             onMouseEnter={() => swiperRef.current?.autoplay.stop()}
             onMouseLeave={() => swiperRef.current?.autoplay.start()}
           >
@@ -175,9 +214,10 @@ const FreelanceSection = () => {
             </svg>
           </div>
 
+          {/* Next Button */}
           <div
             ref={nextRef}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-5 z-10 cursor-pointer bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors duration-300 swiper-button-next-custom"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-5 z-10 cursor-pointer bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors duration-300"
             onMouseEnter={() => swiperRef.current?.autoplay.stop()}
             onMouseLeave={() => swiperRef.current?.autoplay.start()}
           >

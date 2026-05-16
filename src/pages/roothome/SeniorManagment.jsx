@@ -1,9 +1,35 @@
 import React, { useState, useRef, useEffect } from "react";
-import seniorJobs from "../../data/senior.json";
 import { Link } from "react-router-dom";
+import useJobStore from "../../store/jobStore";
+
 const SeniorManagment = () => {
   const containerRef = useRef(null);
   const [showArrows, setShowArrows] = useState(false);
+  const [seniorJobs, setSeniorJobs] = useState([]);
+
+  const { fetchJobs } = useJobStore();
+
+  useEffect(() => {
+    const loadJobs = async () => {
+      const result = await fetchJobs({
+        status: "published",
+        limit: 50,
+        sortBy: "createdAt",
+        order: "desc",
+      });
+
+      if (result?.success && result?.data?.length > 0) {
+        const jobs = result.data;
+        // Shuffle and pick 7-8 random jobs
+        const shuffled = [...jobs].sort(() => Math.random() - 0.5);
+        const count = Math.random() < 0.5 ? 7 : 8;
+        setSeniorJobs(shuffled.slice(0, count));
+      }
+    };
+
+    loadJobs();
+  }, []);
+
   const checkArrows = () => {
     if (containerRef.current) {
       const { scrollWidth, clientWidth } = containerRef.current;
@@ -15,21 +41,14 @@ const SeniorManagment = () => {
     checkArrows();
     window.addEventListener("resize", checkArrows);
     return () => window.removeEventListener("resize", checkArrows);
-  }, []);
-
+  }, [seniorJobs]);
   const nextSlide = () => {
     if (containerRef.current) {
       const container = containerRef.current;
-      const itemWidth = container.scrollWidth / seniorJobs.length;
+      const itemWidth = container.scrollWidth / (seniorJobs.length || 1);
       const maxScroll = container.scrollWidth - container.clientWidth;
-
-      const newScrollPosition = Math.min(
-        container.scrollLeft + itemWidth * 2,
-        maxScroll
-      );
-
       container.scrollTo({
-        left: newScrollPosition,
+        left: Math.min(container.scrollLeft + itemWidth * 2, maxScroll),
         behavior: "smooth",
       });
     }
@@ -38,19 +57,25 @@ const SeniorManagment = () => {
   const prevSlide = () => {
     if (containerRef.current) {
       const container = containerRef.current;
-      const itemWidth = container.scrollWidth / seniorJobs.length;
-
-      const newScrollPosition = Math.max(
-        container.scrollLeft - itemWidth * 2,
-        0
-      );
-
+      const itemWidth = container.scrollWidth / (seniorJobs.length || 1);
       container.scrollTo({
-        left: newScrollPosition,
+        left: Math.max(container.scrollLeft - itemWidth * 2, 0),
         behavior: "smooth",
       });
     }
   };
+
+  const getJobUrl = (job) => {
+    if (!job?.title) return "/jobs";
+    const slug = job.title
+      .toLowerCase()
+      .replace(/[^\w\s]/gi, "")
+      .replace(/\s+/g, "-")
+      .substring(0, 100);
+    return `/job/${slug}-${job.jobId || job.id}`;
+  };
+
+  if (seniorJobs.length === 0) return null;
 
   return (
     <div className="hidden md:block bg-white py-12 px-4 sm:px-6 lg:px-12 font-source">
@@ -84,7 +109,6 @@ const SeniorManagment = () => {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
                     strokeLinecap="round"
@@ -105,7 +129,6 @@ const SeniorManagment = () => {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
                     strokeLinecap="round"
@@ -123,29 +146,42 @@ const SeniorManagment = () => {
             className="flex overflow-x-hidden scroll-smooth py-2"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            <style>{`
-              .flex::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
+            <style>{`.flex::-webkit-scrollbar { display: none; }`}</style>
+
             {seniorJobs.map((job, index) => (
-              <div key={index} className="w-56 shrink-0 overflow-hidden">
-                <Link to={`/job/${job.id}`} className="block">
-                  <div className="w-46 h-36 overflow-hidden">
+              <div
+                key={job.jobId || job.id || index}
+                className="w-56 shrink-0 overflow-hidden"
+              >
+                <Link to={getJobUrl(job)} className="block group">
+                  {/* Company Logo */}
+                  <div className="w-46 h-36 overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-100 rounded-lg">
                     <img
-                      className="w-full h-full object-center"
-                      src={job.clogo}
-                      alt={job.companyname}
+                      className="w-full h-full object-contain p-2"
+                      src={
+                        job.companyLogo ||
+                        job.clogo ||
+                        "/images/default-company.png"
+                      }
+                      alt={job.company}
+                      onError={(e) => {
+                        e.target.src = "/images/default-company.png";
+                      }}
                     />
                   </div>
 
                   <div className="px-2 py-4">
-                    <h3 className="text-[15px] font-semibold font-lato text-gray-700 mb-1 line-clamp-1">
+                    <h3 className="text-[15px] font-semibold font-lato text-gray-700 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
                       {job.title}
                     </h3>
-                    <p className="text-gray-600 font-lato text-sm">
-                      {job.companyname}
+                    <p className="text-gray-600 font-lato text-sm line-clamp-1">
+                      {job.company}
                     </p>
+                    {job.location && (
+                      <p className="text-gray-400 font-lato text-xs mt-1 line-clamp-1">
+                        📍 {job.location}
+                      </p>
+                    )}
                   </div>
                 </Link>
               </div>

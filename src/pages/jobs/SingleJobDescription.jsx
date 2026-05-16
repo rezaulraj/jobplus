@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 import {
   MapPin,
   Calendar,
@@ -22,24 +23,19 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import jobDataPlaceholder from "../../data/jobData.json";
-import seniorJobs from "../../data/senior.json";
 import useJobStore from "../../store/JobStore";
-// import ApplyPopUps from "./ApplyPopUps";
+import DOMPurify from "dompurify";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 const SingleJobDescription = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentJob: job, fetchJobById, isLoading, jobs, fetchJobs } = useJobStore();
+
+  const { fetchJobById, currentJob: job, isLoading } = useJobStore();
+
   const [relatedJobs, setRelatedJobs] = useState([]);
+  const [seniorJobs, setSeniorJobs] = useState([]);
   const [isSaved, setIsSaved] = useState(false);
-  // apply states
-  // const [showApplyPopup, setShowApplyPopup] = useState(false);
-  // const [selectedJobForApply, setSelectedJobForApply] = useState(null);
-  // const handleApplyClick = (job) => {
-  //   setSelectedJobForApply(job);
-  //   setShowApplyPopup(true);
-  // };
 
   const colors = {
     primary: "#1e2558",
@@ -51,82 +47,150 @@ const SingleJobDescription = () => {
     accent: "#3b82f6",
   };
 
+  // Extract UUID from slug (e.g. "frontend-developer-f7085259-06f3-4103-945a-1f5933e59163")
+  const extractUUID = (slug) => {
+    if (!slug) return null;
+    const match = slug.match(
+      /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
+    );
+    return match ? match[1] : slug; // fallback to raw id if no UUID found
+  };
+
   useEffect(() => {
-    fetchJobById(id);
-    if (jobs.length === 0) {
-      fetchJobs();
-    }
+    const uuid = extractUUID(id);
+    if (!uuid) return;
+
+    // Fetch main job via store (uses fetchJobById which sets currentJob)
+    fetchJobById(uuid);
+
+    // Check saved state
+    const saved = JSON.parse(localStorage.getItem("savedJobs") || "[]");
+    setIsSaved(saved.includes(uuid));
   }, [id]);
 
+  // Fetch related + senior jobs directly via axios (no global state pollution)
   useEffect(() => {
-    if (job && jobs.length > 0) {
-      // Find related jobs based on category
-      const related = jobs
-        .filter(
-          (j) =>
-            j.id !== job.id &&
-            (j.category === job.category || j.company === job.company)
-        )
-        .slice(0, 6);
-      setRelatedJobs(related);
-    }
-  }, [job, jobs]);
+    if (!job) return;
 
-  // Format salary display
+    const fetchSidebarJobs = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/jobs`, {
+          withCredentials: true,
+          params: {
+            status: "published",
+            limit: 50,
+            sortBy: "createdAt",
+            order: "desc",
+          },
+        });
+
+        if (response.data?.success) {
+          const items = response.data.data?.items || [];
+
+          // Related: same category or same company, exclude current
+          const related = items
+            .filter((j) => {
+              const sameCategory =
+                (j.jobCategoryId?.jobCategoryId || j.jobCategoryId) ===
+                job.categoryId;
+              const sameCompany =
+                (j.companyId?.companyId || j.companyId) === job.companyId;
+              const notCurrent = j.jobId !== job.jobId;
+              return notCurrent && (sameCategory || sameCompany);
+            })
+            .slice(0, 6)
+            .map((j) => ({
+              jobId: j.jobId,
+              title: j.jobTitle,
+              company: j.companyId?.nameCompany || "Unknown",
+              companyLogo:
+                j.companyId?.companyLogo || "/images/default-company.png",
+              type: j.jobTypeId?.title || "",
+              salary: {
+                min: j.salaryMin || 0,
+                max: j.salaryMax || 0,
+              },
+            }));
+
+          setRelatedJobs(related);
+
+          // Senior: random 4 from all jobs, exclude current
+          const others = items.filter((j) => j.jobId !== job.jobId);
+          const shuffled = [...others].sort(() => Math.random() - 0.5);
+          const senior = shuffled.slice(0, 4).map((j) => ({
+            jobId: j.jobId,
+            title: j.jobTitle,
+            company: j.companyId?.nameCompany || "Unknown",
+            companyLogo:
+              j.companyId?.companyLogo || "/images/default-company.png",
+          }));
+          setSeniorJobs(senior);
+        }
+      } catch (err) {
+        console.error("Failed to fetch sidebar jobs:", err);
+      }
+    };
+
+    fetchSidebarJobs();
+  }, [job?.jobId]);
+
+  const getJobUrl = (jobId, title = "") => {
+    const slug = title
+      .toLowerCase()
+      .replace(/[^\w\s]/gi, "")
+      .replace(/\s+/g, "-")
+      .substring(0, 100);
+    return `/job/${slug}-${jobId}`;
+  };
+
   const formatSalary = (salary) => {
-    if (!salary) return "Not specified";
-    if (salary.min === 0 && salary.max === 0 && salary.default) {
-      return salary.default;
-    }
-    if (salary.min > 0 && salary.max > 0) {
+    if (!salary) return "Negotiable";
+    if (salary.min === 0 && salary.max === 0) return "Negotiable";
+    if (salary.min > 0 && salary.max > 0)
       return `৳${salary.min.toLocaleString()} - ৳${salary.max.toLocaleString()}`;
-    }
-    if (salary.min > 0) {
-      return `৳${salary.min.toLocaleString()}+`;
-    }
+    if (salary.min > 0) return `৳${salary.min.toLocaleString()}+`;
+    if (salary.max > 0) return `Up to ৳${salary.max.toLocaleString()}`;
     return "Negotiable";
   };
 
-  // Calculate days ago 
-  const getPostedDate = (jobId) => {
-    const days = (jobId % 30) + 1;
-    return `${days} days ago`;
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
-  // Get experience text
-  const getExperienceText = (years) => {
-    if (years === 0) return "Fresher";
-    if (years === 1) return "1 year";
-    return `${years} years`;
+  const getDaysLeft = (endDate) => {
+    if (!endDate) return null;
+    const diff = new Date(endDate) - new Date();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    if (days < 0) return "Expired";
+    if (days === 0) return "Today";
+    if (days === 1) return "1 day left";
+    return `${days} days left`;
   };
 
   const handleSaveJob = () => {
-    setIsSaved(!isSaved);
-
-    const savedJobs = JSON.parse(localStorage.getItem("savedJobs") || "[]");
+    const uuid = extractUUID(id);
+    const saved = JSON.parse(localStorage.getItem("savedJobs") || "[]");
     if (!isSaved) {
-      savedJobs.push(job.id);
+      saved.push(uuid);
     } else {
-      const index = savedJobs.indexOf(job.id);
-      if (index > -1) {
-        savedJobs.splice(index, 1);
-      }
+      const idx = saved.indexOf(uuid);
+      if (idx > -1) saved.splice(idx, 1);
     }
-    localStorage.setItem("savedJobs", JSON.stringify(savedJobs));
+    localStorage.setItem("savedJobs", JSON.stringify(saved));
+    setIsSaved(!isSaved);
   };
-
-
-  const handleApply = () => {
-    navigate(`/apply/${id}`);
-  };
-
 
   const handleShare = async () => {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: job.title,
-          text: `Check out this job: ${job.title} at ${job.company}`,
+          title: job?.title,
+          text: `Check out this job: ${job?.title} at ${job?.company}`,
           url: window.location.href,
         });
       } else {
@@ -156,10 +220,7 @@ const SingleJobDescription = () => {
         style={{ backgroundColor: colors.bgLight }}
       >
         <div className="text-center">
-          <Briefcase
-            className="w-16 h-16 mx-auto mb-4"
-            style={{ color: colors.lightPrimary }}
-          />
+          <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-300" />
           <h2
             className="text-2xl font-bold mb-2"
             style={{ color: colors.primary }}
@@ -168,8 +229,8 @@ const SingleJobDescription = () => {
           </h2>
           <button
             onClick={() => navigate("/jobs")}
-            className="mt-4 px-6 py-2 rounded-lg font-medium"
-            style={{ backgroundColor: colors.primary, color: "white" }}
+            className="mt-4 px-6 py-2 rounded-lg font-medium text-white"
+            style={{ backgroundColor: colors.primary }}
           >
             Browse All Jobs
           </button>
@@ -179,8 +240,11 @@ const SingleJobDescription = () => {
   }
 
   return (
-    <div className="min-h-screen font-ubuntu" style={{ backgroundColor: colors.bgLight }}>
-
+    <div
+      className="min-h-screen font-ubuntu"
+      style={{ backgroundColor: colors.bgLight }}
+    >
+      {/* Sticky Header */}
       <div
         className="sticky top-0 z-40 bg-white shadow-sm border-b"
         style={{ borderColor: colors.border }}
@@ -216,9 +280,7 @@ const SingleJobDescription = () => {
                 style={{ borderColor: colors.border, color: colors.primary }}
               >
                 <Heart
-                  className={`w-5 h-5 ${
-                    isSaved ? "fill-red-500 text-red-500" : ""
-                  }`}
+                  className={`w-5 h-5 ${isSaved ? "fill-red-500 text-red-500" : ""}`}
                 />
                 <span className="hidden sm:inline">
                   {isSaved ? "Saved" : "Save Job"}
@@ -240,7 +302,7 @@ const SingleJobDescription = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left Column - Job Description (80%) */}
+          {/* ── LEFT: Job Description (80%) ── */}
           <div className="lg:w-4/5">
             <div
               className="bg-white rounded-xl shadow-lg border overflow-hidden"
@@ -254,83 +316,114 @@ const SingleJobDescription = () => {
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-4 mb-4">
-                      {job.clogo && (
-                        <div
-                          className="w-16 h-16 rounded-lg overflow-hidden border"
-                          style={{ borderColor: colors.border }}
-                        >
-                          <img
-                            src={job.clogo}
-                            alt={job.company}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
+                      <div
+                        className="w-16 h-16 rounded-lg overflow-hidden border flex items-center justify-center bg-gray-50"
+                        style={{ borderColor: colors.border }}
+                      >
+                        <img
+                          src={
+                            job.clogo ||
+                            job.companyLogo ||
+                            "/images/default-company.png"
+                          }
+                          alt={job.company}
+                          className="w-full h-full object-contain p-1"
+                          onError={(e) => {
+                            e.target.src = "/images/default-company.png";
+                          }}
+                        />
+                      </div>
                       <div>
                         <h1
-                          className="text-2xl md:text-3xl font-bold mb-2"
+                          className="text-2xl md:text-3xl font-bold mb-1"
                           style={{ color: colors.primary }}
                         >
                           {job.title}
                         </h1>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span className="font-semibold text-lg text-gray-800">
                             {job.company}
                           </span>
-                          <span
-                            className="px-3 py-1 text-sm rounded-full font-medium"
-                            style={{
-                              backgroundColor: colors.lightSecondary,
-                              color: colors.secondary,
-                            }}
-                          >
-                            {job.type}
-                          </span>
+                          {job.type && (
+                            <span
+                              className="px-3 py-1 text-sm rounded-full font-medium"
+                              style={{
+                                backgroundColor: colors.lightSecondary,
+                                color: colors.secondary,
+                              }}
+                            >
+                              {job.type}
+                            </span>
+                          )}
+                          {job.category && (
+                            <span className="px-3 py-1 text-sm rounded-full font-medium bg-blue-50 text-blue-700">
+                              {job.category}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap gap-4 mb-4">
-                      <div className="flex items-center gap-2">
-                        <MapPin
-                          className="w-5 h-5"
-                          style={{ color: colors.primary }}
-                        />
-                        <span className="text-gray-700">{job.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Briefcase
-                          className="w-5 h-5"
-                          style={{ color: colors.primary }}
-                        />
-                        <span className="text-gray-700">
-                          {getExperienceText(job.experience)} experience
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users
-                          className="w-5 h-5"
-                          style={{ color: colors.primary }}
-                        />
-                        <span className="text-gray-700">
-                          {job.vacancy} vacancies
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <User
-                          className="w-5 h-5"
-                          style={{ color: colors.primary }}
-                        />
-                        <span className="text-gray-700">{job.gender}</span>
-                      </div>
+                      {job.location && (
+                        <div className="flex items-center gap-2">
+                          <MapPin
+                            className="w-5 h-5"
+                            style={{ color: colors.primary }}
+                          />
+                          <span className="text-gray-700">{job.location}</span>
+                        </div>
+                      )}
+                      {job.country && (
+                        <div className="flex items-center gap-2">
+                          {job.countryFlag && (
+                            <img
+                              src={job.countryFlag}
+                              alt={job.country}
+                              className="w-5 h-4 object-cover rounded-sm"
+                            />
+                          )}
+                          <span className="text-gray-700">{job.country}</span>
+                        </div>
+                      )}
+                      {job.experience && (
+                        <div className="flex items-center gap-2">
+                          <Briefcase
+                            className="w-5 h-5"
+                            style={{ color: colors.primary }}
+                          />
+                          <span className="text-gray-700">
+                            {job.experience} yrs experience
+                          </span>
+                        </div>
+                      )}
+                      {job.vacancy > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Users
+                            className="w-5 h-5"
+                            style={{ color: colors.primary }}
+                          />
+                          <span className="text-gray-700">
+                            {job.vacancy}{" "}
+                            {job.vacancy > 1 ? "vacancies" : "vacancy"}
+                          </span>
+                        </div>
+                      )}
+                      {job.gender && (
+                        <div className="flex items-center gap-2">
+                          <User
+                            className="w-5 h-5"
+                            style={{ color: colors.primary }}
+                          />
+                          <span className="text-gray-700">{job.gender}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="md:text-right">
-                    <div className="mb-3">
-                      <div className="text-sm text-gray-600">
-                        Monthly Salary
-                      </div>
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600">Salary</div>
                       <div
                         className="text-2xl font-bold"
                         style={{ color: colors.primary }}
@@ -351,12 +444,8 @@ const SingleJobDescription = () => {
                         {isSaved ? "Saved" : "Save Job"}
                       </button>
                       <button
-                        // onClick={() => handleApplyClick(job)}
-                        className="px-8 py-3 rounded-lg font-semibold transition-all hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
-                        style={{
-                          backgroundColor: colors.secondary,
-                          color: "white",
-                        }}
+                        className="px-8 py-3 rounded-lg font-semibold transition-all hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer text-white"
+                        style={{ backgroundColor: colors.secondary }}
                       >
                         Apply Now
                         <ExternalLink className="w-5 h-5" />
@@ -366,78 +455,60 @@ const SingleJobDescription = () => {
                 </div>
               </div>
 
-              {/* Job Details */}
+              {/* Job Details Body */}
               <div className="p-6 space-y-8">
-                {/* Job Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div
-                    className="p-4 rounded-lg"
-                    style={{ backgroundColor: colors.lightPrimary }}
-                  >
-                    <div className="text-sm text-gray-600 mb-1">Category</div>
+                {/* Summary Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { label: "Category", value: job.category || "N/A" },
+                    { label: "Posted", value: formatDate(job.jobPostedDate) },
+                    { label: "Education", value: job.education || "N/A" },
+                    {
+                      label: "Deadline",
+                      value: job.jobEndDate
+                        ? `${formatDate(job.jobEndDate)} (${getDaysLeft(job.jobEndDate)})`
+                        : "N/A",
+                    },
+                  ].map(({ label, value }) => (
                     <div
-                      className="font-semibold"
-                      style={{ color: colors.primary }}
+                      key={label}
+                      className="p-4 rounded-lg"
+                      style={{ backgroundColor: colors.lightPrimary }}
                     >
-                      {job.category}
+                      <div className="text-sm text-gray-600 mb-1">{label}</div>
+                      <div
+                        className="font-semibold text-sm"
+                        style={{ color: colors.primary }}
+                      >
+                        {value}
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    className="p-4 rounded-lg"
-                    style={{ backgroundColor: colors.lightPrimary }}
-                  >
-                    <div className="text-sm text-gray-600 mb-1">Posted</div>
-                    <div
-                      className="font-semibold"
-                      style={{ color: colors.primary }}
-                    >
-                      {getPostedDate(job.id)}
-                    </div>
-                  </div>
-                  <div
-                    className="p-4 rounded-lg"
-                    style={{ backgroundColor: colors.lightPrimary }}
-                  >
-                    <div className="text-sm text-gray-600 mb-1">Education</div>
-                    <div
-                      className="font-semibold"
-                      style={{ color: colors.primary }}
-                    >
-                      {job.education}
-                    </div>
-                  </div>
-                  <div
-                    className="p-4 rounded-lg"
-                    style={{ backgroundColor: colors.lightPrimary }}
-                  >
-                    <div className="text-sm text-gray-600 mb-1">Deadline</div>
-                    <div
-                      className="font-semibold"
-                      style={{ color: colors.primary }}
-                    >
-                      {getPostedDate(job.id + 10)} left
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
-                {/* Job Description */}
-                <div>
-                  <h3
-                    className="text-xl font-semibold mb-4 pb-2 border-b"
-                    style={{
-                      borderColor: colors.border,
-                      color: colors.primary,
-                    }}
-                  >
-                    Job Description
-                  </h3>
-                  <div className="prose max-w-none text-gray-700 leading-relaxed">
-                    <p className="whitespace-pre-line">{job.description}</p>
+                {/* Description */}
+                {job.description && (
+                  <div>
+                    <h3
+                      className="text-xl font-semibold mb-4 pb-2 border-b"
+                      style={{
+                        borderColor: colors.border,
+                        color: colors.primary,
+                      }}
+                    >
+                      Job Description
+                    </h3>
+                    <div
+                      className="prose max-w-none text-gray-700 leading-relaxed"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(job.description),
+                      }}
+                    />
                   </div>
-                </div>
+                )}
 
                 {/* Requirements */}
-                {job.requirements && job.requirements.length > 0 && (
+                {job.requirements?.length > 0 && (
                   <div>
                     <h3
                       className="text-xl font-semibold mb-4 pb-2 border-b"
@@ -449,8 +520,8 @@ const SingleJobDescription = () => {
                       Job Requirements
                     </h3>
                     <ul className="space-y-3">
-                      {job.requirements.map((req, index) => (
-                        <li key={index} className="flex items-start gap-3">
+                      {job.requirements.map((req, i) => (
+                        <li key={i} className="flex items-start gap-3">
                           <CheckCircle
                             className="w-5 h-5 mt-0.5 shrink-0"
                             style={{ color: colors.secondary }}
@@ -463,7 +534,7 @@ const SingleJobDescription = () => {
                 )}
 
                 {/* Skills */}
-                {job.skills && job.skills.length > 0 && (
+                {job.skills?.length > 0 && (
                   <div>
                     <h3
                       className="text-xl font-semibold mb-4 pb-2 border-b"
@@ -475,9 +546,9 @@ const SingleJobDescription = () => {
                       Required Skills
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {job.skills.map((skill, index) => (
+                      {job.skills.map((skill, i) => (
                         <span
-                          key={index}
+                          key={i}
                           className="px-4 py-2 rounded-lg font-medium"
                           style={{
                             backgroundColor: colors.lightPrimary,
@@ -492,7 +563,7 @@ const SingleJobDescription = () => {
                 )}
 
                 {/* Benefits */}
-                {job.benefits && job.benefits.length > 0 && (
+                {job.benefits?.length > 0 && (
                   <div>
                     <h3
                       className="text-xl font-semibold mb-4 pb-2 border-b"
@@ -504,9 +575,9 @@ const SingleJobDescription = () => {
                       Benefits & Perks
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {job.benefits.map((benefit, index) => (
+                      {job.benefits.map((benefit, i) => (
                         <div
-                          key={index}
+                          key={i}
                           className="flex items-center gap-3 p-3 rounded-lg"
                           style={{ backgroundColor: colors.lightSecondary }}
                         >
@@ -521,7 +592,7 @@ const SingleJobDescription = () => {
                   </div>
                 )}
 
-                {/* Company Information */}
+                {/* Company Info */}
                 <div
                   className="p-6 rounded-lg border"
                   style={{ borderColor: colors.border }}
@@ -532,81 +603,74 @@ const SingleJobDescription = () => {
                   >
                     Company Information
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">
-                          Company Name
-                        </div>
-                        <div className="font-semibold text-gray-800">
-                          {job.company}
-                        </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <img
+                      src={
+                        job.clogo ||
+                        job.companyLogo ||
+                        "/images/default-company.png"
+                      }
+                      alt={job.company}
+                      className="w-12 h-12 rounded-lg object-contain border p-1"
+                      style={{ borderColor: colors.border }}
+                      onError={(e) => {
+                        e.target.src = "/images/default-company.png";
+                      }}
+                    />
+                    <div>
+                      <div className="font-semibold text-gray-800">
+                        {job.company}
                       </div>
-                      {job.compnay?.address && (
-                        <div className="flex items-start gap-3">
-                          <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">
-                              Address
-                            </div>
-                            <div className="text-gray-700">
-                              {job.compnay.address}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-4">
-                      {job.compnay?.email &&
-                        job.compnay.email !== "Not specified" && (
-                          <div className="flex items-center gap-3">
-                            <Mail className="w-5 h-5 text-gray-400" />
-                            <div>
-                              <div className="text-sm text-gray-600 mb-1">
-                                Email
-                              </div>
-                              <div className="text-gray-700">
-                                {job.compnay.email}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      {job.compnay?.phone && (
-                        <div className="flex items-center gap-3">
-                          <Phone className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">
-                              Phone
-                            </div>
-                            <div className="text-gray-700">
-                              {job.compnay.phone}
-                            </div>
-                          </div>
-                        </div>
-                      )}
                       {job.compnay?.website && (
-                        <div className="flex items-center gap-3">
-                          <Globe className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">
-                              Website
-                            </div>
-                            <a
-                              href={job.compnay.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              Visit Website
-                            </a>
-                          </div>
-                        </div>
+                        <a
+                          href={job.compnay.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                        >
+                          Visit Website <ExternalLink className="w-3 h-3" />
+                        </a>
                       )}
                     </div>
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {job.compnay?.address && (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <div className="text-sm text-gray-500">Address</div>
+                          <div className="text-gray-700">
+                            {job.compnay.address}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {job.compnay?.email && (
+                      <div className="flex items-center gap-3">
+                        <Mail className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-500">Email</div>
+                          <div className="text-gray-700">
+                            {job.compnay.email}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {job.compnay?.phone && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-500">Phone</div>
+                          <div className="text-gray-700">
+                            {job.compnay.phone}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Apply Section */}
+                {/* CTA */}
                 <div
                   className="p-8 rounded-lg text-center"
                   style={{ backgroundColor: colors.lightSecondary }}
@@ -618,8 +682,7 @@ const SingleJobDescription = () => {
                     Ready to Apply?
                   </h4>
                   <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                    Don't miss this opportunity! Click the button below to start
-                    your application process.
+                    Don't miss this opportunity!
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
@@ -634,15 +697,10 @@ const SingleJobDescription = () => {
                       {isSaved ? "Job Saved" : "Save for Later"}
                     </button>
                     <button
-                      // onClick={() => handleApplyClick(job)}
-                      className="px-10 py-3 rounded-lg font-semibold text-lg transition-transform hover:scale-105 flex items-center justify-center gap-2 cursor-pointer"
-                      style={{
-                        backgroundColor: colors.primary,
-                        color: "white",
-                      }}
+                      className="px-10 py-3 rounded-lg font-semibold text-lg transition-transform hover:scale-105 flex items-center justify-center gap-2 cursor-pointer text-white"
+                      style={{ backgroundColor: colors.primary }}
                     >
-                      Apply Now
-                      <ExternalLink className="w-5 h-5" />
+                      Apply Now <ExternalLink className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
@@ -650,7 +708,7 @@ const SingleJobDescription = () => {
             </div>
           </div>
 
-          {/* Right Column - Related Jobs (20%) */}
+          {/* ── RIGHT: Sidebar (20%) ── */}
           <div className="lg:w-1/5">
             <div className="sticky top-24 space-y-6">
               {/* Related Jobs */}
@@ -681,32 +739,34 @@ const SingleJobDescription = () => {
                 <div className="p-4">
                   {relatedJobs.length > 0 ? (
                     <div className="space-y-4">
-                      {relatedJobs.map((relatedJob) => (
+                      {relatedJobs.map((rj) => (
                         <Link
-                          key={relatedJob.id}
-                          to={`/job/${relatedJob.id}`}
-                          className="block p-3 rounded-lg border cursor-pointer hover:shadow-sm transition-all duration-200"
+                          key={rj.jobId}
+                          to={getJobUrl(rj.jobId, rj.title)}
+                          className="block p-3 rounded-lg border hover:shadow-sm transition-all"
                           style={{ borderColor: colors.border }}
                         >
                           <h4 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
-                            {relatedJob.title}
+                            {rj.title}
                           </h4>
-                          <p className="text-gray-700 text-xs mb-2">
-                            {relatedJob.company}
+                          <p className="text-gray-600 text-xs mb-2">
+                            {rj.company}
                           </p>
                           <div className="flex items-center justify-between">
-                            <span
-                              className="text-xs px-2 py-1 rounded"
-                              style={{
-                                backgroundColor: colors.lightSecondary,
-                                color: colors.secondary,
-                              }}
-                            >
-                              {relatedJob.type}
+                            {rj.type && (
+                              <span
+                                className="text-xs px-2 py-1 rounded"
+                                style={{
+                                  backgroundColor: colors.lightSecondary,
+                                  color: colors.secondary,
+                                }}
+                              >
+                                {rj.type}
+                              </span>
+                            )}
+                            <span className="text-xs text-gray-500">
+                              {formatSalary(rj.salary)}
                             </span>
-                            <div className="text-xs text-gray-500">
-                              {formatSalary(relatedJob.salary)}
-                            </div>
                           </div>
                         </Link>
                       ))}
@@ -722,72 +782,77 @@ const SingleJobDescription = () => {
                 </div>
               </div>
 
-              {/* Senior Management Jobs */}
-              <div
-                className="bg-white rounded-xl shadow-sm border overflow-hidden"
-                style={{ borderColor: colors.border }}
-              >
+              {/* More Jobs */}
+              {seniorJobs.length > 0 && (
                 <div
-                  className="p-4 border-b"
-                  style={{
-                    borderColor: colors.border,
-                    backgroundColor: colors.lightPrimary,
-                  }}
+                  className="bg-white rounded-xl shadow-sm border overflow-hidden"
+                  style={{ borderColor: colors.border }}
                 >
-                  <div className="flex items-center gap-2">
-                    <Award
-                      className="w-5 h-5"
-                      style={{ color: colors.primary }}
-                    />
-                    <h3
-                      className="font-semibold"
-                      style={{ color: colors.primary }}
-                    >
-                      Senior Management
-                    </h3>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <div className="space-y-4">
-                    {seniorJobs.slice(0, 4).map((seniorJob, index) => (
-                      <Link
-                        key={index}
-                        to={`/job/${seniorJob.id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                      >
-                        <div
-                          className="w-10 h-10 rounded overflow-hidden border"
-                          style={{ borderColor: colors.border }}
-                        >
-                          <img
-                            src={seniorJob.clogo}
-                            alt={seniorJob.companyname}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">
-                            {seniorJob.title}
-                          </h4>
-                          <p className="text-gray-600 text-xs">
-                            {seniorJob.companyname}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                  <Link
-                    to="/jobs"
-                    className="block mt-4 text-center py-2 text-sm rounded-lg border transition-colors"
+                  <div
+                    className="p-4 border-b"
                     style={{
-                      borderColor: colors.primary,
-                      color: colors.primary,
+                      borderColor: colors.border,
+                      backgroundColor: colors.lightPrimary,
                     }}
                   >
-                    View All Senior Jobs
-                  </Link>
+                    <div className="flex items-center gap-2">
+                      <Award
+                        className="w-5 h-5"
+                        style={{ color: colors.primary }}
+                      />
+                      <h3
+                        className="font-semibold"
+                        style={{ color: colors.primary }}
+                      >
+                        More Jobs
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="space-y-4">
+                      {seniorJobs.map((sj, i) => (
+                        <Link
+                          key={sj.jobId || i}
+                          to={getJobUrl(sj.jobId, sj.title)}
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <div
+                            className="w-10 h-10 rounded overflow-hidden border shrink-0"
+                            style={{ borderColor: colors.border }}
+                          >
+                            <img
+                              src={sj.companyLogo}
+                              alt={sj.company}
+                              className="w-full h-full object-contain p-0.5"
+                              onError={(e) => {
+                                e.target.src = "/images/default-company.png";
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">
+                              {sj.title}
+                            </h4>
+                            <p className="text-gray-500 text-xs">
+                              {sj.company}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                    <Link
+                      to="/jobs"
+                      className="block mt-4 text-center py-2 text-sm rounded-lg border transition-colors"
+                      style={{
+                        borderColor: colors.primary,
+                        color: colors.primary,
+                      }}
+                    >
+                      View All Jobs
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Quick Actions */}
               <div
@@ -844,7 +909,7 @@ const SingleJobDescription = () => {
         </div>
       </div>
 
-      {/* Mobile Apply Button */}
+      {/* Mobile Apply Bar */}
       <div
         className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg"
         style={{ borderColor: colors.border }}
@@ -859,25 +924,13 @@ const SingleJobDescription = () => {
             {isSaved ? "Saved" : "Save"}
           </button>
           <button
-            // onClick={() => handleApplyClick(job)}
-            className="flex-1 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer"
-            style={{ backgroundColor: colors.secondary, color: "white" }}
+            className="flex-1 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer text-white"
+            style={{ backgroundColor: colors.secondary }}
           >
             Apply Now
           </button>
         </div>
       </div>
-      {/* {showApplyPopup && selectedJobForApply && (
-        <ApplyPopUps
-          isOpen={showApplyPopup}
-          onClose={() => {
-            setShowApplyPopup(false);
-            setSelectedJobForApply(null);
-          }}
-          jobTitle={selectedJobForApply.title}
-          company={selectedJobForApply.company}
-        />
-      )} */}
     </div>
   );
 };
