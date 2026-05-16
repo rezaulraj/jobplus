@@ -174,13 +174,20 @@ const SeekerSignin = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-gray-600 space-x-2">
               Don't have an account?{" "}
               <Link
                 to="/jobseeker/signup"
                 className="text-[#1e2558] hover:text-[#4eb956] font-semibold hover:underline transition-colors duration-300 cursor-pointer"
               >
                 Create one now
+              </Link>
+              <span>/</span>
+              <Link
+                to="/"
+                className="text-[#1e2558] hover:text-[#4eb956] font-semibold hover:underline transition-colors duration-300 cursor-pointer"
+              >
+                Home
               </Link>
             </p>
           </div>

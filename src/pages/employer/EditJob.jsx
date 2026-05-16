@@ -905,12 +905,11 @@ const EditJob = () => {
     if (!countries.length) return;
 
     setForm((p) => {
-      if (p.jobLocation) return p;
-
+      const defaultCountry = countries.find((c) => c.isoCode === p.country);
       return {
         ...p,
-        jobLocation:
-          getCountryNameFromApi(countries, p.country) || "Bangladesh",
+        countryId: p.countryId || defaultCountry?.countryId || "", // ← resolve on load
+        jobLocation: p.jobLocation || defaultCountry?.name || "Bangladesh",
       };
     });
   }, [countries]);

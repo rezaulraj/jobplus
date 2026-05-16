@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   FaUpload,
   FaEye,
+  FaEyeSlash,
   FaLock,
   FaDownload,
   FaStar,
@@ -11,16 +12,18 @@ import {
   FaCheck,
   FaTimes,
   FaFileAlt,
-  FaShieldAlt,
   FaGlobe,
   FaSpinner,
   FaPlus,
+  FaChevronUp,
+  FaChevronDown,
+  FaExternalLinkAlt,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSeekerStore from "../../store/seekerStore";
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+// ─── helpers ──────────────────────────────────────────────────────────────────
 const formatDate = (d) => {
   if (!d) return "—";
   if (d === "System") return "System Generated";
@@ -43,33 +46,32 @@ const formatSize = (bytes) => {
 
 const getExt = (fileName = "") => fileName.split(".").pop().toLowerCase();
 
+const isPdf = (fileName = "") => getExt(fileName) === "pdf";
+
 // ─── File icon ────────────────────────────────────────────────────────────────
 const FileIcon = ({ fileName = "", size = "text-2xl", system = false }) => {
   const ext = getExt(fileName);
-  const isPdf = ext === "pdf";
-  const cls = system
-    ? "text-sky-500"
-    : isPdf
-      ? "text-rose-500"
-      : "text-blue-500";
-  return isPdf ? (
+  const pdf = ext === "pdf";
+  const cls = system ? "text-sky-500" : pdf ? "text-rose-500" : "text-blue-500";
+  return pdf ? (
     <FaFilePdf className={`${cls} ${size}`} />
   ) : (
     <FaFileWord className={`${cls} ${size}`} />
   );
 };
 
-// ─── Pill badge ───────────────────────────────────────────────────────────────
+// ─── Badge ────────────────────────────────────────────────────────────────────
 const Badge = ({ children, color = "emerald" }) => {
-  const map = {
-    emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    gray: "bg-gray-100   text-gray-600   border-gray-200",
-    sky: "bg-sky-50     text-sky-700    border-sky-100",
-    amber: "bg-amber-50   text-amber-700  border-amber-100",
+  const styles = {
+    emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    gray: "bg-gray-100 text-gray-600 border-gray-200",
+    sky: "bg-sky-50 text-sky-700 border-sky-200",
+    amber: "bg-amber-50 text-amber-700 border-amber-200",
+    red: "bg-red-50 text-red-600 border-red-200",
   };
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full border ${map[color]}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full border ${styles[color]}`}
     >
       {children}
     </span>
@@ -77,7 +79,7 @@ const Badge = ({ children, color = "emerald" }) => {
 };
 
 // ─── Action button ────────────────────────────────────────────────────────────
-const ActionBtn = ({ onClick, title, disabled, children, danger }) => (
+const ActionBtn = ({ onClick, title, disabled, children, danger, active }) => (
   <button
     onClick={onClick}
     title={title}
@@ -86,14 +88,16 @@ const ActionBtn = ({ onClick, title, disabled, children, danger }) => (
       ${
         danger
           ? "text-red-400 hover:text-red-600 hover:bg-red-50"
-          : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
+          : active
+            ? "text-emerald-600 bg-emerald-50"
+            : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
       }`}
   >
     {children}
   </button>
 );
 
-// ─── Animated progress bar ────────────────────────────────────────────────────
+// ─── Progress bar ─────────────────────────────────────────────────────────────
 const ProgressBar = ({ value }) => (
   <div className="mt-4">
     <div className="flex justify-between text-xs text-gray-500 mb-1.5">
@@ -112,9 +116,90 @@ const ProgressBar = ({ value }) => (
   </div>
 );
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ─── PDF Inline Viewer ────────────────────────────────────────────────────────
+const PdfViewer = ({ cv, onClose }) => {
+  const url = cv.resumeFileUrl || cv.fileUrl || cv.url || "";
+  const canEmbed = isPdf(cv.fileName) && url;
+
+  return (
+    <div className="border-t border-gray-100 overflow-hidden">
+      {/* Viewer toolbar */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+        <div className="flex items-center gap-2 min-w-0">
+          <FaFilePdf className="text-rose-500 shrink-0" size={13} />
+          <span className="text-xs font-semibold text-gray-700 truncate">
+            {cv.title || cv.fileName || "Resume"}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {url && (
+            <>
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+              >
+                <FaExternalLinkAlt size={10} /> Open
+              </a>
+              <a
+                href={url}
+                download={cv.fileName || "resume"}
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+              >
+                <FaDownload size={10} /> Download
+              </a>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Embed or fallback */}
+      {canEmbed ? (
+        <>
+          <iframe
+            src={url}
+            title={`PDF preview – ${cv.title || cv.fileName}`}
+            className="w-full block bg-gray-700"
+            style={{ height: "520px", border: "none" }}
+          />
+          <p className="text-[11px] text-gray-400 px-4 py-2 bg-gray-50 border-t border-gray-100">
+            PDF not rendering?{" "}
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-600 font-medium hover:underline"
+            >
+              Open in new tab ↗
+            </a>
+          </p>
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-3 py-14 bg-gray-50">
+          <FaFileAlt className="text-gray-300 text-4xl" />
+          <p className="text-sm text-gray-500 font-medium">
+            Preview not available for this file type
+          </p>
+          {url && (
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-xl hover:bg-emerald-600 transition-all"
+            >
+              <FaExternalLinkAlt size={10} /> Open File
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════
 const SeekerCVUpload = () => {
   const {
     fetchSeekerProfile,
@@ -124,7 +209,6 @@ const SeekerCVUpload = () => {
     deleteResumeAsset,
   } = useSeekerStore();
 
-  // ── state ──────────────────────────────────────────────────────────────────
   const [cvs, setCvs] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -133,14 +217,14 @@ const SeekerCVUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [busy, setBusy] = useState({});
+  const [expandedId, setExpandedId] = useState(null);
 
   const fileRef = useRef(null);
 
-  // ── load CVs from profile ──────────────────────────────────────────────────
+  // ── load CVs ───────────────────────────────────────────────────────────────
   const loadCVs = useCallback(async () => {
     const result = await fetchSeekerProfile();
     if (result?.success && result?.data) {
-      // Check if resumeAssets array exists and has items
       let assets = [];
 
       if (
@@ -148,10 +232,8 @@ const SeekerCVUpload = () => {
         Array.isArray(result.data.resumeAssets) &&
         result.data.resumeAssets.length > 0
       ) {
-        // Use resumeAssets if available
         assets = result.data.resumeAssets;
       } else if (result.data.resumeFileUrl) {
-        // Convert single resumeFileUrl to CV object format
         const fileName =
           result.data.resumeFileUrl.split("/").pop() || "resume.pdf";
         const fileExt = getExt(fileName);
@@ -160,7 +242,7 @@ const SeekerCVUpload = () => {
           {
             _id: result.data.activeResumeFileId || "single-resume",
             title: "My Resume",
-            fileName: fileName,
+            fileName: fileName.includes(".") ? fileName : `${fileName}.pdf`,
             resumeFileUrl: result.data.resumeFileUrl,
             fileUrl: result.data.resumeFileUrl,
             url: result.data.resumeFileUrl,
@@ -170,8 +252,8 @@ const SeekerCVUpload = () => {
             uploadDate: result.data.updatedAt || result.data.createdAt,
             createdAt: result.data.createdAt,
             updatedAt: result.data.updatedAt,
-            fileSize: null, // Size not provided in your API response
-            fileExt: fileExt,
+            fileSize: null,
+            fileExt,
           },
         ];
       }
@@ -187,6 +269,7 @@ const SeekerCVUpload = () => {
 
   // ── helpers ────────────────────────────────────────────────────────────────
   const setBusyId = (id, v) => setBusy((p) => ({ ...p, [id]: v }));
+
   const resetModal = () => {
     setShowModal(false);
     setCvTitle("");
@@ -195,11 +278,14 @@ const SeekerCVUpload = () => {
     if (fileRef.current) fileRef.current.value = "";
   };
 
+  const toggleExpand = (id) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
   // ── file select ────────────────────────────────────────────────────────────
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (file.size > 10 * 1024 * 1024) {
       toast.error("File must be under 10 MB");
       return;
@@ -209,7 +295,6 @@ const SeekerCVUpload = () => {
       toast.error("Only PDF and Word files allowed");
       return;
     }
-
     setSelectedFile(file);
     if (!cvTitle) setCvTitle(file.name.replace(/\.[^/.]+$/, ""));
   };
@@ -220,13 +305,12 @@ const SeekerCVUpload = () => {
     if (file) handleFileSelect({ target: { files: [file] } });
   };
 
-  // ── UPLOAD ─────────────────────────────────────────────────────────────────
+  // ── upload ─────────────────────────────────────────────────────────────────
   const handleUpload = async () => {
     if (!selectedFile || !cvTitle.trim()) {
       toast.error("Please select a file and enter a title");
       return;
     }
-
     setIsUploading(true);
     setUploadProgress(10);
 
@@ -241,7 +325,6 @@ const SeekerCVUpload = () => {
     try {
       const result = await uploadResumeFile(fd);
       clearInterval(tick);
-
       if (result?.success) {
         setUploadProgress(100);
         toast.success("CV uploaded successfully!");
@@ -263,13 +346,12 @@ const SeekerCVUpload = () => {
     }
   };
 
-  // ── TOGGLE VISIBILITY (public / private) ───────────────────────────────────
+  // ── toggle visibility ──────────────────────────────────────────────────────
   const handleToggleVisibility = async (cv) => {
     if (cv.type === "system" || cv._id === "single-resume") {
       toast.info("Visibility toggle not available for this CV");
       return;
     }
-
     const newVis = cv.visibility === "private" ? "public" : "private";
     setBusyId(cv._id, true);
     const result = await updateResumeAssetVisibility(cv._id, newVis);
@@ -283,15 +365,13 @@ const SeekerCVUpload = () => {
     setBusyId(cv._id, false);
   };
 
-  // ── SET ACTIVE (default) ───────────────────────────────────────────────────
+  // ── set active ─────────────────────────────────────────────────────────────
   const handleSetActive = async (cv) => {
     if (cv.isActive) return;
-
     if (cv._id === "single-resume") {
       toast.info("This is your active resume");
       return;
     }
-
     setBusyId(cv._id, true);
     const result = await setResumeAssetActive(cv._id, true);
     if (result?.success) {
@@ -302,23 +382,22 @@ const SeekerCVUpload = () => {
     setBusyId(cv._id, false);
   };
 
-  // ── DELETE ─────────────────────────────────────────────────────────────────
+  // ── delete ─────────────────────────────────────────────────────────────────
   const handleDelete = async (cv) => {
     if (cv.type === "system") {
       toast.info("System CV cannot be deleted");
       return;
     }
-
     if (cv._id === "single-resume") {
       toast.info("Cannot delete the main resume file");
       return;
     }
-
     if (!window.confirm(`Delete "${cv.title || cv.fileName}"?`)) return;
     setBusyId(cv._id, true);
     const result = await deleteResumeAsset(cv._id);
     if (result?.success) {
       setCvs((p) => p.filter((c) => c._id !== cv._id));
+      if (expandedId === cv._id) setExpandedId(null);
       toast.success("CV deleted");
     } else {
       toast.error("Failed to delete");
@@ -326,13 +405,7 @@ const SeekerCVUpload = () => {
     setBusyId(cv._id, false);
   };
 
-  // ── PREVIEW / DOWNLOAD ─────────────────────────────────────────────────────
-  const handlePreview = (cv) => {
-    const url = cv.resumeFileUrl || cv.fileUrl || cv.url;
-    if (url) window.open(url, "_blank", "noopener noreferrer");
-    else toast.info("Preview not available");
-  };
-
+  // ── download ───────────────────────────────────────────────────────────────
   const handleDownload = (cv) => {
     const url = cv.resumeFileUrl || cv.fileUrl || cv.url;
     if (!url) {
@@ -345,7 +418,7 @@ const SeekerCVUpload = () => {
     a.click();
   };
 
-  // ── loading skeleton ───────────────────────────────────────────────────────
+  // ── loading ────────────────────────────────────────────────────────────────
   if (pageLoading)
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -358,7 +431,7 @@ const SeekerCVUpload = () => {
       </div>
     );
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50/80">
       <div className="container mx-auto px-4 py-8">
@@ -373,6 +446,7 @@ const SeekerCVUpload = () => {
           <span>/</span>
           <span className="text-emerald-600 font-semibold">CV Manager</span>
         </nav>
+
         <h1 className="text-2xl font-extrabold text-gray-900 mb-6 tracking-tight">
           Manage Your CVs
         </h1>
@@ -380,7 +454,7 @@ const SeekerCVUpload = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* ── MAIN COLUMN ── */}
           <div className="lg:w-2/3 space-y-4">
-            {/* Header card */}
+            {/* Header */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5">
               <div className="flex items-center justify-between">
                 <div>
@@ -425,16 +499,22 @@ const SeekerCVUpload = () => {
                   const isSystem = cv.type === "system";
                   const isPrivate = cv.visibility === "private";
                   const isBusy = !!busy[cv._id];
-                  const hasUrl = !!(cv.resumeFileUrl || cv.fileUrl || cv.url);
                   const isMainResume = cv._id === "single-resume";
+                  const isExpanded = expandedId === cv._id;
+                  const fileUrl =
+                    cv.resumeFileUrl || cv.fileUrl || cv.url || "";
 
                   return (
                     <div
                       key={cv._id}
-                      className={`bg-white rounded-2xl border transition-all duration-200 hover:shadow-md overflow-hidden
-                        ${cv.isActive ? "border-emerald-300 shadow-sm shadow-emerald-100" : "border-gray-100"}`}
+                      className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden
+                        ${
+                          cv.isActive
+                            ? "border-emerald-300 shadow-sm shadow-emerald-50"
+                            : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
+                        }`}
                     >
-                      {/* Active indicator strip */}
+                      {/* Active strip */}
                       {cv.isActive && (
                         <div
                           className="h-0.5 w-full"
@@ -445,11 +525,14 @@ const SeekerCVUpload = () => {
                         />
                       )}
 
+                      {/* Card body */}
                       <div className="p-5">
                         <div className="flex items-start gap-4">
-                          {/* File icon */}
+                          {/* Icon */}
                           <div
-                            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${isSystem ? "bg-sky-50" : "bg-gray-50"}`}
+                            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                              isSystem ? "bg-sky-50" : "bg-rose-50"
+                            }`}
                           >
                             <FileIcon
                               fileName={cv.fileName}
@@ -461,7 +544,7 @@ const SeekerCVUpload = () => {
                           {/* Info */}
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                              <h3 className="font-bold text-gray-800 text-sm truncate max-w-xs">
+                              <h3 className="font-bold text-gray-800 text-sm truncate max-w-[200px]">
                                 {cv.title || cv.fileName || "Untitled CV"}
                               </h3>
                               {cv.isActive && (
@@ -480,28 +563,19 @@ const SeekerCVUpload = () => {
                               )}
                             </div>
 
-                            {/* <p className="text-xs text-gray-400 truncate">
-                              <FaFileAlt className="inline mr-1" size={10} />
-                              {cv.fileName || "resume.pdf"}
-                              {cv.fileSize ? (
-                                <span className="ml-2 text-gray-300">
-                                  · {formatSize(cv.fileSize)}
-                                </span>
-                              ) : null}
-                            </p> */}
-
-                            <p className="text-[10px] text-gray-400 mt-1">
+                            <p className="text-[10px] text-gray-400 mt-0.5">
                               {cv.uploadDate || cv.createdAt
                                 ? `Uploaded: ${formatDate(cv.uploadDate || cv.createdAt)}`
                                 : "Always available"}
                             </p>
 
-                            {/* URL preview */}
-                            {/* {hasUrl && (
-                              <p className="text-[10px] text-emerald-500 mt-0.5 truncate font-medium">
-                                {cv.resumeFileUrl || cv.fileUrl || cv.url}
-                              </p>
-                            )} */}
+                            {/* File name sub-label */}
+                            <p className="text-[10px] text-gray-300 mt-0.5 truncate">
+                              {cv.fileName || "resume.pdf"}
+                              {cv.fileSize
+                                ? ` · ${formatSize(cv.fileSize)}`
+                                : ""}
+                            </p>
                           </div>
 
                           {/* Actions */}
@@ -512,18 +586,6 @@ const SeekerCVUpload = () => {
                               </div>
                             ) : (
                               <>
-                                <ActionBtn
-                                  onClick={() => handlePreview(cv)}
-                                  title="Preview"
-                                >
-                                  <FaEye size={13} />
-                                </ActionBtn>
-                                <ActionBtn
-                                  onClick={() => handleDownload(cv)}
-                                  title="Download"
-                                >
-                                  <FaDownload size={13} />
-                                </ActionBtn>
                                 {!isSystem && !isMainResume && (
                                   <ActionBtn
                                     onClick={() => handleToggleVisibility(cv)}
@@ -546,6 +608,12 @@ const SeekerCVUpload = () => {
                                     <FaStar size={12} />
                                   </ActionBtn>
                                 )}
+                                <ActionBtn
+                                  onClick={() => handleDownload(cv)}
+                                  title="Download"
+                                >
+                                  <FaDownload size={12} />
+                                </ActionBtn>
                                 {!isSystem && !isMainResume && (
                                   <ActionBtn
                                     onClick={() => handleDelete(cv)}
@@ -575,6 +643,30 @@ const SeekerCVUpload = () => {
                             </div>
                           )}
                       </div>
+
+                      {/* PDF Inline Viewer */}
+                      {isExpanded && <PdfViewer cv={cv} />}
+
+                      {/* View / Collapse toggle bar */}
+                      <button
+                        onClick={() => toggleExpand(cv._id)}
+                        className={`w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold border-t transition-all duration-200
+                          ${
+                            isExpanded
+                              ? "border-gray-100 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-50"
+                              : "border-gray-100 text-gray-400 hover:text-emerald-600 hover:bg-gray-50"
+                          }`}
+                      >
+                        {isExpanded ? (
+                          <>
+                            <FaChevronUp size={10} /> Collapse preview
+                          </>
+                        ) : (
+                          <>
+                            <FaEye size={11} /> View PDF
+                          </>
+                        )}
+                      </button>
                     </div>
                   );
                 })}
@@ -591,30 +683,22 @@ const SeekerCVUpload = () => {
 
               {[
                 {
-                  color: "emerald",
                   dot: "bg-emerald-500",
-                  icon: <FaStar className="text-emerald-500" />,
                   title: "Active CV",
                   desc: "Employers see this when they search. Set any CV as active — it updates instantly.",
                 },
                 {
-                  color: "violet",
                   dot: "bg-violet-500",
-                  icon: <FaLock className="text-violet-500" />,
                   title: "Private CV",
                   desc: "Only visible to you. Toggle privacy any time using the lock icon.",
                 },
                 {
-                  color: "sky",
                   dot: "bg-sky-500",
-                  icon: <FaFileAlt className="text-sky-500" />,
                   title: "Multiple CVs",
                   desc: "Upload different CVs tailored for different roles or industries.",
                 },
                 {
-                  color: "amber",
                   dot: "bg-amber-500",
-                  icon: <FaStar className="text-amber-500" />,
                   title: "Primary Resume",
                   desc: "Your main resume file from profile setup.",
                 },
@@ -654,7 +738,6 @@ const SeekerCVUpload = () => {
                 </ul>
               </div>
 
-              {/* Upload CTA */}
               <button
                 onClick={() => setShowModal(true)}
                 className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-sm font-bold rounded-xl transition-all shadow-sm shadow-emerald-200"
@@ -666,21 +749,22 @@ const SeekerCVUpload = () => {
         </div>
       </div>
 
-      {/* Upload Modal - same as before */}
+      {/* ── UPLOAD MODAL ── */}
       {showModal && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50"
           style={{ animation: "fadeIn 0.18s ease" }}
         >
           <style>{`
-            @keyframes fadeIn   { from{opacity:0}         to{opacity:1} }
-            @keyframes slideUp  { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+            @keyframes fadeIn  { from{opacity:0}                                    to{opacity:1} }
+            @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
           `}</style>
 
           <div
             className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
             style={{ animation: "slideUp 0.22s cubic-bezier(0.4,0,0.2,1)" }}
           >
+            {/* Modal header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div>
                 <h2 className="text-base font-extrabold text-gray-900 tracking-tight">
@@ -700,6 +784,7 @@ const SeekerCVUpload = () => {
             </div>
 
             <div className="p-6 space-y-5">
+              {/* Requirements */}
               <div className="bg-gray-50 rounded-2xl p-4 space-y-1.5">
                 <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-2">
                   Requirements
@@ -720,6 +805,7 @@ const SeekerCVUpload = () => {
                 ))}
               </div>
 
+              {/* Title */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                   CV Title *
@@ -734,6 +820,7 @@ const SeekerCVUpload = () => {
                 />
               </div>
 
+              {/* File drop zone */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                   File *
@@ -754,9 +841,10 @@ const SeekerCVUpload = () => {
                     onChange={handleFileSelect}
                     disabled={isUploading}
                   />
+
                   {selectedFile ? (
                     <div className="space-y-2">
-                      <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto">
+                      <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto">
                         <FileIcon
                           fileName={selectedFile.name}
                           size="text-2xl"
@@ -802,6 +890,7 @@ const SeekerCVUpload = () => {
 
               {isUploading && <ProgressBar value={uploadProgress} />}
 
+              {/* Actions */}
               <div className="flex gap-3 pt-1">
                 <button
                   onClick={resetModal}
