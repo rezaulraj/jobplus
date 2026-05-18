@@ -1,5 +1,5 @@
 // pages/employer/JobApplications.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   FaArrowLeft,
@@ -12,30 +12,31 @@ import {
   FaStar,
   FaRegStar,
   FaSpinner,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaHourglassHalf,
-  FaFileAlt,
-  FaChevronDown,
-  FaFilter,
-  FaSortAmountDown,
-  FaCalendarAlt,
-  FaClock,
   FaUserCheck,
   FaUserTimes,
+  FaFileAlt,
+  FaChevronDown,
+  FaClock,
   FaRegClock,
   FaTimes,
-  FaCheck,
   FaEnvelope,
   FaPhone,
-  FaLinkedin,
-  FaExternalLinkAlt,
   FaGraduationCap,
   FaCode,
-  FaEllipsisH,
+  FaGlobe,
+  FaBirthdayCake,
+  FaVenusMars,
+  FaLanguage,
+  FaHeart,
+  FaBriefcase as FaWork,
+  FaMapPin,
+  FaCheckCircle,
+  FaExternalLinkAlt,
 } from "react-icons/fa";
 import useJobPostStore from "../../store/jobPostStore";
 import useApplicationStore from "../../store/applicationStore";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const APP_STATUS = {
@@ -43,53 +44,51 @@ const APP_STATUS = {
     label: "Applied",
     bg: "bg-blue-50",
     text: "text-blue-600",
-    border: "border-blue-100",
+    border: "border-blue-200",
     dot: "bg-blue-400",
     icon: <FaRegClock size={9} />,
+    gradient: "from-blue-500 to-blue-600",
   },
   shortlisted: {
     label: "Shortlisted",
     bg: "bg-amber-50",
     text: "text-amber-600",
-    border: "border-amber-100",
+    border: "border-amber-200",
     dot: "bg-amber-400",
     icon: <FaStar size={9} />,
+    gradient: "from-amber-400 to-orange-500",
   },
   reviewed: {
     label: "Reviewed",
     bg: "bg-purple-50",
     text: "text-purple-600",
-    border: "border-purple-100",
+    border: "border-purple-200",
     dot: "bg-purple-400",
     icon: <FaEye size={9} />,
+    gradient: "from-purple-500 to-purple-600",
   },
   hired: {
     label: "Hired",
     bg: "bg-emerald-50",
     text: "text-emerald-600",
-    border: "border-emerald-100",
+    border: "border-emerald-200",
     dot: "bg-emerald-500",
     icon: <FaUserCheck size={9} />,
+    gradient: "from-emerald-500 to-teal-500",
   },
   rejected: {
     label: "Rejected",
     bg: "bg-red-50",
     text: "text-red-500",
-    border: "border-red-100",
+    border: "border-red-200",
     dot: "bg-red-400",
     icon: <FaUserTimes size={9} />,
+    gradient: "from-red-400 to-rose-500",
   },
 };
 
-// ── Avatar initials generator ─────────────────────────────────────────────────
-const getInitials = (name = "") => {
-  const parts = name.trim().split(" ");
-  return parts.length >= 2
-    ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-    : name.slice(0, 2).toUpperCase();
-};
-
-const AVATAR_COLORS = [
+// ── Avatar ────────────────────────────────────────────────────────────────────
+const AVATAR_GRADIENTS = [
   "from-violet-500 to-purple-600",
   "from-blue-500 to-cyan-500",
   "from-emerald-500 to-teal-500",
@@ -98,9 +97,634 @@ const AVATAR_COLORS = [
   "from-[#1E2558] to-[#4EB956]",
 ];
 
-const getAvatarColor = (name = "") => {
-  const idx = name.charCodeAt(0) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[idx];
+const getInitials = (name = "") => {
+  const parts = name.trim().split(" ");
+  return parts.length >= 2
+    ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+    : name.slice(0, 2).toUpperCase();
+};
+
+const getAvatarGradient = (name = "") =>
+  AVATAR_GRADIENTS[name.charCodeAt(0) % AVATAR_GRADIENTS.length];
+
+// ── Seeker Profile Drawer ─────────────────────────────────────────────────────
+const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
+  const [activeTab, setActiveTab] = useState("overview");
+  const statusKey = application?.status || "applied";
+  const statusCfg = APP_STATUS[statusKey] || APP_STATUS.applied;
+
+  if (!seeker) return null;
+
+  const info = seeker.personalInfo || {};
+  const name = info.name || "Unknown Applicant";
+  const avatarGradient = getAvatarGradient(name);
+
+  const proficiencyColor = (p) => {
+    const map = {
+      native: "bg-emerald-500",
+      fluent: "bg-blue-500",
+      advanced: "bg-violet-500",
+      intermediate: "bg-amber-500",
+      beginner: "bg-gray-400",
+    };
+    return map[p] || "bg-gray-400";
+  };
+
+  const proficiencyWidth = (p) => {
+    const map = {
+      native: "100%",
+      fluent: "85%",
+      advanced: "70%",
+      intermediate: "55%",
+      beginner: "30%",
+    };
+    return map[p] || "40%";
+  };
+
+  const skillProficiencyDots = (p) => {
+    const map = {
+      expert: 5,
+      advanced: 4,
+      intermediate: 3,
+      beginner: 2,
+      basic: 1,
+    };
+    return map[p] || 3;
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      {/* Backdrop */}
+      <div
+        className="flex-1 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+        style={{ animation: "fadeIn 0.2s ease" }}
+      />
+
+      {/* Drawer */}
+      <div
+        className="w-full max-w-xl bg-white flex flex-col shadow-2xl overflow-hidden"
+        style={{ animation: "slideIn 0.3s cubic-bezier(0.16,1,0.3,1)" }}
+      >
+        {/* ─ Hero Header ─ */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#1E2558] to-[#0f143a] flex-shrink-0">
+          {/* Decorative circles */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/5" />
+          <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-[#4EB956]/20" />
+
+          <div className="relative px-6 pt-6 pb-5">
+            <div className="flex items-start justify-between mb-4">
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${statusCfg.gradient} text-white shadow-sm`}
+              >
+                {statusCfg.icon}
+                {statusCfg.label}
+              </span>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-all"
+              >
+                <FaTimes size={12} />
+              </button>
+            </div>
+
+            <div className="flex items-end gap-4">
+              {seeker.profileImage ? (
+                <img
+                  src={seeker.profileImage}
+                  alt={name}
+                  className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20 shadow-lg flex-shrink-0"
+                />
+              ) : (
+                <div
+                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg`}
+                >
+                  {getInitials(name)}
+                </div>
+              )}
+              <div className="min-w-0 mb-1">
+                <h2 className="text-lg font-bold text-white leading-tight">
+                  {name}
+                </h2>
+                <p className="text-white/60 text-xs mt-0.5">
+                  {info.careerLevel || "Professional"} · {info.experience || ""}
+                </p>
+                {info.city && info.country && (
+                  <p className="flex items-center gap-1 text-white/50 text-xs mt-1">
+                    <FaMapMarkerAlt size={9} />
+                    {info.city}, {info.country}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Quick info pills */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              {info.email && (
+                <a
+                  href={`mailto:${info.email}`}
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 text-xs transition-all"
+                >
+                  <FaEnvelope size={9} /> {info.email}
+                </a>
+              )}
+              {info.mobile && (
+                <a
+                  href={`tel:${info.mobile}`}
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 text-xs transition-all"
+                >
+                  <FaPhone size={9} /> {info.mobile}
+                </a>
+              )}
+              {seeker.profileCompletion && (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 bg-[#4EB956]/20 rounded-lg text-[#4EB956] text-xs font-semibold">
+                  <FaCheckCircle size={9} /> {seeker.profileCompletion}%
+                  Complete
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-t border-white/10 px-2">
+            {["overview", "experience", "skills", "projects"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-3 text-xs font-semibold capitalize transition-all border-b-2 ${
+                  activeTab === tab
+                    ? "text-[#4EB956] border-[#4EB956]"
+                    : "text-white/40 border-transparent hover:text-white/70"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ─ Tab Content ─ */}
+        <div className="flex-1 overflow-y-auto">
+          {activeTab === "overview" && (
+            <div className="p-6 space-y-5">
+              {/* Summary */}
+              {seeker.summary && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                    Summary
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    {seeker.summary}
+                  </p>
+                </div>
+              )}
+
+              {/* Personal Details */}
+              <div>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                  Personal Details
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    {
+                      icon: <FaVenusMars size={10} />,
+                      label: "Gender",
+                      value: info.gender,
+                    },
+                    {
+                      icon: <FaHeart size={10} />,
+                      label: "Status",
+                      value: info.maritalStatus,
+                    },
+                    {
+                      icon: <FaGlobe size={10} />,
+                      label: "Nationality",
+                      value: info.nationality,
+                    },
+                    {
+                      icon: <FaBirthdayCake size={10} />,
+                      label: "DOB",
+                      value: info.dob
+                        ? `${info.dob.day} ${info.dob.month} ${info.dob.year}`
+                        : null,
+                    },
+                    {
+                      icon: <FaMapPin size={10} />,
+                      label: "Address",
+                      value: info.postalAddress,
+                    },
+                    {
+                      icon: <FaWork size={10} />,
+                      label: "Career Level",
+                      value: info.careerLevel,
+                    },
+                  ]
+                    .filter((d) => d.value)
+                    .map((detail, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100"
+                      >
+                        <div className="w-6 h-6 rounded-lg bg-[#1E2558]/8 flex items-center justify-center text-[#1E2558] flex-shrink-0 mt-0.5">
+                          {detail.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-400">
+                            {detail.label}
+                          </p>
+                          <p className="text-xs font-semibold text-gray-700 mt-0.5 truncate">
+                            {detail.value}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Languages */}
+              {seeker.languages?.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                    Languages
+                  </h3>
+                  <div className="space-y-2">
+                    {seeker.languages.map((lang, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 w-28 flex-shrink-0">
+                          <div
+                            className={`w-2 h-2 rounded-full ${proficiencyColor(lang.proficiency)}`}
+                          />
+                          <span className="text-sm font-medium text-gray-700">
+                            {lang.language}
+                          </span>
+                        </div>
+                        <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${proficiencyColor(lang.proficiency)} transition-all duration-700`}
+                            style={{
+                              width: proficiencyWidth(lang.proficiency),
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-400 capitalize w-20 text-right">
+                          {lang.proficiency}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Job Preferences */}
+              {seeker.jobPreferences && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                    Job Preferences
+                  </h3>
+                  <div className="bg-gradient-to-br from-[#1E2558]/5 to-[#4EB956]/5 rounded-xl p-4 border border-[#4EB956]/20 space-y-3">
+                    {seeker.jobPreferences.preferredTitles?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1.5">
+                          Preferred Roles
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {seeker.jobPreferences.preferredTitles.map((t, i) => (
+                            <span
+                              key={i}
+                              className="px-2.5 py-1 bg-[#1E2558] text-white rounded-lg text-xs font-medium"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {(seeker.jobPreferences.salaryMin ||
+                      seeker.jobPreferences.salaryMax) && (
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">
+                          Expected Salary
+                        </p>
+                        <p className="text-sm font-bold text-[#1E2558]">
+                          {seeker.jobPreferences.currency}{" "}
+                          {seeker.jobPreferences.salaryMin?.toLocaleString()} –{" "}
+                          {seeker.jobPreferences.salaryMax?.toLocaleString()}
+                          <span className="text-xs font-normal text-gray-400 ml-1">
+                            / {seeker.jobPreferences.salaryRangeKey}
+                          </span>
+                        </p>
+                      </div>
+                    )}
+                    {seeker.jobPreferences.preferredLocations?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1.5">
+                          Preferred Locations
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {seeker.jobPreferences.preferredLocations.map(
+                            (loc, i) => (
+                              <span
+                                key={i}
+                                className="flex items-center gap-1 px-2 py-0.5 bg-white text-gray-600 rounded-lg text-xs border border-gray-200"
+                              >
+                                <FaMapMarkerAlt size={8} /> {loc}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {seeker.jobPreferences.noticePeriodDays && (
+                      <p className="text-xs text-gray-500">
+                        Notice Period:{" "}
+                        <span className="font-semibold text-gray-700">
+                          {seeker.jobPreferences.noticePeriodDays} days
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "experience" && (
+            <div className="p-6 space-y-5">
+              {/* Work Experience */}
+              {seeker.experience?.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
+                    Work Experience
+                  </h3>
+                  <div className="relative">
+                    <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-[#4EB956] via-[#4EB956]/30 to-transparent" />
+                    <div className="space-y-4 pl-10">
+                      {seeker.experience.map((exp, i) => (
+                        <div key={i} className="relative">
+                          <div className="absolute -left-[26px] top-1 w-4 h-4 rounded-full bg-white border-2 border-[#4EB956] shadow-sm shadow-[#4EB956]/30" />
+                          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-[#4EB956]/30 transition-all">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="text-sm font-bold text-gray-800">
+                                  {exp.jobTitle}
+                                </p>
+                                <p className="text-xs text-[#1E2558] font-semibold mt-0.5">
+                                  {exp.company}
+                                </p>
+                              </div>
+                              {exp.isCurrent && (
+                                <span className="px-2 py-0.5 bg-[#4EB956]/10 text-[#4EB956] text-xs font-bold rounded-full border border-[#4EB956]/20 flex-shrink-0">
+                                  Current
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1.5">
+                              {exp.startMonth}/{exp.startYear} –{" "}
+                              {exp.isCurrent
+                                ? "Present"
+                                : `${exp.endMonth}/${exp.endYear}`}
+                            </p>
+                            {exp.description && (
+                              <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                                {exp.description}
+                              </p>
+                            )}
+                            {exp.managedTeam && (
+                              <div className="flex items-center gap-1 mt-2">
+                                <FaUsers size={9} className="text-[#4EB956]" />
+                                <span className="text-xs text-gray-400">
+                                  Managed a team
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Education */}
+              {seeker.education?.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
+                    Education
+                  </h3>
+                  <div className="space-y-3">
+                    {seeker.education.map((edu, i) => (
+                      <div
+                        key={i}
+                        className="flex gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-violet-200 transition-all"
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-500 flex-shrink-0">
+                          <FaGraduationCap size={14} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-gray-800">
+                            {edu.degree}
+                          </p>
+                          <p className="text-xs text-violet-600 font-medium">
+                            {edu.institute}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {edu.field} · Grade: {edu.grade}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {new Date(edu.startDate).getFullYear()} –{" "}
+                            {edu.endDate
+                              ? new Date(edu.endDate).getFullYear()
+                              : "Present"}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "skills" && (
+            <div className="p-6 space-y-5">
+              {seeker.skills?.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                    Technical Skills
+                  </h3>
+                  <div className="space-y-3">
+                    {seeker.skills.map((s, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-[#1E2558]/8 flex items-center justify-center">
+                            <FaCode size={10} className="text-[#1E2558]" />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">
+                            {s.skill}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {Array.from({ length: 5 }).map((_, dot) => (
+                            <div
+                              key={dot}
+                              className={`w-2 h-2 rounded-full transition-all ${
+                                dot < skillProficiencyDots(s.proficiency)
+                                  ? "bg-[#4EB956]"
+                                  : "bg-gray-200"
+                              }`}
+                            />
+                          ))}
+                          <span className="text-xs text-gray-400 ml-1 capitalize">
+                            {s.proficiency}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {seeker.jobPreferences?.preferredSkills?.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                    Also Skilled In
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {seeker.jobPreferences.preferredSkills.map((skill, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1.5 bg-gradient-to-r from-[#1E2558]/8 to-[#4EB956]/8 text-[#1E2558] rounded-xl text-xs font-semibold border border-[#4EB956]/20 hover:border-[#4EB956]/50 transition-all"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!seeker.skills?.length &&
+                !seeker.jobPreferences?.preferredSkills?.length && (
+                  <div className="text-center py-8 text-gray-300">
+                    <FaCode size={32} className="mx-auto mb-2" />
+                    <p className="text-sm">No skills listed</p>
+                  </div>
+                )}
+            </div>
+          )}
+
+          {activeTab === "projects" && (
+            <div className="p-6 space-y-4">
+              {seeker.projects?.length > 0 ? (
+                seeker.projects.map((proj, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-gray-100 overflow-hidden hover:border-[#4EB956]/30 transition-all group"
+                  >
+                    <div className="p-4 bg-gray-50">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-bold text-gray-800">
+                          {proj.title}
+                        </p>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {proj.liveUrl && (
+                            <a
+                              href={proj.liveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-7 h-7 rounded-lg bg-[#4EB956]/10 flex items-center justify-center text-[#4EB956] hover:bg-[#4EB956] hover:text-white transition-all"
+                            >
+                              <FaExternalLinkAlt size={10} />
+                            </a>
+                          )}
+                          {proj.repoUrl && (
+                            <a
+                              href={proj.repoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-7 h-7 rounded-lg bg-[#1E2558]/8 flex items-center justify-center text-[#1E2558] hover:bg-[#1E2558] hover:text-white transition-all"
+                            >
+                              <FaCode size={10} />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      {proj.description && (
+                        <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                          {proj.description}
+                        </p>
+                      )}
+                    </div>
+                    {proj.techStack?.length > 0 && (
+                      <div className="px-4 py-3 bg-white border-t border-gray-100 flex flex-wrap gap-1.5">
+                        {proj.techStack.map((tech, j) => (
+                          <span
+                            key={j}
+                            className="px-2 py-0.5 bg-[#1E2558]/6 text-[#1E2558] rounded-md text-xs font-medium"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-300">
+                  <FaCode size={32} className="mx-auto mb-2" />
+                  <p className="text-sm">No projects listed</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ─ Footer Actions ─ */}
+        <div className="flex-shrink-0 border-t border-gray-100 bg-gray-50/50 px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => {
+                onAction("shortlist", application);
+              }}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex-1 justify-center border ${
+                application?.status === "shortlisted"
+                  ? "bg-amber-50 text-amber-600 border-amber-200"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600"
+              }`}
+            >
+              {application?.status === "shortlisted" ? (
+                <FaStar size={11} />
+              ) : (
+                <FaRegStar size={11} />
+              )}
+              {application?.status === "shortlisted"
+                ? "Shortlisted"
+                : "Shortlist"}
+            </button>
+            <button
+              onClick={() => onAction("hire", application)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all flex-1 justify-center"
+            >
+              <FaUserCheck size={11} /> Hire
+            </button>
+            <button
+              onClick={() => onAction("reject", application)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-red-500 border border-red-200 hover:bg-red-50 transition-all flex-1 justify-center"
+            >
+              <FaUserTimes size={11} /> Reject
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes slideIn { from { transform: translateX(100%) } to { transform: translateX(0) } }
+      `}</style>
+    </div>
+  );
 };
 
 // ── Action Dropdown ───────────────────────────────────────────────────────────
@@ -119,7 +743,7 @@ const ActionDropdown = ({ application, onAction }) => {
   const actions = [
     {
       key: "view",
-      label: "View Profile",
+      label: "View Full Profile",
       icon: <FaEye size={11} />,
       color: "text-[#1E2558]",
       hover: "hover:bg-[#1E2558]/5",
@@ -164,22 +788,25 @@ const ActionDropdown = ({ application, onAction }) => {
         onClick={() => setOpen((o) => !o)}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-200 ${
           open
-            ? "bg-[#1E2558] border-[#1E2558] text-white"
-            : "bg-white border-gray-200 text-gray-600 hover:border-[#1E2558]/30 hover:text-[#1E2558]"
+            ? "bg-[#1E2558] border-[#1E2558] text-white shadow-sm"
+            : "bg-white border-gray-200 text-gray-600 hover:border-[#1E2558]/40 hover:text-[#1E2558]"
         }`}
       >
         Actions
         <FaChevronDown
           size={9}
-          className={`transition-transform ${open ? "rotate-180" : ""}`}
+          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-30 py-1.5 overflow-hidden">
+        <div
+          className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 z-30 py-1.5 overflow-hidden"
+          style={{ animation: "dropIn 0.15s cubic-bezier(0.16,1,0.3,1)" }}
+        >
           {actions.map((action, i) =>
             action.divider ? (
-              <div key={i} className="my-1 border-t border-gray-50" />
+              <div key={i} className="my-1.5 border-t border-gray-50 mx-2" />
             ) : (
               <button
                 key={action.key}
@@ -189,60 +816,72 @@ const ActionDropdown = ({ application, onAction }) => {
                 }}
                 className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-all ${action.color} ${action.hover}`}
               >
-                {action.icon}
+                <span className="w-5 h-5 rounded-md bg-current/10 flex items-center justify-center flex-shrink-0">
+                  {action.icon}
+                </span>
                 {action.label}
               </button>
             ),
           )}
         </div>
       )}
+      <style>{`@keyframes dropIn { from { opacity: 0; transform: translateY(-6px) scale(0.97) } to { opacity: 1; transform: none } }`}</style>
     </div>
   );
 };
 
 // ── Applicant Row ─────────────────────────────────────────────────────────────
-const ApplicantRow = ({ application, index, onAction }) => {
-  const name =
-    application?.seekerName ||
-    application?.seeker?.name ||
-    application?.applicantName ||
-    "Unknown Applicant";
+const ApplicantRow = ({
+  application,
+  index,
+  onAction,
+  onViewProfile,
+  loadingSeeker,
+}) => {
+  const seeker = application._seekerData;
+  const info = seeker?.personalInfo || {};
 
+  const name = info.name || application.seekerName || "Loading...";
   const statusKey = application?.status || "applied";
   const statusCfg = APP_STATUS[statusKey] || APP_STATUS.applied;
-  const avatarColor = getAvatarColor(name);
-  const appliedDate = application?.createdAt || application?.appliedAt;
+  const avatarGradient = getAvatarGradient(name);
+  const appliedDate = application?.createdAt;
+  const skills =
+    seeker?.skills?.map((s) => s.skill) ||
+    seeker?.jobPreferences?.preferredSkills ||
+    [];
 
   return (
-    <tr
-      className="group hover:bg-gradient-to-r hover:from-gray-50/80 hover:to-transparent transition-all duration-200"
-      style={{ animationDelay: `${index * 40}ms` }}
-    >
-      {/* Rank */}
+    <tr className="group hover:bg-gradient-to-r hover:from-[#4EB956]/5 hover:to-transparent transition-all duration-200">
       <td className="px-5 py-4 w-10">
         <span className="text-xs font-bold text-gray-300">#{index + 1}</span>
       </td>
 
-      {/* Applicant */}
       <td className="px-4 py-4">
         <div className="flex items-center gap-3">
-          <div
-            className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm`}
-          >
-            {getInitials(name)}
-          </div>
+          {seeker?.profileImage ? (
+            <img
+              src={seeker.profileImage}
+              alt={name}
+              className="w-10 h-10 rounded-2xl object-cover shadow-sm flex-shrink-0"
+            />
+          ) : (
+            <div
+              className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm`}
+            >
+              {loadingSeeker ? (
+                <FaSpinner className="animate-spin" size={12} />
+              ) : (
+                getInitials(name)
+              )}
+            </div>
+          )}
           <div className="min-w-0">
             <p className="font-semibold text-gray-800 text-sm">{name}</p>
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              {application?.seeker?.email && (
+            <div className="flex items-center gap-2 mt-0.5">
+              {info.email && (
                 <span className="flex items-center gap-1 text-xs text-gray-400">
-                  <FaEnvelope size={8} />
-                  {application.seeker.email}
-                </span>
-              )}
-              {application?.source && (
-                <span className="text-xs text-gray-300 bg-gray-100 px-1.5 py-0.5 rounded-full">
-                  via {application.source}
+                  <FaEnvelope size={8} /> {info.email}
                 </span>
               )}
             </div>
@@ -250,43 +889,33 @@ const ApplicantRow = ({ application, index, onAction }) => {
         </div>
       </td>
 
-      {/* Current Role */}
       <td className="px-4 py-4">
         <div className="min-w-0">
           <p className="text-sm text-gray-700 font-medium truncate max-w-[160px]">
-            {application?.currentTitle ||
-              application?.seeker?.currentTitle ||
-              application?.jobTitle ||
-              "—"}
+            {seeker?.experience?.[0]?.jobTitle || info.careerLevel || "—"}
           </p>
-          {(application?.company || application?.seeker?.company) && (
-            <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[160px]">
-              {application?.company || application?.seeker?.company}
-            </p>
-          )}
+          <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[160px]">
+            {seeker?.experience?.[0]?.company || info.experience || ""}
+          </p>
         </div>
       </td>
 
-      {/* Skills */}
       <td className="px-4 py-4">
         <div className="flex flex-wrap gap-1 max-w-[200px]">
-          {(application?.skills || application?.seeker?.skills || [])
-            .slice(0, 3)
-            .map((skill, i) => (
-              <span
-                key={i}
-                className="px-2 py-0.5 bg-[#4EB956]/10 text-[#1E2558] rounded-full text-xs font-medium border border-[#4EB956]/20"
-              >
-                {skill}
-              </span>
-            ))}
-          {(application?.skills || application?.seeker?.skills || []).length >
-            3 && (
-            <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs">
-              +{(application?.skills || application?.seeker?.skills).length - 3}
+          {skills.slice(0, 3).map((skill, i) => (
+            <span
+              key={i}
+              className="px-2 py-0.5 bg-[#4EB956]/10 text-[#1E2558] rounded-full text-xs font-medium border border-[#4EB956]/20"
+            >
+              {skill}
+            </span>
+          ))}
+          {skills.length > 3 && (
+            <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs font-medium">
+              +{skills.length - 3}
             </span>
           )}
-          {!(application?.skills || application?.seeker?.skills)?.length && (
+          {!skills.length && !loadingSeeker && (
             <span className="text-xs text-gray-300 italic">
               No skills listed
             </span>
@@ -294,7 +923,6 @@ const ApplicantRow = ({ application, index, onAction }) => {
         </div>
       </td>
 
-      {/* Status */}
       <td className="px-4 py-4">
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
@@ -307,7 +935,6 @@ const ApplicantRow = ({ application, index, onAction }) => {
         </span>
       </td>
 
-      {/* Applied date */}
       <td className="px-4 py-4">
         {appliedDate ? (
           <div>
@@ -330,10 +957,15 @@ const ApplicantRow = ({ application, index, onAction }) => {
         )}
       </td>
 
-      {/* Actions */}
       <td className="px-4 py-4">
         <div className="flex items-center gap-2">
-          {/* Quick shortlist star */}
+          <button
+            onClick={() => onViewProfile(application)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-[#1E2558] hover:bg-[#1E2558]/8 border border-transparent transition-all duration-200"
+            title="View Profile"
+          >
+            <FaEye size={13} />
+          </button>
           <button
             onClick={() =>
               onAction(
@@ -358,17 +990,6 @@ const ApplicantRow = ({ application, index, onAction }) => {
               <FaRegStar size={13} />
             )}
           </button>
-
-          {/* Download CV quick action */}
-          <button
-            onClick={() => onAction("download", application)}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-[#4EB956] hover:bg-[#4EB956]/10 border border-transparent transition-all duration-200"
-            title="Download CV"
-          >
-            <FaDownload size={12} />
-          </button>
-
-          {/* Full action dropdown */}
           <ActionDropdown application={application} onAction={onAction} />
         </div>
       </td>
@@ -377,31 +998,45 @@ const ApplicantRow = ({ application, index, onAction }) => {
 };
 
 // ── Mobile Applicant Card ─────────────────────────────────────────────────────
-const ApplicantCard = ({ application, index, onAction }) => {
-  const name =
-    application?.seekerName ||
-    application?.seeker?.name ||
-    application?.applicantName ||
-    "Unknown Applicant";
-
+const ApplicantCard = ({ application, index, onAction, onViewProfile }) => {
+  const seeker = application._seekerData;
+  const info = seeker?.personalInfo || {};
+  const name = info.name || "Unknown Applicant";
   const statusKey = application?.status || "applied";
   const statusCfg = APP_STATUS[statusKey] || APP_STATUS.applied;
-  const avatarColor = getAvatarColor(name);
-  const appliedDate = application?.createdAt || application?.appliedAt;
+  const avatarGradient = getAvatarGradient(name);
+  const appliedDate = application?.createdAt;
+  const skills =
+    seeker?.skills?.map((s) => s.skill) ||
+    seeker?.jobPreferences?.preferredSkills ||
+    [];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3 hover:border-[#4EB956]/30 hover:shadow-md transition-all duration-200">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}
-          >
-            {getInitials(name)}
-          </div>
+        <div
+          className="flex items-center gap-3 min-w-0"
+          onClick={() => onViewProfile(application)}
+        >
+          {seeker?.profileImage ? (
+            <img
+              src={seeker.profileImage}
+              alt={name}
+              className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 cursor-pointer"
+            />
+          ) : (
+            <div
+              className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white text-sm font-bold flex-shrink-0 cursor-pointer`}
+            >
+              {getInitials(name)}
+            </div>
+          )}
           <div className="min-w-0">
-            <p className="font-bold text-gray-800 text-sm">{name}</p>
+            <p className="font-bold text-gray-800 text-sm cursor-pointer hover:text-[#1E2558]">
+              {name}
+            </p>
             <p className="text-xs text-gray-400 truncate mt-0.5">
-              {application?.currentTitle || "—"}
+              {seeker?.experience?.[0]?.jobTitle || info.careerLevel || "—"}
             </p>
           </div>
         </div>
@@ -413,32 +1048,32 @@ const ApplicantCard = ({ application, index, onAction }) => {
         </span>
       </div>
 
-      {/* Skills */}
-      {(application?.skills || application?.seeker?.skills || []).length >
-        0 && (
+      {skills.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {(application?.skills || application?.seeker?.skills || [])
-            .slice(0, 4)
-            .map((s, i) => (
-              <span
-                key={i}
-                className="px-2 py-0.5 bg-[#4EB956]/10 text-[#1E2558] rounded-full text-xs font-medium border border-[#4EB956]/20"
-              >
-                {s}
-              </span>
-            ))}
+          {skills.slice(0, 4).map((s, i) => (
+            <span
+              key={i}
+              className="px-2 py-0.5 bg-[#4EB956]/10 text-[#1E2558] rounded-full text-xs font-medium border border-[#4EB956]/20"
+            >
+              {s}
+            </span>
+          ))}
         </div>
       )}
 
       <div className="border-t border-gray-50 pt-3 flex items-center justify-between">
         <p className="text-xs text-gray-400">
           {appliedDate
-            ? `Applied ${Math.floor(
-                (Date.now() - new Date(appliedDate)) / (1000 * 60 * 60 * 24),
-              )}d ago`
+            ? `Applied ${Math.floor((Date.now() - new Date(appliedDate)) / (1000 * 60 * 60 * 24))}d ago`
             : ""}
         </p>
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => onViewProfile(application)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-[#1E2558] hover:bg-[#1E2558]/8 border border-transparent transition-all"
+          >
+            <FaEye size={12} />
+          </button>
           <button
             onClick={() => onAction("shortlist", application)}
             className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
@@ -453,12 +1088,6 @@ const ApplicantCard = ({ application, index, onAction }) => {
               <FaRegStar size={12} />
             )}
           </button>
-          <button
-            onClick={() => onAction("download", application)}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-[#4EB956] hover:bg-[#4EB956]/10 border border-transparent transition-all"
-          >
-            <FaDownload size={11} />
-          </button>
           <ActionDropdown application={application} onAction={onAction} />
         </div>
       </div>
@@ -470,9 +1099,15 @@ const ApplicantCard = ({ application, index, onAction }) => {
 const JobDescModal = ({ job, onClose }) => {
   if (!job) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col">
-        {/* Header */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      style={{ animation: "fadeIn 0.2s ease" }}
+    >
+      <div
+        className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+        style={{ animation: "scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)" }}
+      >
+        <div className="h-1 bg-gradient-to-r from-[#1E2558] via-[#4EB956] to-[#1E2558]" />
         <div className="px-7 py-5 border-b border-gray-100 flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-800">{job.jobTitle}</h2>
@@ -490,15 +1125,6 @@ const JobDescModal = ({ job, onClose }) => {
                   </span>
                 </span>
               )}
-              {(job.salaryMin || job.salaryMax) && (
-                <span className="text-xs font-semibold text-[#4EB956]">
-                  {job.salaryMin && job.salaryMax
-                    ? `$${job.salaryMin.toLocaleString()} – $${job.salaryMax.toLocaleString()}`
-                    : job.salaryMin
-                      ? `From $${job.salaryMin.toLocaleString()}`
-                      : `Up to $${job.salaryMax.toLocaleString()}`}
-                </span>
-              )}
             </div>
           </div>
           <button
@@ -508,16 +1134,12 @@ const JobDescModal = ({ job, onClose }) => {
             <FaTimes size={13} />
           </button>
         </div>
-        {/* Body */}
         <div className="flex-1 overflow-y-auto px-7 py-6">
           {job.jobDescription ? (
             <div
               className="prose prose-sm max-w-none text-gray-600 leading-relaxed
-                [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-gray-800 [&_h3]:mt-4 [&_h3]:mb-2
-                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_li]:mb-1
-                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2
-                [&_strong]:font-semibold [&_strong]:text-gray-800
-                [&_blockquote]:border-l-4 [&_blockquote]:border-[#4EB956] [&_blockquote]:pl-4 [&_blockquote]:text-gray-500 [&_blockquote]:italic"
+              [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-gray-800 [&_h3]:mt-4 [&_h3]:mb-2
+              [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_li]:mb-1"
               dangerouslySetInnerHTML={{ __html: job.jobDescription }}
             />
           ) : (
@@ -527,6 +1149,9 @@ const JobDescModal = ({ job, onClose }) => {
           )}
         </div>
       </div>
+      <style>{`
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95) } to { opacity: 1; transform: scale(1) } }
+      `}</style>
     </div>
   );
 };
@@ -537,8 +1162,6 @@ const JobApplications = () => {
   const navigate = useNavigate();
 
   const { myJobs, fetchMyJobs } = useJobPostStore();
-
-  // Try to get applications from store — adjust to your actual store
   const applicationStore = (() => {
     try {
       return useApplicationStore();
@@ -549,60 +1172,107 @@ const JobApplications = () => {
 
   const [applications, setApplications] = useState([]);
   const [loadingApps, setLoadingApps] = useState(true);
+  const [loadingSeekers, setLoadingSeekers] = useState({});
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [showJobDesc, setShowJobDesc] = useState(false);
+  const [drawerApp, setDrawerApp] = useState(null); // application with seeker data
 
-  // Derive job from store
   const job = myJobs.find((j) => (j.jobId || j._id) === jobId) || null;
 
   useEffect(() => {
     if (myJobs.length === 0) fetchMyJobs();
   }, []);
 
-  // Fetch applications — adapt this to your actual API/store call
+  // Fetch seeker profile by userId
+  const fetchSeekerData = useCallback(async (seekerUserId) => {
+    if (!seekerUserId) return null;
+    try {
+      const { default: axios } = await import("axios");
+      // Try by userId or seekerProfileId
+      const res = await axios.get(`${API_URL}/seekers/user/${seekerUserId}`, {
+        withCredentials: true,
+      });
+      if (res.data?.success) return res.data.data;
+      return null;
+    } catch (e) {
+      // Try alternate endpoint
+      try {
+        const { default: axios } = await import("axios");
+        const res = await axios.get(`${API_URL}/seekers/${seekerUserId}`, {
+          withCredentials: true,
+        });
+        if (res.data?.success) return res.data.data;
+      } catch {}
+      return null;
+    }
+  }, []);
+
+  // Fetch applications then enrich with seeker data
   useEffect(() => {
     const load = async () => {
       setLoadingApps(true);
+      let apps = [];
       try {
         if (applicationStore?.fetchJobApplications) {
           const result = await applicationStore.fetchJobApplications(jobId);
-          if (result?.success) {
-            setApplications(result.data || []);
-          }
+          if (result?.success) apps = result.data || [];
         } else {
-          // Fallback: fetch directly
           const { default: axios } = await import("axios");
-          const API_URL =
-            import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
           const res = await axios.get(`${API_URL}/applications/job/${jobId}`, {
             withCredentials: true,
           });
-          if (res.data?.success) setApplications(res.data.data || []);
+          if (res.data?.success) apps = res.data.data || [];
         }
       } catch (e) {
         console.error("Failed to fetch applications", e);
       } finally {
         setLoadingApps(false);
       }
+
+      setApplications(apps.map((a) => ({ ...a, _seekerData: null })));
+
+      // Fetch seeker data for each application concurrently
+      apps.forEach(async (app) => {
+        const uid = app.seekerUserId || app.seekerId;
+        if (!uid) return;
+        setLoadingSeekers((prev) => ({
+          ...prev,
+          [app.applicationId || app._id]: true,
+        }));
+        const seekerData = await fetchSeekerData(uid);
+        setApplications((prev) =>
+          prev.map((a) =>
+            (a.applicationId || a._id) === (app.applicationId || app._id)
+              ? { ...a, _seekerData: seekerData }
+              : a,
+          ),
+        );
+        setLoadingSeekers((prev) => ({
+          ...prev,
+          [app.applicationId || app._id]: false,
+        }));
+      });
     };
+
     if (jobId) load();
   }, [jobId]);
 
   const handleAction = async (actionKey, application) => {
     const appId = application?.applicationId || application?._id;
+
     if (actionKey === "view") {
-      const seekerId = application?.seekerId || application?.seeker?._id;
-      if (seekerId) navigate(`/employer/applicant/${seekerId}`);
+      setDrawerApp(application);
       return;
     }
     if (actionKey === "download") {
-      const cvUrl = application?.cvUrl || application?.seeker?.cvUrl;
+      const cvUrl =
+        application?._seekerData?.resumeFileUrl || application?.cvUrl;
       if (cvUrl) window.open(cvUrl, "_blank");
       else alert("No CV available for this applicant.");
       return;
     }
-    // Status updates
+
     const statusMap = {
       shortlist: "shortlisted",
       hire: "hired",
@@ -613,8 +1283,6 @@ const JobApplications = () => {
 
     try {
       const { default: axios } = await import("axios");
-      const API_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
       await axios.patch(
         `${API_URL}/applications/${appId}/status`,
         { status: newStatus },
@@ -627,12 +1295,15 @@ const JobApplications = () => {
             : a,
         ),
       );
+      // Update drawer if open
+      if (drawerApp && (drawerApp.applicationId || drawerApp._id) === appId) {
+        setDrawerApp((prev) => ({ ...prev, status: newStatus }));
+      }
     } catch (e) {
       console.error("Failed to update status", e);
     }
   };
 
-  // Filter
   const statusTabCounts = applications.reduce((acc, a) => {
     acc[a.status || "applied"] = (acc[a.status || "applied"] || 0) + 1;
     return acc;
@@ -642,15 +1313,11 @@ const JobApplications = () => {
     if (filter !== "all" && (a.status || "applied") !== filter) return false;
     if (search) {
       const s = search.toLowerCase();
-      const name = (
-        a.seekerName ||
-        a.seeker?.name ||
-        a.applicantName ||
-        ""
-      ).toLowerCase();
+      const info = a._seekerData?.personalInfo || {};
+      const name = (info.name || a.seekerName || "").toLowerCase();
       const title = (
-        a.currentTitle ||
-        a.seeker?.currentTitle ||
+        a._seekerData?.experience?.[0]?.jobTitle ||
+        info.careerLevel ||
         ""
       ).toLowerCase();
       return name.includes(s) || title.includes(s);
@@ -681,15 +1348,23 @@ const JobApplications = () => {
 
   return (
     <div className="space-y-6">
+      {/* Seeker Profile Drawer */}
+      {drawerApp && (
+        <SeekerDrawer
+          seeker={drawerApp._seekerData}
+          application={drawerApp}
+          onClose={() => setDrawerApp(null)}
+          onAction={handleAction}
+        />
+      )}
+
       {showJobDesc && (
         <JobDescModal job={job} onClose={() => setShowJobDesc(false)} />
       )}
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {/* Top gradient stripe */}
         <div className="h-1 bg-gradient-to-r from-[#1E2558] via-[#4EB956] to-[#1E2558]" />
-
         <div className="px-6 py-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-start gap-4">
@@ -716,7 +1391,6 @@ const JobApplications = () => {
                     </span>
                   )}
                 </div>
-
                 <div className="flex items-center gap-4 mt-1.5 flex-wrap">
                   {job?.jobLocation && (
                     <span className="flex items-center gap-1.5 text-xs text-gray-400">
@@ -725,14 +1399,12 @@ const JobApplications = () => {
                   )}
                   {job?.jobType && (
                     <span className="flex items-center gap-1.5 text-xs text-gray-400 capitalize">
-                      <FaBriefcase size={10} />
-                      {job.jobType.replace(/_/g, " ")}
+                      <FaBriefcase size={10} /> {job.jobType.replace(/_/g, " ")}
                     </span>
                   )}
                   {job?.endDate && (
                     <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                      <FaClock size={10} />
-                      Closes{" "}
+                      <FaClock size={10} /> Closes{" "}
                       {new Date(job.endDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -742,18 +1414,15 @@ const JobApplications = () => {
                 </div>
               </div>
             </div>
-
-            {/* View Description button only */}
             <button
               onClick={() => setShowJobDesc(true)}
               className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 hover:border-[#1E2558]/30 hover:text-[#1E2558] font-medium transition-all"
             >
-              <FaFileAlt size={12} />
-              View Job Description
+              <FaFileAlt size={12} /> View Job Description
             </button>
           </div>
 
-          {/* Stats row */}
+          {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
             {[
               {
@@ -812,7 +1481,6 @@ const JobApplications = () => {
 
       {/* ── Filter & Search ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3">
-        {/* Status tabs */}
         <div className="flex flex-wrap gap-2">
           {tabs.map((tab) => {
             const cfg = tab.key !== "all" ? APP_STATUS[tab.key] : null;
@@ -840,8 +1508,6 @@ const JobApplications = () => {
             );
           })}
         </div>
-
-        {/* Search */}
         <div className="relative">
           <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
           <input
@@ -859,8 +1525,12 @@ const JobApplications = () => {
         {loadingApps ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <FaSpinner className="animate-spin text-[#4EB956] text-3xl mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">Loading applicants...</p>
+              <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-[#4EB956]/10 flex items-center justify-center">
+                <FaSpinner className="animate-spin text-[#4EB956] text-xl" />
+              </div>
+              <p className="text-gray-500 text-sm font-medium">
+                Loading applicants...
+              </p>
             </div>
           </div>
         ) : filtered.length === 0 ? (
@@ -909,6 +1579,8 @@ const JobApplications = () => {
                     application={app}
                     index={i}
                     onAction={handleAction}
+                    onViewProfile={(a) => setDrawerApp(a)}
+                    loadingSeeker={loadingSeekers[app.applicationId || app._id]}
                   />
                 ))}
               </tbody>
@@ -948,6 +1620,7 @@ const JobApplications = () => {
               application={app}
               index={i}
               onAction={handleAction}
+              onViewProfile={(a) => setDrawerApp(a)}
             />
           ))
         )}

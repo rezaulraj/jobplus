@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import DOMPurify from "dompurify";
 import useJobStore from "../../store/JobStore";
-
+import ApplyJobModal from "../../components/ApplyJobModal";
 const AllJobs = () => {
   const {
     cate,
@@ -62,6 +62,15 @@ const AllJobs = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
+
+  // apply job
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [applyTargetJob, setApplyTargetJob] = useState(null);
+
+  const handleOpenApply = (job) => {
+    setApplyTargetJob(job);
+    setApplyModalOpen(true);
+  };
 
   const colors = {
     primary: "#1e2558",
@@ -1312,7 +1321,7 @@ const AllJobs = () => {
 
                           <div className="flex gap-3">
                             <button
-                              className="px-6 py-3 rounded-lg font-semibold border transition-colors cursor-pointer"
+                              className="px-3 py-3 rounded-lg font-semibold border transition-colors cursor-pointer"
                               style={{
                                 borderColor: colors.primary,
                                 color: colors.primary,
@@ -1322,7 +1331,8 @@ const AllJobs = () => {
                             </button>
 
                             <button
-                              className="px-8 py-3 rounded-lg font-semibold transition-colors hover:shadow-lg cursor-pointer"
+                              onClick={() => handleOpenApply(selectedJob)}
+                              className="flex-1 px-3 py-3 rounded-lg font-semibold cursor-pointer"
                               style={{
                                 backgroundColor: colors.secondary,
                                 color: "white",
@@ -1543,9 +1553,10 @@ const AllJobs = () => {
                               </p>
 
                               <button
-                                className="px-8 py-3 rounded-lg font-semibold text-lg transition-transform hover:scale-105 cursor-pointer"
+                                onClick={() => handleOpenApply(selectedJob)}
+                                className="px-8 py-3 rounded-lg font-semibold transition-colors hover:shadow-lg cursor-pointer"
                                 style={{
-                                  backgroundColor: colors.primary,
+                                  backgroundColor: colors.secondary,
                                   color: "white",
                                 }}
                               >
@@ -1699,8 +1710,9 @@ const AllJobs = () => {
                 </button>
 
                 <button
-                  className="flex-1 py-3 rounded-lg font-semibold cursor-pointer"
-                  style={{ backgroundColor: colors.secondary, color: "white" }}
+                  onClick={() => handleOpenApply(selectedJob)}
+                  className="px-8 py-3 rounded-lg font-semibold text-lg transition-transform hover:scale-105 cursor-pointer"
+                  style={{ backgroundColor: colors.primary, color: "white" }}
                 >
                   Apply Now
                 </button>
@@ -1709,6 +1721,13 @@ const AllJobs = () => {
           </div>
         </div>
       )}
+
+      <ApplyJobModal
+        job={applyTargetJob}
+        isOpen={applyModalOpen}
+        onClose={() => setApplyModalOpen(false)}
+        onSuccess={() => setApplyModalOpen(false)}
+      />
     </div>
   );
 };

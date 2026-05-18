@@ -23,7 +23,7 @@ import {
   Bookmark,
 } from "lucide-react";
 import useJobStore from "../../store/jobStore";
-
+import ApplyJobModal from "../../components/ApplyJobModal";
 const FreelanceJobDescription = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();

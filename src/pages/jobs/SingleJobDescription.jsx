@@ -24,7 +24,11 @@ import {
   Loader2,
 } from "lucide-react";
 import useJobStore from "../../store/JobStore";
+import useSeekerStore from "../../store/seekerStore";
+import useAuthStore from "../../store/authStore";
 import DOMPurify from "dompurify";
+import ApplyJobModal from "../../components/ApplyJobModal";
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 const SingleJobDescription = () => {
@@ -32,10 +36,18 @@ const SingleJobDescription = () => {
   const navigate = useNavigate();
 
   const { fetchJobById, currentJob: job, isLoading } = useJobStore();
+  const { fetchMyApplications } = useSeekerStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   const [relatedJobs, setRelatedJobs] = useState([]);
   const [seniorJobs, setSeniorJobs] = useState([]);
   const [isSaved, setIsSaved] = useState(false);
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
+
+  // ── Applied state ──────────────────────────────────────────────────────────
+  const [hasApplied, setHasApplied] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState(null); // "applied" | "shortlisted" | "hired" | "rejected" | "reviewed"
+  const [checkingApplication, setCheckingApplication] = useState(false);
 
   const colors = {
     primary: "#1e2558",
@@ -44,31 +56,56 @@ const SingleJobDescription = () => {
     lightSecondary: "rgba(78, 185, 86, 0.1)",
     border: "#e2e8f0",
     bgLight: "#f8fafc",
-    accent: "#3b82f6",
   };
 
-  // Extract UUID from slug (e.g. "frontend-developer-f7085259-06f3-4103-945a-1f5933e59163")
   const extractUUID = (slug) => {
     if (!slug) return null;
     const match = slug.match(
       /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
     );
-    return match ? match[1] : slug; // fallback to raw id if no UUID found
+    return match ? match[1] : slug;
+  };
+
+  // ── Check if already applied ───────────────────────────────────────────────
+  const checkIfApplied = async (jobId) => {
+    // Only check if user is authenticated (seekers only)
+    const authState = useAuthStore.getState();
+    if (!authState.isAuthenticated || authState.user?.role !== "seeker") return;
+
+    setCheckingApplication(true);
+    try {
+      const result = await fetchMyApplications({ limit: 100 });
+      if (result?.success && Array.isArray(result.data)) {
+        const match = result.data.find((app) => app.jobId === jobId);
+        if (match) {
+          setHasApplied(true);
+          setApplicationStatus(match.status);
+        } else {
+          setHasApplied(false);
+          setApplicationStatus(null);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to check applications:", e);
+    } finally {
+      setCheckingApplication(false);
+    }
   };
 
   useEffect(() => {
     const uuid = extractUUID(id);
     if (!uuid) return;
-
-    // Fetch main job via store (uses fetchJobById which sets currentJob)
     fetchJobById(uuid);
-
-    // Check saved state
     const saved = JSON.parse(localStorage.getItem("savedJobs") || "[]");
     setIsSaved(saved.includes(uuid));
   }, [id]);
 
-  // Fetch related + senior jobs directly via axios (no global state pollution)
+  // Check application status once job is loaded
+  useEffect(() => {
+    if (!job?.jobId) return;
+    checkIfApplied(job.jobId);
+  }, [job?.jobId]);
+
   useEffect(() => {
     if (!job) return;
 
@@ -87,7 +124,6 @@ const SingleJobDescription = () => {
         if (response.data?.success) {
           const items = response.data.data?.items || [];
 
-          // Related: same category or same company, exclude current
           const related = items
             .filter((j) => {
               const sameCategory =
@@ -95,8 +131,7 @@ const SingleJobDescription = () => {
                 job.categoryId;
               const sameCompany =
                 (j.companyId?.companyId || j.companyId) === job.companyId;
-              const notCurrent = j.jobId !== job.jobId;
-              return notCurrent && (sameCategory || sameCompany);
+              return j.jobId !== job.jobId && (sameCategory || sameCompany);
             })
             .slice(0, 6)
             .map((j) => ({
@@ -106,24 +141,21 @@ const SingleJobDescription = () => {
               companyLogo:
                 j.companyId?.companyLogo || "/images/default-company.png",
               type: j.jobTypeId?.title || "",
-              salary: {
-                min: j.salaryMin || 0,
-                max: j.salaryMax || 0,
-              },
+              salary: { min: j.salaryMin || 0, max: j.salaryMax || 0 },
             }));
-
           setRelatedJobs(related);
 
-          // Senior: random 4 from all jobs, exclude current
           const others = items.filter((j) => j.jobId !== job.jobId);
-          const shuffled = [...others].sort(() => Math.random() - 0.5);
-          const senior = shuffled.slice(0, 4).map((j) => ({
-            jobId: j.jobId,
-            title: j.jobTitle,
-            company: j.companyId?.nameCompany || "Unknown",
-            companyLogo:
-              j.companyId?.companyLogo || "/images/default-company.png",
-          }));
+          const senior = [...others]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 4)
+            .map((j) => ({
+              jobId: j.jobId,
+              title: j.jobTitle,
+              company: j.companyId?.nameCompany || "Unknown",
+              companyLogo:
+                j.companyId?.companyLogo || "/images/default-company.png",
+            }));
           setSeniorJobs(senior);
         }
       } catch (err) {
@@ -202,12 +234,437 @@ const SingleJobDescription = () => {
     }
   };
 
+  // ── Status badge config ────────────────────────────────────────────────────
+  const STATUS_CONFIG = {
+    applied: {
+      label: "Applied",
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+      border: "border-blue-200",
+      dot: "bg-blue-500",
+      icon: "✓",
+    },
+    shortlisted: {
+      label: "Shortlisted",
+      bg: "bg-amber-50",
+      text: "text-amber-700",
+      border: "border-amber-200",
+      dot: "bg-amber-500",
+      icon: "★",
+    },
+    reviewed: {
+      label: "Under Review",
+      bg: "bg-purple-50",
+      text: "text-purple-700",
+      border: "border-purple-200",
+      dot: "bg-purple-500",
+      icon: "◎",
+    },
+    hired: {
+      label: "Hired!",
+      bg: "bg-emerald-50",
+      text: "text-emerald-700",
+      border: "border-emerald-200",
+      dot: "bg-emerald-500",
+      icon: "✓",
+    },
+    rejected: {
+      label: "Not Selected",
+      bg: "bg-red-50",
+      text: "text-red-600",
+      border: "border-red-200",
+      dot: "bg-red-400",
+      icon: "✕",
+    },
+  };
+
+  // ── Applied Badge Component ────────────────────────────────────────────────
+  const AppliedBadge = ({ size = "md", className = "" }) => {
+    const cfg = STATUS_CONFIG[applicationStatus] || STATUS_CONFIG.applied;
+    return (
+      <div
+        className={`inline-flex items-center gap-2 rounded-lg border font-semibold ${cfg.bg} ${cfg.text} ${cfg.border} ${
+          size === "lg" ? "px-6 py-3 text-base" : "px-4 py-2.5 text-sm"
+        } ${className}`}
+      >
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
+        {cfg.icon} {cfg.label}
+      </div>
+    );
+  };
+
+  // ── Apply Button (only shown when NOT applied) ─────────────────────────────
+  const ApplyButton = ({ className = "", style = {}, size = "md" }) => {
+    if (checkingApplication) {
+      return (
+        <button
+          disabled
+          className={`flex items-center justify-center gap-2 font-semibold rounded-lg text-white opacity-70 cursor-not-allowed ${
+            size === "lg" ? "px-10 py-3 text-lg" : "px-8 py-3"
+          } ${className}`}
+          style={{ backgroundColor: colors.secondary, ...style }}
+        >
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Checking...
+        </button>
+      );
+    }
+
+    if (hasApplied) {
+      return (
+        <AppliedBadge
+          size={size === "lg" ? "lg" : "md"}
+          className={className}
+        />
+      );
+    }
+
+    return (
+      <button
+        onClick={() => setApplyModalOpen(true)}
+        className={`flex items-center justify-center gap-2 font-semibold rounded-lg transition-all hover:shadow-lg cursor-pointer text-white ${
+          size === "lg" ? "px-10 py-3 text-lg" : "px-8 py-3"
+        } ${className}`}
+        style={{ backgroundColor: colors.secondary, ...style }}
+      >
+        Apply Now
+        <ExternalLink className={size === "lg" ? "w-5 h-5" : "w-5 h-5"} />
+      </button>
+    );
+  };
+
+  // ── Save Button (hidden when already applied, or show "Applied" state) ─────
+  const SaveButton = ({
+    variant = "outline",
+    className = "",
+    showLabel = true,
+  }) => {
+    if (hasApplied) return null; // hide save button once applied
+
+    if (variant === "icon-only") {
+      return (
+        <button
+          onClick={handleSaveJob}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${className}`}
+          style={{ borderColor: colors.border, color: colors.primary }}
+        >
+          <Heart
+            className={`w-5 h-5 ${isSaved ? "fill-red-500 text-red-500" : ""}`}
+          />
+          {showLabel && (
+            <span className="hidden sm:inline">
+              {isSaved ? "Saved" : "Save Job"}
+            </span>
+          )}
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={handleSaveJob}
+        className={`px-6 py-3 rounded-lg font-semibold border flex items-center justify-center gap-2 ${className}`}
+        style={{ borderColor: colors.primary, color: colors.primary }}
+      >
+        <Bookmark className="w-5 h-5" />
+        {isSaved ? "Saved" : "Save Job"}
+      </button>
+    );
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading job details...</p>
+      <div
+        className="min-h-screen font-ubuntu"
+        style={{ backgroundColor: colors.bgLight }}
+      >
+        <style>{`
+          @keyframes shimmer {
+            0% { background-position: -800px 0; }
+            100% { background-position: 800px 0; }
+          }
+          .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+          }
+          .skeleton-dark {
+            background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+          }
+        `}</style>
+
+        {/* ── Skeleton Sticky Header ── */}
+        <div
+          className="sticky top-0 z-40 bg-white shadow-sm border-b"
+          style={{ borderColor: colors.border }}
+        >
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="skeleton w-28 h-8 rounded-lg" />
+                <div className="hidden md:flex items-center gap-2">
+                  <div className="skeleton w-10 h-4" />
+                  <div className="skeleton w-3 h-3 rounded-full" />
+                  <div className="skeleton w-8 h-4" />
+                  <div className="skeleton w-3 h-3 rounded-full" />
+                  <div className="skeleton w-40 h-4" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="skeleton w-24 h-9 rounded-lg" />
+                <div className="skeleton w-20 h-9 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Skeleton Main Content ── */}
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* ── LEFT: Main skeleton ── */}
+            <div className="lg:w-4/5">
+              <div
+                className="bg-white rounded-xl shadow-lg border overflow-hidden"
+                style={{ borderColor: colors.border }}
+              >
+                {/* Job Header Skeleton */}
+                <div
+                  className="p-6 border-b"
+                  style={{ borderColor: colors.border }}
+                >
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                    <div className="flex-1">
+                      {/* Logo + title row */}
+                      <div className="flex items-center gap-4 mb-5">
+                        <div className="skeleton w-16 h-16 rounded-lg flex-shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="skeleton h-8 w-3/4 rounded-lg" />
+                          <div className="flex items-center gap-2">
+                            <div className="skeleton h-5 w-36 rounded-lg" />
+                            <div className="skeleton h-6 w-20 rounded-full" />
+                            <div className="skeleton h-6 w-24 rounded-full" />
+                          </div>
+                        </div>
+                      </div>
+                      {/* Meta row */}
+                      <div className="flex flex-wrap gap-4">
+                        <div className="skeleton h-5 w-40 rounded" />
+                        <div className="skeleton h-5 w-24 rounded" />
+                        <div className="skeleton h-5 w-32 rounded" />
+                        <div className="skeleton h-5 w-28 rounded" />
+                      </div>
+                    </div>
+                    {/* Salary + buttons */}
+                    <div className="md:text-right space-y-3">
+                      <div className="skeleton h-4 w-12 ml-auto rounded" />
+                      <div className="skeleton h-9 w-40 ml-auto rounded-lg" />
+                      <div className="flex gap-3 justify-end">
+                        <div className="skeleton h-12 w-28 rounded-lg" />
+                        <div className="skeleton h-12 w-32 rounded-lg" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Body skeleton */}
+                <div className="p-6 space-y-8">
+                  {/* Summary grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="p-4 rounded-lg"
+                        style={{ backgroundColor: colors.lightPrimary }}
+                      >
+                        <div className="skeleton h-3 w-16 mb-2 rounded" />
+                        <div className="skeleton h-4 w-20 rounded" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Description section */}
+                  <div>
+                    <div className="skeleton h-6 w-40 mb-4 rounded" />
+                    <div className="space-y-2.5">
+                      <div className="skeleton h-4 w-full rounded" />
+                      <div className="skeleton h-4 w-full rounded" />
+                      <div className="skeleton h-4 w-5/6 rounded" />
+                      <div className="skeleton h-4 w-full rounded" />
+                      <div className="skeleton h-4 w-4/5 rounded" />
+                      <div className="skeleton h-4 w-full rounded" />
+                      <div className="skeleton h-4 w-3/4 rounded" />
+                    </div>
+                  </div>
+
+                  {/* Responsibilities list */}
+                  <div>
+                    <div className="skeleton h-6 w-48 mb-4 rounded" />
+                    <div className="space-y-3">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="skeleton w-5 h-5 rounded-full flex-shrink-0 mt-0.5" />
+                          <div
+                            className={`skeleton h-4 rounded ${i % 3 === 0 ? "w-full" : i % 3 === 1 ? "w-5/6" : "w-4/5"}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Skills */}
+                  <div>
+                    <div className="skeleton h-6 w-36 mb-4 rounded" />
+                    <div className="flex flex-wrap gap-2">
+                      {[100, 80, 110, 90, 120, 85].map((w, i) => (
+                        <div
+                          key={i}
+                          className="skeleton h-9 rounded-lg"
+                          style={{ width: `${w}px` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Company info block */}
+                  <div
+                    className="p-6 rounded-lg border"
+                    style={{ borderColor: colors.border }}
+                  >
+                    <div className="skeleton h-6 w-44 mb-4 rounded" />
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="skeleton w-12 h-12 rounded-lg flex-shrink-0" />
+                      <div className="space-y-2">
+                        <div className="skeleton h-4 w-36 rounded" />
+                        <div className="skeleton h-3 w-24 rounded" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="skeleton w-5 h-5 rounded flex-shrink-0" />
+                          <div className="space-y-1 flex-1">
+                            <div className="skeleton h-3 w-16 rounded" />
+                            <div className="skeleton h-4 w-40 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* CTA section skeleton */}
+                  <div
+                    className="p-8 rounded-lg"
+                    style={{ backgroundColor: colors.lightSecondary }}
+                  >
+                    <div className="text-center space-y-3">
+                      <div className="skeleton h-7 w-48 mx-auto rounded" />
+                      <div className="skeleton h-4 w-64 mx-auto rounded" />
+                      <div className="flex gap-4 justify-center mt-4">
+                        <div className="skeleton h-12 w-36 rounded-lg" />
+                        <div className="skeleton h-12 w-32 rounded-lg" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── RIGHT: Sidebar skeleton ── */}
+            <div className="lg:w-1/5">
+              <div className="sticky top-24 space-y-6">
+                {/* Related jobs skeleton */}
+                <div
+                  className="bg-white rounded-xl shadow-sm border overflow-hidden"
+                  style={{ borderColor: colors.border }}
+                >
+                  <div
+                    className="p-4 border-b flex items-center gap-2"
+                    style={{
+                      borderColor: colors.border,
+                      backgroundColor: colors.lightPrimary,
+                    }}
+                  >
+                    <div className="skeleton w-5 h-5 rounded" />
+                    <div className="skeleton h-4 w-24 rounded" />
+                  </div>
+                  <div className="p-4 space-y-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="p-3 rounded-lg border"
+                        style={{ borderColor: colors.border }}
+                      >
+                        <div className="skeleton h-4 w-full mb-1.5 rounded" />
+                        <div className="skeleton h-3 w-3/4 mb-2 rounded" />
+                        <div className="flex justify-between">
+                          <div className="skeleton h-6 w-16 rounded" />
+                          <div className="skeleton h-4 w-20 rounded" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* More jobs skeleton */}
+                <div
+                  className="bg-white rounded-xl shadow-sm border overflow-hidden"
+                  style={{ borderColor: colors.border }}
+                >
+                  <div
+                    className="p-4 border-b flex items-center gap-2"
+                    style={{
+                      borderColor: colors.border,
+                      backgroundColor: colors.lightPrimary,
+                    }}
+                  >
+                    <div className="skeleton w-5 h-5 rounded" />
+                    <div className="skeleton h-4 w-20 rounded" />
+                  </div>
+                  <div className="p-4 space-y-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 p-2">
+                        <div className="skeleton w-10 h-10 rounded flex-shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="skeleton h-4 w-full rounded" />
+                          <div className="skeleton h-3 w-3/4 rounded" />
+                        </div>
+                      </div>
+                    ))}
+                    <div className="skeleton h-9 w-full rounded-lg mt-2" />
+                  </div>
+                </div>
+
+                {/* Quick actions skeleton */}
+                <div
+                  className="p-4 rounded-lg border space-y-2.5"
+                  style={{
+                    borderColor: colors.border,
+                    backgroundColor: colors.lightPrimary,
+                  }}
+                >
+                  <div className="skeleton h-4 w-28 mb-1 rounded" />
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="skeleton h-9 w-full rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Mobile bottom bar skeleton ── */}
+        <div
+          className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg z-30"
+          style={{ borderColor: colors.border }}
+        >
+          <div className="flex gap-3">
+            <div className="skeleton flex-1 h-12 rounded-lg" />
+            <div className="skeleton flex-1 h-12 rounded-lg" />
+          </div>
         </div>
       </div>
     );
@@ -244,7 +701,7 @@ const SingleJobDescription = () => {
       className="min-h-screen font-ubuntu"
       style={{ backgroundColor: colors.bgLight }}
     >
-      {/* Sticky Header */}
+      {/* ── Sticky Header ── */}
       <div
         className="sticky top-0 z-40 bg-white shadow-sm border-b"
         style={{ borderColor: colors.border }}
@@ -273,19 +730,14 @@ const SingleJobDescription = () => {
                 </span>
               </div>
             </div>
+
             <div className="flex items-center gap-3">
-              <button
-                onClick={handleSaveJob}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border"
-                style={{ borderColor: colors.border, color: colors.primary }}
-              >
-                <Heart
-                  className={`w-5 h-5 ${isSaved ? "fill-red-500 text-red-500" : ""}`}
-                />
-                <span className="hidden sm:inline">
-                  {isSaved ? "Saved" : "Save Job"}
-                </span>
-              </button>
+              {/* Applied badge in header */}
+              {hasApplied ? (
+                <AppliedBadge />
+              ) : (
+                <SaveButton variant="icon-only" />
+              )}
               <button
                 onClick={handleShare}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg border"
@@ -299,10 +751,10 @@ const SingleJobDescription = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* ── Main Content ── */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* ── LEFT: Job Description (80%) ── */}
+          {/* ── LEFT: Job Description ── */}
           <div className="lg:w-4/5">
             <div
               className="bg-white rounded-xl shadow-lg border overflow-hidden"
@@ -313,6 +765,51 @@ const SingleJobDescription = () => {
                 className="p-6 border-b"
                 style={{ borderColor: colors.border }}
               >
+                {/* Already Applied Banner */}
+                {hasApplied && (
+                  <div
+                    className="mb-5 flex items-center gap-3 px-5 py-4 rounded-xl border"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(30,37,88,0.04) 0%, rgba(78,185,86,0.08) 100%)",
+                      borderColor: "#4eb956",
+                    }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm"
+                      style={{ backgroundColor: "#4eb956" }}
+                    >
+                      ✓
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="font-semibold text-sm"
+                        style={{ color: colors.primary }}
+                      >
+                        You've already applied for this job
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Status:{" "}
+                        <span
+                          className={`font-semibold capitalize ${STATUS_CONFIG[applicationStatus]?.text || "text-gray-600"}`}
+                        >
+                          {STATUS_CONFIG[applicationStatus]?.label ||
+                            applicationStatus}
+                        </span>
+                        {" · "}
+                        <Link
+                          to="/seeker/applied-jobs"
+                          className="underline hover:no-underline"
+                          style={{ color: colors.primary }}
+                        >
+                          View my applications
+                        </Link>
+                      </p>
+                    </div>
+                    <AppliedBadge />
+                  </div>
+                )}
+
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-4 mb-4">
@@ -421,6 +918,7 @@ const SingleJobDescription = () => {
                     </div>
                   </div>
 
+                  {/* Salary + action buttons */}
                   <div className="md:text-right">
                     <div className="mb-4">
                       <div className="text-sm text-gray-600">Salary</div>
@@ -432,24 +930,10 @@ const SingleJobDescription = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <button
-                        onClick={handleSaveJob}
-                        className="px-6 py-3 rounded-lg font-semibold border flex items-center justify-center gap-2"
-                        style={{
-                          borderColor: colors.primary,
-                          color: colors.primary,
-                        }}
-                      >
-                        <Bookmark className="w-5 h-5" />
-                        {isSaved ? "Saved" : "Save Job"}
-                      </button>
-                      <button
-                        className="px-8 py-3 rounded-lg font-semibold transition-all hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer text-white"
-                        style={{ backgroundColor: colors.secondary }}
-                      >
-                        Apply Now
-                        <ExternalLink className="w-5 h-5" />
-                      </button>
+                      {/* Save button only shown if not applied */}
+                      {!hasApplied && <SaveButton />}
+                      {/* Apply / Applied badge */}
+                      <ApplyButton />
                     </div>
                   </div>
                 </div>
@@ -670,45 +1154,106 @@ const SingleJobDescription = () => {
                   </div>
                 </div>
 
-                {/* CTA */}
+                {/* CTA Section */}
                 <div
                   className="p-8 rounded-lg text-center"
                   style={{ backgroundColor: colors.lightSecondary }}
                 >
-                  <h4
-                    className="text-2xl font-semibold mb-3"
-                    style={{ color: colors.primary }}
-                  >
-                    Ready to Apply?
-                  </h4>
-                  <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                    Don't miss this opportunity!
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button
-                      onClick={handleSaveJob}
-                      className="px-8 py-3 rounded-lg font-semibold border flex items-center justify-center gap-2"
-                      style={{
-                        borderColor: colors.primary,
-                        color: colors.primary,
-                      }}
-                    >
-                      <Bookmark className="w-5 h-5" />
-                      {isSaved ? "Job Saved" : "Save for Later"}
-                    </button>
-                    <button
-                      className="px-10 py-3 rounded-lg font-semibold text-lg transition-transform hover:scale-105 flex items-center justify-center gap-2 cursor-pointer text-white"
-                      style={{ backgroundColor: colors.primary }}
-                    >
-                      Apply Now <ExternalLink className="w-5 h-5" />
-                    </button>
-                  </div>
+                  {hasApplied ? (
+                    /* ── Already applied CTA ── */
+                    <div>
+                      <div
+                        className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold"
+                        style={{ backgroundColor: "#4eb956" }}
+                      >
+                        ✓
+                      </div>
+                      <h4
+                        className="text-2xl font-semibold mb-2"
+                        style={{ color: colors.primary }}
+                      >
+                        Application Submitted!
+                      </h4>
+                      <p className="text-gray-600 mb-2">
+                        You've already applied for this position.{" "}
+                        {applicationStatus === "shortlisted" &&
+                          "🎉 Great news — you've been shortlisted!"}
+                        {applicationStatus === "hired" &&
+                          "🎊 Congratulations — you've been hired!"}
+                        {applicationStatus === "applied" &&
+                          "We'll notify you once the employer reviews your application."}
+                        {applicationStatus === "reviewed" &&
+                          "Your application is currently under review."}
+                        {applicationStatus === "rejected" &&
+                          "Unfortunately this position didn't work out."}
+                      </p>
+                      <p className="text-sm text-gray-500 mb-6">
+                        Current Status:{" "}
+                        <span
+                          className={`font-semibold capitalize ${STATUS_CONFIG[applicationStatus]?.text || ""}`}
+                        >
+                          {STATUS_CONFIG[applicationStatus]?.label ||
+                            applicationStatus}
+                        </span>
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <Link
+                          to="/seeker/applied-jobs"
+                          className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg font-semibold text-white transition-all hover:shadow-lg"
+                          style={{ backgroundColor: colors.primary }}
+                        >
+                          View My Applications
+                        </Link>
+                        <Link
+                          to="/jobs"
+                          className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg font-semibold border transition-all hover:bg-white"
+                          style={{
+                            borderColor: colors.primary,
+                            color: colors.primary,
+                          }}
+                        >
+                          <Briefcase className="w-5 h-5" />
+                          Browse More Jobs
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    /* ── Normal apply CTA ── */
+                    <div>
+                      <h4
+                        className="text-2xl font-semibold mb-3"
+                        style={{ color: colors.primary }}
+                      >
+                        Ready to Apply?
+                      </h4>
+                      <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                        Don't miss this opportunity!
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button
+                          onClick={handleSaveJob}
+                          className="px-8 py-3 rounded-lg font-semibold border flex items-center justify-center gap-2"
+                          style={{
+                            borderColor: colors.primary,
+                            color: colors.primary,
+                          }}
+                        >
+                          <Bookmark className="w-5 h-5" />
+                          {isSaved ? "Job Saved" : "Save for Later"}
+                        </button>
+                        <ApplyButton
+                          size="lg"
+                          style={{ backgroundColor: colors.primary }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ── RIGHT: Sidebar (20%) ── */}
+          {/* ── RIGHT: Sidebar ── */}
           <div className="lg:w-1/5">
             <div className="sticky top-24 space-y-6">
               {/* Related Jobs */}
@@ -869,17 +1414,55 @@ const SingleJobDescription = () => {
                   Quick Actions
                 </h4>
                 <div className="space-y-2">
-                  <button
-                    onClick={handleSaveJob}
-                    className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors hover:bg-white"
-                    style={{
-                      borderColor: colors.border,
-                      color: colors.primary,
-                    }}
-                  >
-                    <Bookmark className="w-4 h-4" />
-                    {isSaved ? "Remove from Saved" : "Save This Job"}
-                  </button>
+                  {hasApplied ? (
+                    /* Show application status in sidebar when already applied */
+                    <>
+                      <div
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-sm border"
+                        style={{
+                          backgroundColor:
+                            STATUS_CONFIG[applicationStatus]?.bg?.replace(
+                              "bg-",
+                              "",
+                            ) || "#f0fdf4",
+                          borderColor: "#4eb956",
+                          color: colors.primary,
+                        }}
+                      >
+                        <span className="text-base">✓</span>
+                        {STATUS_CONFIG[applicationStatus]?.label || "Applied"}
+                      </div>
+                      <Link
+                        to="/my-applications"
+                        className="w-full flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-sm text-white transition-all hover:shadow-md"
+                        style={{ backgroundColor: colors.primary }}
+                      >
+                        View My Applications
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setApplyModalOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-white transition-all hover:shadow-md"
+                        style={{ backgroundColor: colors.secondary }}
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Apply Now
+                      </button>
+                      <button
+                        onClick={handleSaveJob}
+                        className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors hover:bg-white"
+                        style={{
+                          borderColor: colors.border,
+                          color: colors.primary,
+                        }}
+                      >
+                        <Bookmark className="w-4 h-4" />
+                        {isSaved ? "Remove from Saved" : "Save This Job"}
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={handleShare}
                     className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors hover:bg-white"
@@ -909,28 +1492,64 @@ const SingleJobDescription = () => {
         </div>
       </div>
 
-      {/* Mobile Apply Bar */}
+      {/* ── Mobile Apply Bar ── */}
       <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg"
+        className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg z-30"
         style={{ borderColor: colors.border }}
       >
-        <div className="flex gap-3">
-          <button
-            onClick={handleSaveJob}
-            className="flex-1 py-3 rounded-lg font-semibold border flex items-center justify-center gap-2"
-            style={{ borderColor: colors.primary, color: colors.primary }}
-          >
-            <Bookmark className="w-5 h-5" />
-            {isSaved ? "Saved" : "Save"}
-          </button>
-          <button
-            className="flex-1 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer text-white"
-            style={{ backgroundColor: colors.secondary }}
-          >
-            Apply Now
-          </button>
-        </div>
+        {hasApplied ? (
+          /* Applied state: full-width status + link */
+          <div className="flex gap-3">
+            <div
+              className="flex-1 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 border"
+              style={{ borderColor: "#4eb956", color: colors.primary }}
+            >
+              <span>✓</span>
+              {STATUS_CONFIG[applicationStatus]?.label || "Applied"}
+            </div>
+            <Link
+              to="/my-applications"
+              className="flex-1 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-white"
+              style={{ backgroundColor: colors.primary }}
+            >
+              My Applications
+            </Link>
+          </div>
+        ) : (
+          /* Not yet applied: save + apply */
+          <div className="flex gap-3">
+            <button
+              onClick={handleSaveJob}
+              className="flex-1 py-3 rounded-lg font-semibold border flex items-center justify-center gap-2"
+              style={{ borderColor: colors.primary, color: colors.primary }}
+            >
+              <Bookmark className="w-5 h-5" />
+              {isSaved ? "Saved" : "Save"}
+            </button>
+            <button
+              onClick={() => setApplyModalOpen(true)}
+              className="flex-1 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer text-white"
+              style={{ backgroundColor: colors.secondary }}
+            >
+              Apply Now
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* ── Apply Job Modal ── */}
+      {!hasApplied && (
+        <ApplyJobModal
+          job={job}
+          isOpen={applyModalOpen}
+          onClose={() => setApplyModalOpen(false)}
+          onSuccess={() => {
+            setApplyModalOpen(false);
+            setHasApplied(true);
+            setApplicationStatus("applied");
+          }}
+        />
+      )}
     </div>
   );
 };

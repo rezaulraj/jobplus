@@ -100,6 +100,51 @@ const useSeekerStore = create((set, get) => ({
     }
   },
 
+  // Apply for a job
+  applyJob: async (jobId) =>
+    get().runRequest(
+      () =>
+        axios.post(
+          `${API_URL}/applications/apply`,
+          { jobId },
+          get().getAuthConfig(),
+        ),
+      "Application submitted successfully!",
+      { updateProfile: false },
+    ),
+
+  // Get my applications
+  fetchMyApplications: async (query = {}) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const params = {
+        ...(query.page ? { page: query.page } : {}),
+        ...(query.limit ? { limit: query.limit } : {}),
+        ...(query.status ? { status: query.status } : {}),
+      };
+
+      const response = await axios.get(
+        `${API_URL}/applications/my`,
+        get().getAuthConfig({ params }),
+      );
+
+      if (response.data?.success) {
+        set({ isLoading: false });
+        return {
+          success: true,
+          data: response.data.data?.items || response.data.data || [],
+          meta: response.data.data?.meta || null,
+        };
+      }
+
+      set({ isLoading: false });
+      return { success: false };
+    } catch (error) {
+      return get().handleError(error, "Failed to fetch applications");
+    }
+  },
+
   getPersonalInfo: async () => {
     try {
       const response = await axios.get(
