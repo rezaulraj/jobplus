@@ -391,7 +391,7 @@ const EmployerAuth = () => {
                       </h2>
                       <button
                         onClick={handleShowSignup}
-                        className="text-sm lg:text-base cursor-pointer text-[#1e2558] hover:text-[#4eb956] font-medium"
+                        className="text-sm lg:text-base cursor-pointer underline text-[#1e2558] hover:text-[#4eb956] font-medium"
                       >
                         Create account
                       </button>
@@ -480,7 +480,7 @@ const EmployerAuth = () => {
                         </label>
                         <a
                           href="#"
-                          className="text-xs lg:text-sm text-[#1e2558] hover:text-[#4eb956] hover:underline"
+                          className="text-xs lg:text-sm  text-[#1e2558] hover:text-[#4eb956] underline"
                         >
                           Forgot password?
                         </a>

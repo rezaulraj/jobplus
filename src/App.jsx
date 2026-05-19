@@ -53,6 +53,7 @@ import PostJob from "./pages/employer/PostJob";
 import EditJob from "./pages/employer/EditJob";
 import JobApplications from "./pages/employer/JobApplications";
 import ForgotPassword from "./components/ForgotPassword";
+import AccountOverview from "./pages/employer/AccountOverview";
 
 function App() {
   const { isAuthenticated, tokens, setAuthHeader, user } = useAuthStore();
@@ -238,6 +239,10 @@ function App() {
             <Route path="employer/dashboard" element={<EmployerDashboard />} />
             <Route path="employer/company" element={<CompanyProfile />} />
             <Route path="employer/profile" element={<EmployerProfile />} />
+            <Route
+              path="employer/account-overview"
+              element={<AccountOverview />}
+            />
             <Route path="employer/jobs" element={<PostedJobs />} />
             <Route path="employer/post-job" element={<PostJob />} />
             <Route path="employer/edit-job/:id" element={<EditJob />} />

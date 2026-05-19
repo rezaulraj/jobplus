@@ -1,1524 +1,1226 @@
-import React, { useState, useEffect, useCallback } from "react";
+// pages/employer/PostJob.jsx
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import {
   FaBriefcase,
   FaMapMarkerAlt,
   FaDollarSign,
-  FaClock,
-  FaCalendarAlt,
-  FaUserGraduate,
-  FaFileAlt,
-  FaTags,
-  FaGlobe,
-  FaBuilding,
   FaUsers,
-  FaArrowLeft,
-  FaArrowRight,
-  FaCheckCircle,
-  FaPlus,
-  FaTrash,
+  FaChevronDown,
+  FaTimes,
+  FaSpinner,
   FaCheck,
-  FaHome,
-  FaSuitcase,
-  FaUserTie,
-  FaUser,
-  FaCalendar,
-  FaEnvelope,
+  FaSave,
+  FaPaperPlane,
+  FaExclamationCircle,
+  FaTag,
+  FaSearch,
+  FaBold,
+  FaItalic,
+  FaListUl,
+  FaListOl,
+  FaUnderline,
+  FaHeading,
+  FaQuoteLeft,
+  FaUndo,
+  FaRedo,
+  FaLock,
+  FaSignInAlt,
+  FaUserPlus,
+  FaUserSlash,
+  FaCrown,
+  FaExclamationTriangle,
 } from "react-icons/fa";
+import { State, City } from "country-state-city";
+import useJobPostStore from "../../store/jobPostStore";
 
-// Department data array
-const jobDepartments = [
-  { name: "Accounting/Finance" },
-  { name: "Business Development" },
-  { name: "Sales/Marketing" },
-  { name: "IT/Telecommunication" },
-  { name: "Information Technology" },
-  { name: "Engineering" },
-  { name: "Manufacturing" },
-  { name: "Services" },
-  { name: "Recruitment/Employment Firms" },
-  { name: "Data Entry/Office Support" },
-  { name: "Hospitality/Travel/Tourism" },
-  { name: "Education/Training" },
-  { name: "Customer/Service/Call Centre" },
-  { name: "Consultants" },
-  { name: "Banking/Financial Services" },
-  { name: "N.G.O./Social Services" },
-  { name: "E-Commerce/E-Business" },
-  { name: "Real Estate/Property" },
-  { name: "Healthcare/Hospital/Medical" },
-  { name: "BPO" },
-  { name: "Construction/Cement/Metals" },
-  { name: "Architect/Interior Design" },
-  { name: "Importers/Distributors/Exporters" },
-];
+// ── Color Constants ─────────────────────────────────────────────────────────
+const NAVY = "#1e2558";
+const GREEN = "#4eb956";
 
-// Subcategory data
-const subCategories = [
-  { name: "Sales" },
-  { name: "Marketing" },
-  { name: "Software Development" },
-  { name: "Human Resources" },
-  { name: "Finance" },
-  { name: "Operations" },
-  { name: "Customer Support" },
-  { name: "Administration" },
-];
+const DEFAULT_COUNTRY_CODE = "BD";
 
-// Job categories for final step
-const jobCategories = [
-  { name: "Technology" },
-  { name: "Marketing" },
-  { name: "Sales" },
-  { name: "Design" },
-  { name: "Finance" },
-  { name: "Human Resources" },
-  { name: "Operations" },
-  { name: "Customer Service" },
-];
+const getCountryNameFromApi = (countries, code) => {
+  return countries.find((c) => c.isoCode === code)?.name || "";
+};
 
-// Industries
-const industries = [
-  { name: "Technology" },
-  { name: "Finance" },
-  { name: "Healthcare" },
-  { name: "E-commerce" },
-  { name: "Education" },
-  { name: "Manufacturing" },
-  { name: "Consulting" },
-  { name: "Media & Entertainment" },
-];
+const getStateName = (stateCode, countryCode) => {
+  if (!countryCode || !stateCode) return "";
+  return State.getStatesOfCountry(countryCode).find(
+    (s) => s.isoCode === stateCode,
+  )?.name;
+};
 
-const Jobpost = () => {
-  // Step state
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mounted, setMounted] = useState(false);
+const buildLocation = ({ city, state, country, countries = [] }) => {
+  const countryName = getCountryNameFromApi(countries, country);
+  const stateName = getStateName(state, country);
+  return [city, stateName, countryName].filter(Boolean).join(", ");
+};
 
-  // Job form state
-  const [jobData, setJobData] = useState({
-    // Step 1: Basic Information
-    jobTitle: "",
-    companyName: "",
-    department: "",
-    employmentType: "",
-    experienceLevel: "",
+// ── Rich Text Editor Component ─────────────────────────────────────────────
+const RichTextEditor = ({ value, onChange, error }) => {
+  const editorRef = useRef(null);
+  const [wordCount, setWordCount] = useState(0);
 
-    // Step 2: Location & Details
-    location: {
-      city: "",
-      state: "",
-      country: "",
-      remoteType: "onsite",
-    },
-    salary: {
-      min: "",
-      max: "",
-      currency: "BDT",
-      period: "month",
-    },
-    vacancies: "1",
+  const sync = useCallback(() => {
+    if (!editorRef.current) return;
+    const html = editorRef.current.innerHTML;
+    onChange(html);
+    const text = editorRef.current.innerText || "";
+    setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
+  }, [onChange]);
 
-    // Step 3: Requirements
-    education: "",
-    skills: [],
-    certifications: [],
+  const exec = (command, val = null) => {
+    document.execCommand(command, false, val);
+    editorRef.current?.focus();
+    sync();
+  };
 
-    // Step 4: Description
-    description: "",
-    responsibilities: "",
-    benefits: "",
-
-    // Step 5: Application Details
-    applicationDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    applicationEmail: "",
-    applicationUrl: "",
-
-    // Step 6: Additional Info
-    tags: [],
-    category: "",
-    subCategory: "",
-    industry: "",
-  });
-
-  // Input states
-  const [skillInput, setSkillInput] = useState("");
-  const [certInput, setCertInput] = useState("");
-  const [tagInput, setTagInput] = useState("");
-
-  // Set mounted state
   useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
+    if (editorRef.current && value && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value;
+      const text = editorRef.current.innerText || "";
+      setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
+    }
   }, []);
 
-  // Options arrays - FIXED: Using emojis instead of React elements in select
-  const employmentTypes = [
-    { value: "full-time", label: "Full Time" },
-    { value: "part-time", label: "Part Time" },
-    { value: "contract", label: "Contract" },
-    { value: "temporary", label: "Temporary" },
-    { value: "internship", label: "Internship" },
-    { value: "freelance", label: "Freelance" },
-  ];
-
-  const experienceLevels = [
-    { value: "entry", label: "Entry Level (0-2 years)" },
-    { value: "mid", label: "Mid Level (2-5 years)" },
-    { value: "senior", label: "Senior Level (5+ years)" },
-    { value: "executive", label: "Executive" },
-    { value: "director", label: "Director" },
-  ];
-
-  // Button versions with icons (for display, not for select)
-  const employmentTypeButtons = [
-    { value: "full-time", label: "Full Time", icon: <FaClock /> },
-    { value: "part-time", label: "Part Time", icon: <FaClock /> },
-    { value: "contract", label: "Contract", icon: <FaCalendar /> },
-    { value: "temporary", label: "Temporary", icon: <FaCalendar /> },
-    { value: "internship", label: "Internship", icon: <FaUserGraduate /> },
-    { value: "freelance", label: "Freelance", icon: <FaSuitcase /> },
-  ];
-
-  const experienceLevelButtons = [
-    { value: "entry", label: "Entry Level", icon: <FaUserGraduate /> },
-    { value: "mid", label: "Mid Level", icon: <FaUser /> },
-    { value: "senior", label: "Senior Level", icon: <FaUserTie /> },
-    { value: "executive", label: "Executive", icon: <FaUserTie /> },
-    { value: "director", label: "Director", icon: <FaSuitcase /> },
-  ];
-
-  const remoteTypes = [
-    { value: "onsite", label: "On-site", icon: <FaBuilding /> },
-    { value: "remote", label: "Fully Remote", icon: <FaHome /> },
+  const toolbarBtns = [
+    { icon: <FaBold size={12} />, cmd: "bold", title: "Bold" },
+    { icon: <FaItalic size={12} />, cmd: "italic", title: "Italic" },
+    { icon: <FaUnderline size={12} />, cmd: "underline", title: "Underline" },
     {
-      value: "hybrid",
-      label: "Hybrid",
-      icon: (
-        <>
-          <FaBuilding />
-          <FaHome />
-        </>
-      ),
+      icon: <FaHeading size={12} />,
+      cmd: "formatBlock",
+      val: "h3",
+      title: "Heading",
     },
-  ];
-
-  const educationLevels = [
-    { value: "high-school", label: "High School Diploma" },
-    { value: "associate", label: "Associate Degree" },
-    { value: "bachelor", label: "Bachelor's Degree" },
-    { value: "master", label: "Master's Degree" },
-    { value: "phd", label: "PhD" },
-    { value: "none", label: "No Formal Education Required" },
-  ];
-
-  const currencies = [
-    { value: "BDT", label: "BDT (৳)" },
-    { value: "USD", label: "USD ($)" },
-    { value: "EUR", label: "EUR (€)" },
-    { value: "GBP", label: "GBP (£)" },
-    { value: "JPY", label: "JPY (¥)" },
-    { value: "CAD", label: "CAD ($)" },
-    { value: "AUD", label: "AUD ($)" },
-  ];
-
-  const salaryPeriods = [
-    { value: "month", label: "Per Month" },
-    { value: "year", label: "Per Year" },
-    { value: "week", label: "Per Week" },
-    { value: "hour", label: "Per Hour" },
-  ];
-
-  // Handle input changes
-  const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".");
-      setJobData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value,
-        },
-      }));
-    } else {
-      setJobData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  }, []);
-
-  // Add skill
-  const addSkill = useCallback(() => {
-    if (skillInput.trim() && !jobData.skills.includes(skillInput.trim())) {
-      setJobData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, skillInput.trim()],
-      }));
-      setSkillInput("");
-    }
-  }, [skillInput, jobData.skills]);
-
-  // Remove skill
-  const removeSkill = useCallback((skill) => {
-    setJobData((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((s) => s !== skill),
-    }));
-  }, []);
-
-  // Add certification
-  const addCertification = useCallback(() => {
-    if (
-      certInput.trim() &&
-      !jobData.certifications.includes(certInput.trim())
-    ) {
-      setJobData((prev) => ({
-        ...prev,
-        certifications: [...prev.certifications, certInput.trim()],
-      }));
-      setCertInput("");
-    }
-  }, [certInput, jobData.certifications]);
-
-  // Remove certification
-  const removeCertification = useCallback((cert) => {
-    setJobData((prev) => ({
-      ...prev,
-      certifications: prev.certifications.filter((c) => c !== cert),
-    }));
-  }, []);
-
-  // Add tag
-  const addTag = useCallback(() => {
-    if (tagInput.trim() && !jobData.tags.includes(tagInput.trim())) {
-      setJobData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()],
-      }));
-      setTagInput("");
-    }
-  }, [tagInput, jobData.tags]);
-
-  // Remove tag
-  const removeTag = useCallback((tag) => {
-    setJobData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((t) => t !== tag),
-    }));
-  }, []);
-
-  // Handle key press for inputs
-  const handleKeyPress = useCallback(
-    (e, type) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (type === "skill") addSkill();
-        if (type === "cert") addCertification();
-        if (type === "tag") addTag();
-      }
+    {
+      icon: <FaQuoteLeft size={12} />,
+      cmd: "formatBlock",
+      val: "blockquote",
+      title: "Quote",
     },
-    [addSkill, addCertification, addTag]
-  );
-
-  // Navigation
-  const nextStep = useCallback(() => {
-    // Validate current step before proceeding
-    if (currentStep === 1) {
-      if (
-        !jobData.jobTitle ||
-        !jobData.companyName ||
-        !jobData.employmentType
-      ) {
-        alert("Please fill in all required basic information");
-        return;
-      }
-    } else if (currentStep === 2) {
-      if (!jobData.location.city || !jobData.location.country) {
-        alert("Please fill in location information");
-        return;
-      }
-    } else if (currentStep === 3) {
-      if (jobData.skills.length === 0) {
-        alert("Please add at least one required skill");
-        return;
-      }
-    } else if (currentStep === 4) {
-      if (
-        !jobData.description.trim() ||
-        jobData.description.trim().length < 50
-      ) {
-        alert(
-          "Please provide a detailed job description (minimum 50 characters)"
-        );
-        return;
-      }
-    } else if (currentStep === 5) {
-      if (!jobData.applicationEmail && !jobData.applicationUrl) {
-        alert("Please provide either application email or URL");
-        return;
-      }
-    }
-
-    if (currentStep < 6) {
-      setCurrentStep(currentStep + 1);
-    }
-  }, [currentStep, jobData]);
-
-  const prevStep = useCallback(() => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  }, [currentStep]);
-
-  // Handle form submission
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      setIsSubmitting(true);
-
-      // Final validation
-      if (!jobData.category || !jobData.industry) {
-        alert("Please select category and industry");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Prepare data for API
-      const submitData = {
-        ...jobData,
-        postedDate: new Date().toISOString(),
-        status: "active",
-      };
-
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Job posted:", submitData);
-        setIsSubmitting(false);
-        setIsSubmitted(true);
-      }, 2000);
+    {
+      icon: <FaListUl size={12} />,
+      cmd: "insertUnorderedList",
+      title: "Bullet List",
     },
-    [jobData]
-  );
-
-  // Progress percentage
-  const progressPercentage = ((currentStep - 1) / 6) * 100;
-
-  // Step titles
-  const stepTitles = [
-    "Basic Information",
-    "Location & Salary",
-    "Requirements",
-    "Description",
-    "Application Details",
-    "Additional Info",
+    {
+      icon: <FaListOl size={12} />,
+      cmd: "insertOrderedList",
+      title: "Numbered List",
+    },
+    { icon: <FaUndo size={12} />, cmd: "undo", title: "Undo" },
+    { icon: <FaRedo size={12} />, cmd: "redo", title: "Redo" },
   ];
-
-  // Reset form
-  const resetForm = useCallback(() => {
-    setCurrentStep(1);
-    setJobData({
-      jobTitle: "",
-      companyName: "",
-      department: "",
-      employmentType: "",
-      experienceLevel: "",
-      location: { city: "", state: "", country: "", remoteType: "onsite" },
-      salary: { min: "", max: "", currency: "USD", period: "year" },
-      vacancies: "1",
-      education: "",
-      skills: [],
-      certifications: [],
-      description: "",
-      responsibilities: "",
-      benefits: "",
-      applicationDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      applicationEmail: "",
-      applicationUrl: "",
-      tags: [],
-      category: "",
-      subCategory: "",
-      industry: "",
-    });
-    setIsSubmitted(false);
-  }, []);
-
-  if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center">
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="inline-flex items-center justify-center w-16 h-16 "
-            >
-              <FaBriefcase className="text-2xl text-primary" />
-            </motion.div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              Post a New Job
-            </h1>
-          </div>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Fill in the job details step by step to find the perfect candidate
-          </p>
+    <div
+      className={`border rounded-xl overflow-hidden transition-all duration-200 ${error ? "border-red-400 ring-2 ring-red-100" : "border-gray-200 focus-within:border-[#4EB956] focus-within:ring-2 focus-within:ring-[#4EB956]/10"}`}
+    >
+      <div className="flex items-center gap-0.5 px-3 py-2 bg-gray-50 border-b border-gray-100 flex-wrap">
+        {toolbarBtns.map((btn, i) => (
+          <button
+            key={i}
+            type="button"
+            title={btn.title}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              exec(btn.cmd, btn.val || null);
+            }}
+            className="p-1.5 rounded-lg text-gray-500 hover:bg-white hover:text-[#1E2558] hover:shadow-sm transition-all duration-150"
+          >
+            {btn.icon}
+          </button>
+        ))}
+        <div className="ml-auto text-xs text-gray-400 font-medium">
+          {wordCount} words
         </div>
+      </div>
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={sync}
+        onBlur={sync}
+        className="min-h-[220px] max-h-[420px] overflow-y-auto p-4 text-sm text-gray-700 outline-none leading-relaxed [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-gray-800 [&_h3]:mt-3 [&_h3]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-[#4EB956] [&_blockquote]:pl-3 [&_blockquote]:text-gray-500 [&_blockquote]:italic [&_blockquote]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ul_li]:mb-0.5 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_ol_li]:mb-0.5"
+        data-placeholder="Describe the role, responsibilities, requirements, and other details..."
+        style={{ caretColor: "#4EB956" }}
+      />
+      <style>{`[contenteditable]:empty:before { content: attr(data-placeholder); color: #9ca3af; pointer-events: none; }`}</style>
+    </div>
+  );
+};
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              Step {currentStep} of 6: {stepTitles[currentStep - 1]}
-            </span>
-            <span className="text-sm font-semibold text-[#4eb956]">
-              {Math.round(progressPercentage)}% Complete
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercentage}%` }}
-              className="h-3 rounded-full bg-gradient-to-r from-[#1e2558] via-[#4eb956] to-[#1e2558]"
-            ></motion.div>
-          </div>
+const FieldError = ({ msg }) =>
+  msg ? (
+    <p className="flex items-center gap-1 text-red-500 text-xs mt-1">
+      <FaExclamationCircle size={10} />
+      {msg}
+    </p>
+  ) : null;
 
-          {/* Step Indicators */}
-          <div className="flex justify-between mt-6">
-            {stepTitles.map((title, index) => (
-              <div
-                key={index}
-                className={`flex flex-col items-center ${
-                  index + 1 <= currentStep ? "text-[#1e2558]" : "text-gray-400"
-                }`}
-              >
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                    index + 1 < currentStep
-                      ? "bg-[#4eb956] text-white"
-                      : index + 1 === currentStep
-                      ? "bg-[#1e2558] text-white shadow-lg"
-                      : "bg-gray-200"
-                  }`}
-                >
-                  {index + 1 < currentStep ? (
-                    <FaCheckCircle />
-                  ) : (
-                    <span className="font-semibold">{index + 1}</span>
-                  )}
-                </div>
-                <span className="text-xs text-center max-w-16 hidden md:block">
-                  {title}
-                </span>
+// ── API Search Selector Component ───────────────────────────────────────────
+const ApiSearchSelector = ({
+  items = [],
+  loading,
+  value,
+  onChange,
+  error,
+  placeholder,
+  searchPlaceholder,
+  icon,
+  getId,
+  getLabel,
+  getSubLabel,
+  renderLeft,
+}) => {
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = items.filter((item) =>
+    getLabel(item)?.toLowerCase().includes(search.toLowerCase()),
+  );
+  const selected = items.find((item) => getId(item) === value);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-sm transition-all duration-200 bg-white ${error ? "border-red-400 bg-red-50" : open ? "border-[#4EB956] ring-2 ring-[#4EB956]/10" : "border-gray-200 hover:border-gray-300"}`}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          {selected && renderLeft ? (
+            renderLeft(selected)
+          ) : (
+            <span className={selected ? "text-[#4EB956]" : "text-gray-400"}>
+              {icon}
+            </span>
+          )}
+          <span
+            className={`truncate ${selected ? "text-gray-800 font-medium" : "text-gray-400"}`}
+          >
+            {loading
+              ? "Loading..."
+              : selected
+                ? getLabel(selected)
+                : placeholder}
+          </span>
+        </div>
+        <FaChevronDown
+          className={`text-gray-400 text-xs transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="absolute z-40 w-full mt-1.5 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-gray-50">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={searchPlaceholder}
+                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-100 rounded-lg outline-none focus:border-[#4EB956] bg-gray-50"
+                autoFocus
+              />
+            </div>
+          </div>
+          <div className="max-h-56 overflow-y-auto py-1">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <FaSpinner className="animate-spin text-[#4EB956]" />
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Form Container */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <AnimatePresence mode="wait">
-            {isSubmitted ? (
-              // Success Screen
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="p-8 md:p-12 text-center"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200 }}
-                  className="w-24 h-24 bg-gradient-to-br from-[#4eb956] to-green-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
-                >
-                  <FaCheckCircle className="text-4xl text-white" />
-                </motion.div>
-
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                  Job Posted Successfully!
-                </h2>
-                <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                  Your job listing has been published and is now visible to
-                  candidates.
-                </p>
-
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 max-w-md mx-auto mb-8">
-                  <h3 className="font-semibold text-blue-800 mb-3">
-                    Job Summary
-                  </h3>
-                  <div className="text-left space-y-2">
-                    <p>
-                      <span className="font-medium">Position:</span>{" "}
-                      {jobData.jobTitle}
-                    </p>
-                    <p>
-                      <span className="font-medium">Company:</span>{" "}
-                      {jobData.companyName}
-                    </p>
-                    <p>
-                      <span className="font-medium">Location:</span>{" "}
-                      {jobData.location.city}, {jobData.location.country}
-                    </p>
-                    <p>
-                      <span className="font-medium">Type:</span>{" "}
-                      {
-                        employmentTypes.find(
-                          (e) => e.value === jobData.employmentType
-                        )?.label
-                      }
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={resetForm}
-                    className="px-6 py-3 bg-[#1e2558] text-white rounded-lg hover:bg-[#2d377a] transition-colors duration-300"
-                  >
-                    Post Another Job
-                  </button>
-                  <button
-                    onClick={() => console.log("View job listing")}
-                    className="px-6 py-3 border border-[#1e2558] text-[#1e2558] rounded-lg hover:bg-[#1e2558] hover:text-white transition-colors duration-300"
-                  >
-                    View Job Listing
-                  </button>
-                </div>
-              </motion.div>
+            ) : filtered.length === 0 ? (
+              <p className="text-center text-sm text-gray-400 py-6">
+                No data found
+              </p>
             ) : (
-              // Form Steps
-              <motion.div
-                key={`step-${currentStep}`}
-                initial={{ x: 100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -100, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="p-6 md:p-8"
-              >
-                <form
-                  onSubmit={
-                    currentStep === 6
-                      ? handleSubmit
-                      : (e) => {
-                          e.preventDefault();
-                          nextStep();
-                        }
-                  }
-                >
-                  {/* Step 1: Basic Information */}
-                  {currentStep === 1 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-[#1e2558]/10 rounded-lg">
-                          <FaBriefcase className="text-xl text-[#1e2558]" />
-                        </div>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                          Basic Job Information
-                        </h2>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Job Title <span className="text-red-500">*</span>
-                          </label>
-                          <div className="relative">
-                            <FaBriefcase className="absolute left-3 top-3.5 text-gray-400" />
-                            <input
-                              type="text"
-                              name="jobTitle"
-                              value={jobData.jobTitle}
-                              onChange={handleInputChange}
-                              required
-                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              placeholder="e.g., Senior Frontend Developer"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Company Name <span className="text-red-500">*</span>
-                          </label>
-                          <div className="relative">
-                            <FaBuilding className="absolute left-3 top-3.5 text-gray-400" />
-                            <input
-                              type="text"
-                              name="companyName"
-                              value={jobData.companyName}
-                              onChange={handleInputChange}
-                              required
-                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              placeholder="Your company name"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Department Dropdown - FIXED */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Department
-                          </label>
-                          <select
-                            name="department"
-                            value={jobData.department}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                          >
-                            <option value="">Select Department</option>
-                            {jobDepartments.map((dept, index) => (
-                              <option key={index} value={dept.name}>
-                                {dept.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Employment Type{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <div className="relative">
-                            <FaClock className="absolute left-3 top-3.5 text-gray-400 z-10" />
-                            <select
-                              name="employmentType"
-                              value={jobData.employmentType}
-                              onChange={handleInputChange}
-                              required
-                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200 appearance-none bg-white"
-                            >
-                              <option value="">Select Type</option>
-                              {employmentTypes.map((type) => (
-                                <option key={type.value} value={type.value}>
-                                  {type.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Experience Level Buttons */}
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Experience Level
-                          </label>
-                          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                            {experienceLevelButtons.map((level) => (
-                              <button
-                                key={level.value}
-                                type="button"
-                                onClick={() =>
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    experienceLevel: level.value,
-                                  }))
-                                }
-                                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  jobData.experienceLevel === level.value
-                                    ? "border-[#4eb956] bg-[#4eb956]/10"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                <span className="text-xl mb-2">
-                                  {level.icon}
-                                </span>
-                                <span className="text-xs font-medium text-center">
-                                  {level.label.split(" ")[0]}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+              filtered.map((item) => {
+                const id = getId(item);
+                const isSelected = id === value;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      onChange(id, item);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors ${isSelected ? "bg-[#4EB956]/10 text-[#4EB956] font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      {renderLeft && renderLeft(item)}
+                      <div className="min-w-0 text-left">
+                        <p className="truncate">{getLabel(item)}</p>
+                        {getSubLabel?.(item) && (
+                          <p className="text-[11px] text-gray-400 truncate">
+                            {getSubLabel(item)}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  )}
-
-                  {/* Step 2: Location & Salary */}
-                  {currentStep === 2 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-[#1e2558]/10 rounded-lg">
-                          <FaMapMarkerAlt className="text-xl text-[#1e2558]" />
-                        </div>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                          Location & Salary Details
-                        </h2>
-                      </div>
-
-                      <div className="space-y-6">
-                        {/* Remote Type */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Work Arrangement
-                          </label>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {remoteTypes.map((type) => (
-                              <button
-                                key={type.value}
-                                type="button"
-                                onClick={() =>
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    location: {
-                                      ...prev.location,
-                                      remoteType: type.value,
-                                    },
-                                  }))
-                                }
-                                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  jobData.location.remoteType === type.value
-                                    ? "border-[#4eb956] bg-[#4eb956]/10"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                <span className="text-xl mb-2">
-                                  {type.icon}
-                                </span>
-                                <span className="font-medium">
-                                  {type.label}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Location */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              City <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative">
-                              <FaMapMarkerAlt className="absolute left-3 top-3.5 text-gray-400" />
-                              <input
-                                type="text"
-                                name="location.city"
-                                value={jobData.location.city}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                                placeholder="City"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              State/Province
-                            </label>
-                            <input
-                              type="text"
-                              name="location.state"
-                              value={jobData.location.state}
-                              onChange={handleInputChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              placeholder="State"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Country <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              name="location.country"
-                              value={jobData.location.country}
-                              onChange={handleInputChange}
-                              required
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              placeholder="Country"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Salary */}
-                        <div className="border-t pt-6">
-                          <div className="flex items-center space-x-2 mb-4">
-                            <FaDollarSign className="text-[#4eb956]" />
-                            <h3 className="font-medium text-gray-800">
-                              Salary Information
-                            </h3>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Minimum Salary
-                              </label>
-                              <input
-                                type="number"
-                                name="salary.min"
-                                value={jobData.salary.min}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                                placeholder="Min"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Maximum Salary
-                              </label>
-                              <input
-                                type="number"
-                                name="salary.max"
-                                value={jobData.salary.max}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                                placeholder="Max"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Currency
-                              </label>
-                              <select
-                                name="salary.currency"
-                                value={jobData.salary.currency}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              >
-                                {currencies.map((curr) => (
-                                  <option key={curr.value} value={curr.value}>
-                                    {curr.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Period
-                              </label>
-                              <select
-                                name="salary.period"
-                                value={jobData.salary.period}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              >
-                                {salaryPeriods.map((period) => (
-                                  <option
-                                    key={period.value}
-                                    value={period.value}
-                                  >
-                                    {period.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Vacancies */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Number of Vacancies
-                          </label>
-                          <div className="flex items-center space-x-4">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setJobData((prev) => ({
-                                  ...prev,
-                                  vacancies: Math.max(
-                                    1,
-                                    parseInt(prev.vacancies) - 1
-                                  ).toString(),
-                                }))
-                              }
-                              className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                            >
-                              -
-                            </button>
-                            <input
-                              type="number"
-                              name="vacancies"
-                              value={jobData.vacancies}
-                              onChange={handleInputChange}
-                              min="1"
-                              className="w-24 px-4 py-3 border border-gray-300 rounded-xl text-center focus:ring-2 focus:ring-[#4eb956] focus:border-transparent"
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setJobData((prev) => ({
-                                  ...prev,
-                                  vacancies: (
-                                    parseInt(prev.vacancies) + 1
-                                  ).toString(),
-                                }))
-                              }
-                              className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 3: Requirements */}
-                  {currentStep === 3 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-[#1e2558]/10 rounded-lg">
-                          <FaUserGraduate className="text-xl text-[#1e2558]" />
-                        </div>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                          Requirements & Qualifications
-                        </h2>
-                      </div>
-
-                      <div className="space-y-6">
-                        {/* Education */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Minimum Education Level
-                          </label>
-                          <select
-                            name="education"
-                            value={jobData.education}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                          >
-                            <option value="">Select Education Level</option>
-                            {educationLevels.map((level) => (
-                              <option key={level.value} value={level.value}>
-                                {level.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Skills */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Required Skills{" "}
-                            <span className="text-red-500">*</span>
-                            <span className="text-xs text-gray-500 ml-2">
-                              (Add at least one skill)
-                            </span>
-                          </label>
-                          <div className="flex space-x-2 mb-3">
-                            <input
-                              type="text"
-                              value={skillInput}
-                              onChange={(e) => setSkillInput(e.target.value)}
-                              onKeyPress={(e) => handleKeyPress(e, "skill")}
-                              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              placeholder="e.g., React, JavaScript, Python"
-                            />
-                            <button
-                              type="button"
-                              onClick={addSkill}
-                              className="px-4 py-3 bg-[#1e2558] text-white rounded-xl hover:bg-[#2d377a] transition-colors duration-200 flex items-center space-x-2"
-                            >
-                              <FaPlus />
-                              <span>Add</span>
-                            </button>
-                          </div>
-
-                          {/* Skills List */}
-                          <div className="flex flex-wrap gap-2">
-                            {jobData.skills.map((skill, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center space-x-2 bg-[#4eb956]/10 px-3 py-2 rounded-lg"
-                              >
-                                <span className="font-medium">{skill}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => removeSkill(skill)}
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <FaTrash className="text-sm" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Certifications */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Preferred Certifications
-                          </label>
-                          <div className="flex space-x-2 mb-3">
-                            <input
-                              type="text"
-                              value={certInput}
-                              onChange={(e) => setCertInput(e.target.value)}
-                              onKeyPress={(e) => handleKeyPress(e, "cert")}
-                              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              placeholder="e.g., PMP, AWS Certified, CISSP"
-                            />
-                            <button
-                              type="button"
-                              onClick={addCertification}
-                              className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2"
-                            >
-                              <FaPlus />
-                              <span>Add</span>
-                            </button>
-                          </div>
-
-                          {/* Certifications List */}
-                          <div className="flex flex-wrap gap-2">
-                            {jobData.certifications.map((cert, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-lg"
-                              >
-                                <span className="font-medium">{cert}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => removeCertification(cert)}
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <FaTrash className="text-sm" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 4: Description - REPLACED Quill with textareas */}
-                  {currentStep === 4 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-[#1e2558]/10 rounded-lg">
-                          <FaFileAlt className="text-xl text-[#1e2558]" />
-                        </div>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                          Job Description & Details
-                        </h2>
-                      </div>
-
-                      <div className="space-y-6">
-                        {/* Job Description */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Job Description{" "}
-                            <span className="text-red-500">*</span>
-                            <span className="text-xs text-gray-500 ml-2">
-                              (Minimum 50 characters)
-                            </span>
-                          </label>
-                          <textarea
-                            value={jobData.description}
-                            onChange={(e) =>
-                              setJobData((prev) => ({
-                                ...prev,
-                                description: e.target.value,
-                              }))
-                            }
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200 h-64"
-                            placeholder="Describe the job role, expectations, and impact..."
-                          />
-                          <div className="mt-2 flex justify-between items-center">
-                            <p className="text-xs text-gray-500">
-                              Character count: {jobData.description.length}
-                            </p>
-                            {jobData.description.length < 50 && (
-                              <p className="text-xs text-red-500">
-                                Minimum 50 characters required
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Responsibilities */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Key Responsibilities
-                          </label>
-                          <textarea
-                            value={jobData.responsibilities}
-                            onChange={(e) =>
-                              setJobData((prev) => ({
-                                ...prev,
-                                responsibilities: e.target.value,
-                              }))
-                            }
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200 h-48"
-                            placeholder="List the main responsibilities and tasks..."
-                          />
-                        </div>
-
-                        {/* Benefits */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Benefits & Perks
-                          </label>
-                          <textarea
-                            value={jobData.benefits}
-                            onChange={(e) =>
-                              setJobData((prev) => ({
-                                ...prev,
-                                benefits: e.target.value,
-                              }))
-                            }
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200 h-48"
-                            placeholder="Describe the benefits, perks, and company culture..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 5: Application Details */}
-                  {currentStep === 5 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-[#1e2558]/10 rounded-lg">
-                          <FaUsers className="text-xl text-[#1e2558]" />
-                        </div>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                          Application Process
-                        </h2>
-                      </div>
-
-                      <div className="space-y-6">
-                        {/* Application Deadline */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Application Deadline
-                          </label>
-                          <div className="relative">
-                            <FaCalendarAlt className="absolute left-3 top-3.5 text-gray-400 z-10" />
-                            <DatePicker
-                              selected={jobData.applicationDeadline}
-                              onChange={(date) =>
-                                setJobData((prev) => ({
-                                  ...prev,
-                                  applicationDeadline: date,
-                                }))
-                              }
-                              minDate={new Date()}
-                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              dateFormat="MMMM d, yyyy"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Application Method */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            How to Apply <span className="text-red-500">*</span>
-                            <span className="text-xs text-gray-500 ml-2">
-                              (Provide at least one method)
-                            </span>
-                          </label>
-
-                          <div className="space-y-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Application Email
-                              </label>
-                              <div className="relative">
-                                <FaEnvelope className="absolute left-3 top-3.5 text-gray-400" />
-                                <input
-                                  type="email"
-                                  name="applicationEmail"
-                                  value={jobData.applicationEmail}
-                                  onChange={handleInputChange}
-                                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                                  placeholder="careers@company.com"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="relative">
-                              <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-200"></div>
-                              </div>
-                              <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-white text-gray-500">
-                                  OR
-                                </span>
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Application URL
-                              </label>
-                              <div className="relative">
-                                <FaGlobe className="absolute left-3 top-3.5 text-gray-400" />
-                                <input
-                                  type="url"
-                                  name="applicationUrl"
-                                  value={jobData.applicationUrl}
-                                  onChange={handleInputChange}
-                                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                                  placeholder="https://company.com/careers/apply"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 6: Additional Info */}
-                  {currentStep === 6 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-[#1e2558]/10 rounded-lg">
-                          <FaTags className="text-xl text-[#1e2558]" />
-                        </div>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                          Additional Information
-                        </h2>
-                      </div>
-
-                      <div className="space-y-6">
-                        {/* Tags */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Job Tags
-                            <span className="text-xs text-gray-500 ml-2">
-                              (Helps candidates find your job)
-                            </span>
-                          </label>
-                          <div className="flex space-x-2 mb-3">
-                            <input
-                              type="text"
-                              value={tagInput}
-                              onChange={(e) => setTagInput(e.target.value)}
-                              onKeyPress={(e) => handleKeyPress(e, "tag")}
-                              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                              placeholder="e.g., remote, tech, startup, healthcare"
-                            />
-                            <button
-                              type="button"
-                              onClick={addTag}
-                              className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2"
-                            >
-                              <FaPlus />
-                              <span>Add</span>
-                            </button>
-                          </div>
-
-                          {/* Tags List */}
-                          <div className="flex flex-wrap gap-2">
-                            {jobData.tags.map((tag, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center space-x-2 bg-purple-50 px-3 py-2 rounded-lg"
-                              >
-                                <span className="font-medium">#{tag}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => removeTag(tag)}
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <FaTrash className="text-sm" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Category, Sub Category & Industry */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Job Category{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              name="category"
-                              value={jobData.category}
-                              onChange={handleInputChange}
-                              required
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                            >
-                              <option value="">Select Category</option>
-                              {jobCategories.map((cat, index) => (
-                                <option key={index} value={cat.name}>
-                                  {cat.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Sub Category
-                            </label>
-                            <select
-                              name="subCategory"
-                              value={jobData.subCategory}
-                              onChange={handleInputChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                            >
-                              <option value="">Select Sub Category</option>
-                              {subCategories.map((subCat, index) => (
-                                <option key={index} value={subCat.name}>
-                                  {subCat.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Industry <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              name="industry"
-                              value={jobData.industry}
-                              onChange={handleInputChange}
-                              required
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4eb956] focus:border-transparent transition-all duration-200"
-                            >
-                              <option value="">Select Industry</option>
-                              {industries.map((ind, index) => (
-                                <option key={index} value={ind.name}>
-                                  {ind.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Review Summary */}
-                        <div className="bg-gray-50 rounded-xl p-6">
-                          <h3 className="font-semibold text-gray-800 mb-4">
-                            Job Summary Preview
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm text-gray-600">Position</p>
-                              <p className="font-medium">
-                                {jobData.jobTitle || "Not specified"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600">Company</p>
-                              <p className="font-medium">
-                                {jobData.companyName || "Not specified"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600">Location</p>
-                              <p className="font-medium">
-                                {jobData.location.city},{" "}
-                                {jobData.location.country}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600">Type</p>
-                              <p className="font-medium">
-                                {employmentTypes.find(
-                                  (e) => e.value === jobData.employmentType
-                                )?.label || "Not specified"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600">
-                                Experience
-                              </p>
-                              <p className="font-medium">
-                                {experienceLevels.find(
-                                  (e) => e.value === jobData.experienceLevel
-                                )?.label || "Not specified"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600">Skills</p>
-                              <p className="font-medium">
-                                {jobData.skills.slice(0, 3).join(", ")}
-                                {jobData.skills.length > 3 &&
-                                  ` +${jobData.skills.length - 3} more`}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Navigation Buttons */}
-                  <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
-                    {currentStep > 1 && (
-                      <button
-                        type="button"
-                        onClick={prevStep}
-                        className="flex items-center space-x-2 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-200"
-                      >
-                        <FaArrowLeft />
-                        <span>Back</span>
-                      </button>
+                    {isSelected && (
+                      <FaCheck size={11} className="text-[#4EB956]" />
                     )}
-
-                    <div className="ml-auto">
-                      {currentStep < 6 ? (
-                        <button
-                          type="submit"
-                          className="flex items-center space-x-2 px-6 py-3 bg-[#1e2558] text-white rounded-xl hover:bg-[#2d377a] transition-colors duration-200"
-                        >
-                          <span>Continue</span>
-                          <FaArrowRight />
-                        </button>
-                      ) : (
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="px-8 py-3 bg-gradient-to-r from-[#1e2558] to-[#4eb956] text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
-                        >
-                          {isSubmitting ? (
-                            <div className="flex items-center space-x-2">
-                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              <span>Posting Job...</span>
-                            </div>
-                          ) : (
-                            "Post Job Now"
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </form>
-              </motion.div>
+                  </button>
+                );
+              })
             )}
-          </AnimatePresence>
-        </div>
-
-        {/* Help Text */}
-        {!isSubmitted && (
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <p>
-              Need help?{" "}
-              <a
-                href="/employer/help"
-                className="text-[#1e2558] hover:underline font-medium"
-              >
-                View posting guidelines
-              </a>
-            </p>
           </div>
-        )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Location Selector Component ─────────────────────────────────────────────
+const LocationSelector = ({
+  form,
+  setForm,
+  countries,
+  countriesLoading,
+  visibleErrors,
+}) => {
+  const states = form.country ? State.getStatesOfCountry(form.country) : [];
+  const cities =
+    form.country && form.state
+      ? City.getCitiesOfState(form.country, form.state)
+      : [];
+
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+        Job Location
+      </label>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <ApiSearchSelector
+          items={countries}
+          loading={countriesLoading}
+          value={form.country}
+          onChange={(countryCode, country) => {
+            const location =
+              buildLocation({
+                city: "",
+                state: "",
+                country: countryCode,
+                countries,
+              }) || country?.name;
+            setForm((p) => ({
+              ...p,
+              country: countryCode,
+              countryId: country?.countryId || "",
+              state: "",
+              city: "",
+              jobLocation: location || "",
+            }));
+          }}
+          error={visibleErrors?.country}
+          placeholder="Select Country"
+          searchPlaceholder="Search country..."
+          icon={<FaMapMarkerAlt />}
+          getId={(item) => item.isoCode}
+          getLabel={(item) => item.name}
+          getSubLabel={(item) => item.isoCode}
+          renderLeft={(item) =>
+            item.flag ? (
+              <img
+                src={item.flag}
+                alt={item.name}
+                className="w-5 h-5 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <FaMapMarkerAlt className="text-gray-400 text-sm" />
+            )
+          }
+        />
+        <div className="relative">
+          <select
+            name="state"
+            value={form.state}
+            disabled={!form.country}
+            onChange={(e) => {
+              const stateCode = e.target.value;
+              const location = buildLocation({
+                city: "",
+                state: stateCode,
+                country: form.country,
+                countries,
+              });
+              setForm((p) => ({
+                ...p,
+                state: stateCode,
+                city: "",
+                jobLocation:
+                  location || getCountryNameFromApi(countries, form.country),
+              }));
+            }}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all bg-white disabled:bg-gray-100 disabled:text-gray-400 appearance-none"
+          >
+            <option value="">Select State/Division</option>
+            {states.map((state) => (
+              <option key={state.isoCode} value={state.isoCode}>
+                {state.name}
+              </option>
+            ))}
+          </select>
+          <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+        </div>
+        <div className="relative">
+          <select
+            name="city"
+            value={form.city}
+            disabled={!form.country || !form.state}
+            onChange={(e) => {
+              const cityName = e.target.value;
+              const location = buildLocation({
+                city: cityName,
+                state: form.state,
+                country: form.country,
+                countries,
+              });
+              setForm((p) => ({
+                ...p,
+                city: cityName,
+                jobLocation:
+                  location || getCountryNameFromApi(countries, form.country),
+              }));
+            }}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all bg-white disabled:bg-gray-100 disabled:text-gray-400 appearance-none"
+          >
+            <option value="">Select City</option>
+            {cities.map((city, index) => (
+              <option key={`${city.name}-${index}`} value={city.name}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+          <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+        </div>
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-xs font-medium text-[#4EB956] bg-[#4EB956]/10 px-3 py-2 rounded-xl w-fit">
+        <FaMapMarkerAlt />
+        <span>{form.jobLocation || "No location selected"}</span>
       </div>
     </div>
   );
 };
 
-export default Jobpost;
+// ── Step Indicator ──────────────────────────────────────────────────────────
+const steps = ["Basic Info", "Details", "Description"];
+const StepIndicator = ({ current }) => (
+  <div className="flex items-center gap-0 overflow-x-auto pb-1">
+    {steps.map((step, i) => (
+      <React.Fragment key={step}>
+        <div className="flex items-center gap-2 shrink-0">
+          <div
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${i < current ? "bg-[#4EB956] text-white" : i === current ? "bg-[#1E2558] text-white ring-4 ring-[#1E2558]/15" : "bg-gray-100 text-gray-400"}`}
+          >
+            {i < current ? <FaCheck size={10} /> : i + 1}
+          </div>
+          <span
+            className={`text-sm font-medium ${i === current ? "text-[#1E2558]" : i < current ? "text-[#4EB956]" : "text-gray-400"}`}
+          >
+            {step}
+          </span>
+        </div>
+        {i < steps.length - 1 && (
+          <div
+            className={`flex-1 h-0.5 mx-3 rounded min-w-8 ${i < current ? "bg-[#4EB956]" : "bg-gray-200"}`}
+          />
+        )}
+      </React.Fragment>
+    ))}
+  </div>
+);
+
+// ── Default Form Values ─────────────────────────────────────────────────────
+const EMPTY_FORM = {
+  jobCategoryId: "",
+  jobTitle: "",
+  vacancy: "",
+  country: DEFAULT_COUNTRY_CODE,
+  countryId: "",
+  state: "",
+  city: "",
+  jobLocation: "Bangladesh",
+  jobType: "",
+  jobTypeId: "",
+  jobDescription: "",
+  salaryMin: "",
+  salaryMax: "",
+  experienceLevel: "",
+};
+
+// ── Validation Function ─────────────────────────────────────────────────────
+function validate(form, step) {
+  const errs = {};
+  if (step === 0) {
+    if (!form.jobCategoryId) errs.jobCategoryId = "Please select a category";
+    if (!form.jobTitle.trim()) errs.jobTitle = "Job title is required";
+    else if (form.jobTitle.trim().length < 2)
+      errs.jobTitle = "Title must be at least 2 characters";
+  }
+  if (step === 1) {
+    if (
+      form.salaryMin &&
+      form.salaryMax &&
+      Number(form.salaryMin) > Number(form.salaryMax)
+    )
+      errs.salaryMax = "Max salary must be greater than min salary";
+  }
+  if (step === 2) {
+    const text = form.jobDescription?.replace(/<[^>]*>/g, "").trim() || "";
+    if (!text) errs.jobDescription = "Job description is required";
+    else if (text.length < 20)
+      errs.jobDescription = "Description must be at least 20 characters";
+  }
+  return errs;
+}
+
+// ── MODAL: Login Required ───────────────────────────────────────────────────
+const LoginRequiredModal = ({ onClose, onLogin, onRegister }) => (
+  <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(15,18,40,0.75)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.86, y: 48 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.86, y: 48 }}
+        transition={{ type: "spring", stiffness: 320, damping: 26 }}
+        className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="h-1.5"
+          style={{ background: `linear-gradient(90deg,${NAVY},${GREEN})` }}
+        />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ background: "#f1f5f9", color: "#94a3b8" }}
+        >
+          <FaTimes size={12} />
+        </button>
+        <div className="bg-white px-8 pt-8 pb-10">
+          <motion.div
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 280 }}
+            className="flex justify-center mb-6"
+          >
+            <div
+              className="relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ background: `linear-gradient(135deg,${NAVY},#2d3a8c)` }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.22, 1], opacity: [0.35, 0, 0.35] }}
+                transition={{ duration: 2.2, repeat: Infinity }}
+                className="absolute inset-0 rounded-2xl"
+                style={{ border: `2px solid ${NAVY}` }}
+              />
+              <FaLock className="text-white text-2xl" />
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="text-center mb-2"
+          >
+            <h2
+              className="text-2xl font-extrabold mb-1"
+              style={{ color: NAVY }}
+            >
+              Employer Login Required
+            </h2>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              You're not logged in. Please sign in to your account
+              <br />
+              to continue posting your job.
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.26 }}
+            className="flex items-center gap-3 my-6"
+          >
+            <div className="flex-1 h-px bg-gray-100" />
+            <span
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+              style={{ background: `${GREEN}15`, color: GREEN }}
+            >
+              <FaBriefcase size={10} /> Your progress is saved
+            </span>
+            <div className="flex-1 h-px bg-gray-100" />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.32 }}
+            className="space-y-3"
+          >
+            <button
+              onClick={onLogin}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-bold text-sm shadow-lg transition-all hover:opacity-90"
+              style={{ background: `linear-gradient(135deg,${NAVY},#2d3a8c)` }}
+            >
+              <FaSignInAlt /> Sign In to Continue
+            </button>
+            <button
+              onClick={onRegister}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-bold text-sm border-2 transition-all"
+              style={{
+                borderColor: GREEN,
+                color: GREEN,
+                background: `${GREEN}08`,
+              }}
+            >
+              <FaUserPlus /> Create New Account
+            </button>
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.42 }}
+            className="text-center text-xs text-gray-400 mt-5"
+          >
+            Your job details are saved — just log in and we'll pick up right
+            where you left off.
+          </motion.p>
+        </div>
+      </motion.div>
+    </motion.div>
+  </AnimatePresence>
+);
+
+// ── MODAL: Not Employer Role ────────────────────────────────────────────────
+const NotEmployerModal = ({ onClose, onUpgrade }) => (
+  <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(15,18,40,0.75)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.86, y: 48 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.86, y: 48 }}
+        transition={{ type: "spring", stiffness: 320, damping: 26 }}
+        className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="h-1.5"
+          style={{ background: "linear-gradient(90deg,#f59e0b,#ef4444)" }}
+        />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ background: "#f1f5f9", color: "#94a3b8" }}
+        >
+          <FaTimes size={12} />
+        </button>
+        <div className="bg-white px-8 pt-8 pb-10">
+          <motion.div
+            initial={{ scale: 0, rotate: 20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 280 }}
+            className="flex justify-center mb-6"
+          >
+            <div
+              className="relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ background: "linear-gradient(135deg,#f59e0b,#ef4444)" }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.22, 1], opacity: [0.3, 0, 0.3] }}
+                transition={{ duration: 2.4, repeat: Infinity }}
+                className="absolute inset-0 rounded-2xl"
+                style={{ border: "2px solid #f59e0b" }}
+              />
+              <FaUserSlash className="text-white text-2xl" />
+              <div
+                className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-sm"
+                style={{ background: NAVY }}
+              >
+                <FaCrown className="text-yellow-300 text-xs" />
+              </div>
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="text-center mb-2"
+          >
+            <h2
+              className="text-2xl font-extrabold mb-1"
+              style={{ color: NAVY }}
+            >
+              Employer Account Required
+            </h2>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              You're logged in, but your account is not registered
+              <br />
+              as an{" "}
+              <span className="font-semibold text-gray-600">Employer</span>.
+              Only employer accounts can post jobs.
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.24 }}
+            className="flex items-start gap-3 my-6 p-4 rounded-2xl border"
+            style={{ background: "#fef9ec", borderColor: "#f59e0b40" }}
+          >
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "#f59e0b20" }}
+            >
+              <FaExclamationTriangle
+                className="text-sm"
+                style={{ color: "#f59e0b" }}
+              />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-yellow-700 mb-0.5">
+                Not Eligible to Post
+              </p>
+              <p className="text-xs text-yellow-600 leading-relaxed">
+                Your current role does not have permission to post job listings.
+                Upgrade to an employer account to unlock this feature.
+              </p>
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.32 }}
+            className="space-y-3"
+          >
+            <button
+              onClick={onUpgrade}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-bold text-sm shadow-lg transition-all hover:opacity-90"
+              style={{ background: `linear-gradient(135deg,${NAVY},#2d3a8c)` }}
+            >
+              <FaCrown className="text-yellow-300" /> Upgrade to Employer
+              Account
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-bold text-sm border-2 transition-all"
+              style={{ borderColor: "#e5e7eb", color: "#6b7280" }}
+            >
+              Go Back
+            </button>
+          </motion.div>
+        </div>
+      </motion.div>
+    </motion.div>
+  </AnimatePresence>
+);
+
+// ── MAIN COMPONENT ──────────────────────────────────────────────────────────
+const PostJob = () => {
+  const navigate = useNavigate();
+  const { id: editJobId } = useParams();
+  const {
+    categories,
+    categoriesLoading,
+    fetchCategories,
+    jobTypes,
+    jobTypesLoading,
+    fetchJobTypes,
+    countries,
+    countriesLoading,
+    fetchCountries,
+    createJobPost,
+    updateJobPost,
+    myJobs,
+    isSubmitting,
+  } = useJobPostStore();
+
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  // ── AUTH STATE (Replace with your actual auth context) ───────────────────
+  // These should come from your auth store/context in production
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // ← Set from auth context
+  const [userRole, setUserRole] = useState(null); // ← "employer" | "jobseeker" | "admin"
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchJobTypes();
+    fetchCountries();
+    // Load auth state from your auth store/context here
+    // Example: const { user } = useAuth(); setIsLoggedIn(!!user); setUserRole(user?.role);
+  }, [fetchCategories, fetchJobTypes, fetchCountries]);
+
+  useEffect(() => {
+    if (!countries.length) return;
+    setForm((p) => {
+      const defaultCountry = countries.find((c) => c.isoCode === p.country);
+      return {
+        ...p,
+        countryId: p.countryId || defaultCountry?.countryId || "",
+        jobLocation: p.jobLocation || defaultCountry?.name || "Bangladesh",
+      };
+    });
+  }, [countries]);
+
+  useEffect(() => {
+    if (editJobId && myJobs.length > 0) {
+      const job = myJobs.find((j) => (j.jobId || j._id) === editJobId);
+      if (job) {
+        const countryCode = job.countryCode || DEFAULT_COUNTRY_CODE;
+        const stateCode = job.stateCode || "";
+        const cityName = job.city || "";
+        setForm({
+          jobCategoryId: job.jobCategoryId || "",
+          jobTitle: job.jobTitle || "",
+          vacancy: job.vacancy ?? "",
+          country: countryCode,
+          state: stateCode,
+          city: cityName,
+          jobLocation:
+            job.jobLocation ||
+            buildLocation({
+              city: cityName,
+              state: stateCode,
+              country: countryCode,
+              countryId: job.countryId || "",
+              countries,
+            }) ||
+            "Bangladesh",
+          jobType: job.jobType || "",
+          jobTypeId: job.jobTypeId || "",
+          jobDescription: job.jobDescription || "",
+          salaryMin: job.salaryMin ?? "",
+          salaryMax: job.salaryMax ?? "",
+          experienceLevel: job.experienceLevel || "",
+        });
+      }
+    }
+  }, [editJobId, myJobs, countries]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((p) => ({ ...p, [name]: value }));
+    setTouched((p) => ({ ...p, [name]: true }));
+  };
+  const handleBlur = (e) => {
+    setTouched((p) => ({ ...p, [e.target.name]: true }));
+  };
+
+  const liveErrors = () => {
+    const errs = {
+      ...validate(form, 0),
+      ...validate(form, 1),
+      ...validate(form, 2),
+    };
+    const visible = {};
+    Object.keys(touched).forEach((key) => {
+      if (errs[key]) visible[key] = errs[key];
+    });
+    return visible;
+  };
+
+  const goNext = () => {
+    const errs = validate(form, step);
+    if (Object.keys(errs).length > 0) {
+      const allTouched = {};
+      Object.keys(errs).forEach((key) => {
+        allTouched[key] = true;
+      });
+      setTouched((p) => ({ ...p, ...allTouched }));
+      setErrors(errs);
+      return;
+    }
+    setErrors({});
+    setStep((s) => s + 1);
+  };
+
+  // ── SUBMIT HANDLER WITH AUTH CHECKS ───────────────────────────────────────
+  const handleSubmit = async (isDraft = false) => {
+    // 🔐 AUTH CHECK 1: Not logged in
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    // 🔐 AUTH CHECK 2: Logged in but not employer
+    if (userRole !== "employer") {
+      setShowRoleModal(true);
+      return;
+    }
+
+    // ✅ Auth passed - proceed with validation & API call
+    const allErrs = {
+      ...validate(form, 0),
+      ...validate(form, 1),
+      ...validate(form, 2),
+    };
+    if (Object.keys(allErrs).length > 0) {
+      setErrors(allErrs);
+      if (allErrs.jobCategoryId || allErrs.jobTitle) {
+        setStep(0);
+        return;
+      }
+      if (allErrs.salaryMax) {
+        setStep(1);
+        return;
+      }
+      setStep(2);
+      return;
+    }
+
+    const selectedJobType = jobTypes.find(
+      (type) => type.jobTypeId === form.jobTypeId,
+    );
+    const payload = {
+      jobCategoryId: form.jobCategoryId,
+      jobTitle: form.jobTitle.trim(),
+      vacancy: form.vacancy ? Number(form.vacancy) : null,
+      countryId: form.countryId,
+      country: getCountryNameFromApi(countries, form.country) || "Bangladesh",
+      countryCode: form.country || DEFAULT_COUNTRY_CODE,
+      state: getStateName(form.state, form.country) || null,
+      stateCode: form.state || null,
+      city: form.city || null,
+      jobLocation: form.jobLocation.trim() || "Bangladesh",
+      jobTypeId: form.jobTypeId || null,
+      jobType: selectedJobType?.title || form.jobType || null,
+      jobDescription: form.jobDescription,
+      salaryMin: form.salaryMin !== "" ? Number(form.salaryMin) : null,
+      salaryMax: form.salaryMax !== "" ? Number(form.salaryMax) : null,
+      experienceLevel: form.experienceLevel.trim() || null,
+      status: isDraft ? "draft" : undefined,
+    };
+
+    const result = editJobId
+      ? await updateJobPost(editJobId, payload)
+      : await createJobPost(payload);
+    if (result.success) navigate("/employer/jobs");
+  };
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const visibleErrors = { ...liveErrors(), ...errors };
+
+  return (
+    <div className="max-w-2xl mx-auto py-10">
+      {/* ── MODALS ───────────────────────────────────────────────────────── */}
+      {showLoginModal && (
+        <LoginRequiredModal
+          onClose={() => setShowLoginModal(false)}
+          onLogin={() => {
+            setShowLoginModal(false);
+            navigate("/employer/login");
+          }}
+          onRegister={() => {
+            setShowLoginModal(false);
+            navigate("employer/signup");
+          }}
+        />
+      )}
+      {showRoleModal && (
+        <NotEmployerModal
+          onClose={() => setShowRoleModal(false)}
+          onUpgrade={() => {
+            setShowRoleModal(false);
+            navigate("/employer/upgrade");
+          }}
+        />
+      )}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">
+          {editJobId ? "Edit Job Post" : "Post a New Job"}
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">
+          {editJobId
+            ? "Update your job posting details"
+            : "Fill in the details to attract the right candidates"}
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+        <StepIndicator current={step} />
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div
+          className="h-1 bg-gradient-to-r from-[#1E2558] to-[#4EB956]"
+          style={{
+            width: `${((step + 1) / steps.length) * 100}%`,
+            transition: "width 0.4s ease",
+          }}
+        />
+        <div className="p-7 space-y-5">
+          {step === 0 && (
+            <>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Job Category <span className="text-red-400">*</span>
+                </label>
+                <ApiSearchSelector
+                  items={categories}
+                  loading={categoriesLoading}
+                  value={form.jobCategoryId}
+                  onChange={(id) => {
+                    setForm((p) => ({ ...p, jobCategoryId: id }));
+                    setTouched((p) => ({ ...p, jobCategoryId: true }));
+                  }}
+                  error={visibleErrors.jobCategoryId}
+                  placeholder="Select a job category"
+                  searchPlaceholder="Search categories..."
+                  icon={<FaTag />}
+                  getId={(item) => item.jobCategoryId || item._id}
+                  getLabel={(item) => item.title}
+                />
+                <FieldError msg={visibleErrors.jobCategoryId} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Job Title <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="jobTitle"
+                  value={form.jobTitle}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="e.g. Senior React Developer"
+                  className={`w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all duration-200 ${visibleErrors.jobTitle ? "border-red-400 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100" : "border-gray-200 focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10"}`}
+                />
+                <FieldError msg={visibleErrors.jobTitle} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Job Type
+                  </label>
+                  <ApiSearchSelector
+                    items={jobTypes}
+                    loading={jobTypesLoading}
+                    value={form.jobTypeId}
+                    onChange={(id, item) => {
+                      setForm((p) => ({
+                        ...p,
+                        jobTypeId: id,
+                        jobType: item.title,
+                      }));
+                    }}
+                    placeholder="Select job type"
+                    searchPlaceholder="Search job types..."
+                    icon={<FaBriefcase />}
+                    getId={(item) => item.jobTypeId || item._id}
+                    getLabel={(item) => item.title}
+                    getSubLabel={(item) =>
+                      item.isActive ? "Active" : "Inactive"
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Vacancies
+                  </label>
+                  <div className="relative">
+                    <FaUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                      type="number"
+                      name="vacancy"
+                      value={form.vacancy}
+                      onChange={handleChange}
+                      min="1"
+                      placeholder="e.g. 3"
+                      className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {step === 1 && (
+            <>
+              <LocationSelector
+                form={form}
+                setForm={setForm}
+                countries={countries}
+                countriesLoading={countriesLoading}
+                visibleErrors={visibleErrors}
+              />
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Experience Level
+                </label>
+                <div className="relative">
+                  <FaBriefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    type="text"
+                    name="experienceLevel"
+                    value={form.experienceLevel}
+                    onChange={handleChange}
+                    placeholder="e.g. 3+ years, Entry level, Senior"
+                    className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Salary Range
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="relative">
+                    <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                      type="number"
+                      name="salaryMin"
+                      value={form.salaryMin}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Min"
+                      min="0"
+                      className="w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all"
+                    />
+                  </div>
+                  <div className="relative">
+                    <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                      type="number"
+                      name="salaryMax"
+                      value={form.salaryMax}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Max"
+                      min="0"
+                      className={`w-full pl-8 pr-4 py-3 border rounded-xl text-sm outline-none transition-all ${visibleErrors.salaryMax ? "border-red-400 bg-red-50" : "border-gray-200 focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10"}`}
+                    />
+                  </div>
+                </div>
+                <FieldError msg={visibleErrors.salaryMax} />
+                <p className="text-xs text-gray-400 mt-1.5">
+                  Leave blank if not specified
+                </p>
+              </div>
+            </>
+          )}
+
+          {step === 2 && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Job Description <span className="text-red-400">*</span>
+              </label>
+              <p className="text-xs text-gray-400 mb-2">
+                Include responsibilities, requirements, and benefits.
+              </p>
+              <RichTextEditor
+                value={form.jobDescription}
+                onChange={(value) => {
+                  setForm((p) => ({ ...p, jobDescription: value }));
+                  setTouched((p) => ({ ...p, jobDescription: true }));
+                }}
+                error={visibleErrors.jobDescription}
+              />
+              <FieldError msg={visibleErrors.jobDescription} />
+            </div>
+          )}
+        </div>
+
+        <div className="px-7 py-5 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex gap-2">
+            {step > 0 && (
+              <button
+                type="button"
+                onClick={() => setStep((s) => s - 1)}
+                className="px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-white hover:shadow-sm transition-all"
+              >
+                ← Back
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate("/employer/posted-jobs")}
+              className="px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-white transition-all"
+            >
+              <FaTimes size={11} className="inline mr-1.5" />
+              Cancel
+            </button>
+          </div>
+          <div className="flex gap-2">
+            {step === steps.length - 1 ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleSubmit(true)}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-white hover:shadow-sm transition-all disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <FaSpinner className="animate-spin" size={12} />
+                  ) : (
+                    <FaSave size={12} />
+                  )}
+                  Save Draft
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSubmit(false)}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#1E2558] to-[#4EB956] text-white rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-[#4EB956]/20 transition-all disabled:opacity-60"
+                >
+                  {isSubmitting ? (
+                    <FaSpinner className="animate-spin" size={12} />
+                  ) : (
+                    <FaPaperPlane size={12} />
+                  )}
+                  {editJobId ? "Update Job" : "Submit for Review"}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={goNext}
+                className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#1E2558] to-[#4EB956] text-white rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-[#4EB956]/20 transition-all"
+              >
+                Continue →
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PostJob;

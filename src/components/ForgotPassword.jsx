@@ -40,6 +40,32 @@ const Eye = ({ open }) =>
     </svg>
   );
 
+// ── Spinner Component ───────────────────────────────────────────────────────
+const Spinner = () => (
+  <svg
+    className="animate-spin"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="3"
+    />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    />
+  </svg>
+);
+
 // ── Main component ──────────────────────────────────────────────────────────
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -160,13 +186,13 @@ export default function ForgotPassword() {
   const Field = ({ label, error, children }) => (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
           {label}
         </label>
       )}
       {children}
       {error && (
-        <p className="flex items-center gap-1.5 text-xs text-rose-400">
+        <p className="flex items-center gap-1.5 text-xs text-red-500">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <circle cx="12" cy="12" r="12" opacity=".15" />
             <path
@@ -189,18 +215,13 @@ export default function ForgotPassword() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      {/* Subtle radial glow behind card */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-[120px]" />
-      </div>
-
       <div className="relative w-full max-w-md">
         {/* Logo / brand mark */}
-        <div className="flex justify-center mb-8">
-          <div className="w-11 h-11 rounded-xl bg-green-500 flex items-center justify-center shadow-lg shadow-indigo-600/40">
+        <div className="flex justify-center mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-green-500 flex items-center justify-center shadow-lg">
             <svg
-              width="22"
-              height="22"
+              width="24"
+              height="24"
               viewBox="0 0 24 24"
               fill="none"
               stroke="white"
@@ -213,21 +234,23 @@ export default function ForgotPassword() {
             </svg>
           </div>
         </div>
-        <h1 className="font-bold text-4xl text-gray-700 text-center ">
-          Forget Password
+
+        <h1 className="font-bold text-3xl text-gray-800 text-center mb-8">
+          Forgot Password
         </h1>
+
         {/* Card */}
-        <div className="bg-gray-100 border border-white/[0.07] rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
-          {/* Progress bar */}
-          <div className="h-0.5 bg-white/5">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+          {/* Progress bar - GREEN */}
+          <div className="h-1 bg-gray-100">
             <div
-              className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500 ease-out"
+              className="h-full bg-green-500 transition-all duration-500 ease-out"
               style={{ width: `${((step - 1) / 2) * 100}%` }}
             />
           </div>
 
           <div className="px-8 pt-8 pb-10">
-            {/* Step bubbles */}
+            {/* Step bubbles - GREEN for active/done */}
             <div className="flex items-center justify-center gap-0 mb-10">
               {steps.map((label, idx) => {
                 const num = idx + 1;
@@ -235,21 +258,21 @@ export default function ForgotPassword() {
                 const active = step === num;
                 return (
                   <div key={label} className="flex items-center">
-                    <div className="flex flex-col items-center gap-1.5">
+                    <div className="flex flex-col items-center gap-2">
                       <div
                         className={`
-                        w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300
-                        ${done ? "bg-indigo-900 text-white" : active ? "bg-indigo-900 text-white ring-4 ring-indigo-600/25" : "bg-white/5 text-slate-500"}
-                      `}
+                          w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300
+                          ${done ? "bg-green-500 text-white" : active ? "bg-green-500 text-white ring-4 ring-green-100" : "bg-gray-100 text-gray-400"}
+                        `}
                       >
                         {done ? (
                           <svg
-                            width="14"
-                            height="14"
+                            width="16"
+                            height="16"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2.5"
+                            strokeWidth="3"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
@@ -260,14 +283,14 @@ export default function ForgotPassword() {
                         )}
                       </div>
                       <span
-                        className={`text-[10px] font-medium tracking-wide ${active ? "text-indigo-800" : done ? "text-slate-400" : "text-slate-600"}`}
+                        className={`text-xs font-medium ${active ? "text-green-600" : done ? "text-green-500" : "text-gray-400"}`}
                       >
                         {label}
                       </span>
                     </div>
                     {idx < 2 && (
                       <div
-                        className={`w-16 h-px mx-2 mb-5 transition-colors duration-300 ${step > num ? "bg-indigo-900/60" : "bg-white/8"}`}
+                        className={`w-14 h-0.5 mx-2 mb-6 transition-colors duration-300 ${step > num ? "bg-green-500" : "bg-gray-200"}`}
                       />
                     )}
                   </div>
@@ -277,15 +300,15 @@ export default function ForgotPassword() {
 
             {/* ── SUCCESS state ─────────────────────────────────────────── */}
             {success && (
-              <div className="text-center py-6 flex flex-col items-center gap-4 animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <div className="text-center py-8 flex flex-col items-center gap-5 animate-fade-in">
+                <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
                   <svg
-                    width="32"
-                    height="32"
+                    width="40"
+                    height="40"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#10b981"
-                    strokeWidth="2"
+                    stroke="#22c55e"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
@@ -293,18 +316,18 @@ export default function ForgotPassword() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Password reset!
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Password Reset!
                   </h2>
-                  <p className="text-sm text-slate-400 mt-1">
-                    Redirecting you to login…
+                  <p className="text-sm text-gray-500 mt-2">
+                    Redirecting to login…
                   </p>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   {[0, 1, 2].map((i) => (
                     <span
                       key={i}
-                      className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce"
+                      className="w-2 h-2 rounded-full bg-green-500 animate-bounce"
                       style={{ animationDelay: `${i * 0.15}s` }}
                     />
                   ))}
@@ -318,16 +341,16 @@ export default function ForgotPassword() {
                 onSubmit={handleEmailSubmit}
                 className="flex flex-col gap-6"
               >
-                <div>
-                  <h1 className="text-xl font-semibold text-gray-700">
-                    Forgot password?
-                  </h1>
-                  <p className="text-sm text-slate-600 mt-1">
-                    We'll send a one-time code to your email.
+                <div className="text-center">
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    Forgot your password?
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Enter your email and we'll send you a verification code.
                   </p>
                 </div>
 
-                <Field label="Email address" error={errors.email}>
+                <Field label="Email Address" error={errors.email}>
                   <input
                     type="email"
                     value={email}
@@ -335,36 +358,37 @@ export default function ForgotPassword() {
                     placeholder="you@example.com"
                     autoFocus
                     className={`
-                      w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-gray-500 placeholder-slate-600
+                      w-full bg-gray-50 border rounded-xl px-4 py-3 text-sm text-gray-700 placeholder-gray-400
                       outline-none transition-all duration-200
-                      focus:bg-white/[0.07] focus:ring-2 focus:ring-indigo-500/50
-                      ${errors.email ? "border-rose-500/60" : "border-white/10 hover:border-white/20"}
+                      focus:bg-white focus:ring-2 focus:ring-green-500/30 focus:border-green-400
+                      ${errors.email ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"}
                     `}
                   />
                 </Field>
 
+                {/* BLUE Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 rounded-xl bg-indigo-900 hover:bg-indigo-800 active:scale-[0.98] text-white text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/30 cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-600/20"
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center gap-2">
-                      <Spinner /> Sending code…
+                      <Spinner /> Sending Code…
                     </span>
                   ) : (
-                    "Send reset code"
+                    "Send Verification Code"
                   )}
                 </button>
 
-                <p className="text-center text-xs text-slate-500">
-                  Remembered it?{" "}
+                <p className="text-center text-xs text-gray-500">
+                  Remembered your password?{" "}
                   <button
                     type="button"
-                    onClick={() => navigate("/")}
-                    className="text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                    onClick={() => navigate("/login")}
+                    className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
                   >
-                    Back to Home
+                    Back to Login
                   </button>
                 </p>
               </form>
@@ -373,19 +397,19 @@ export default function ForgotPassword() {
             {/* ── STEP 2: OTP ───────────────────────────────────────────── */}
             {!success && step === STEP.OTP && (
               <form onSubmit={handleOtpSubmit} className="flex flex-col gap-6">
-                <div>
-                  <h1 className="text-xl font-semibold text-white">
-                    Check your inbox
-                  </h1>
-                  <p className="text-sm text-slate-400 mt-1">
+                <div className="text-center">
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    Check Your Email
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-2">
                     Enter the 6-digit code sent to{" "}
-                    <span className="text-indigo-400 font-medium">{email}</span>
+                    <span className="text-green-600 font-medium">{email}</span>
                   </p>
                 </div>
 
                 <Field error={errors.otp}>
                   <div
-                    className="flex gap-2.5 justify-between"
+                    className="flex gap-2.5 justify-center"
                     onPaste={handleOtpPaste}
                   >
                     {otp.map((digit, i) => (
@@ -399,11 +423,11 @@ export default function ForgotPassword() {
                         onChange={(e) => handleOtpChange(i, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(i, e)}
                         className={`
-                          w-12 h-14 text-center text-xl font-bold rounded-xl
-                          bg-white/5 border outline-none text-white caret-indigo-400
+                          w-12 h-14 text-center text-lg font-bold rounded-xl
+                          bg-gray-50 border outline-none text-gray-800 caret-green-500
                           transition-all duration-200
-                          focus:bg-white/[0.09] focus:ring-2 focus:ring-indigo-500/50
-                          ${errors.otp ? "border-rose-500/60" : digit ? "border-indigo-500/70" : "border-white/10 hover:border-white/20"}
+                          focus:bg-white focus:ring-2 focus:ring-green-500/30 focus:border-green-400
+                          ${errors.otp ? "border-red-400 bg-red-50" : digit ? "border-green-400 bg-green-50" : "border-gray-200 hover:border-gray-300"}
                         `}
                       />
                     ))}
@@ -412,11 +436,11 @@ export default function ForgotPassword() {
 
                 {/* Timer / resend */}
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">
+                  <span className="text-gray-500">
                     {otpTimer > 0 ? (
                       <span>
                         Resend in{" "}
-                        <span className="text-indigo-400 font-mono font-semibold">
+                        <span className="text-green-600 font-mono font-semibold">
                           {formatTimer(otpTimer)}
                         </span>
                       </span>
@@ -424,27 +448,28 @@ export default function ForgotPassword() {
                       <button
                         type="button"
                         onClick={handleResend}
-                        className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+                        className="text-green-600 hover:text-green-700 transition-colors font-medium"
                       >
-                        Resend code
+                        Resend Code
                       </button>
                     )}
                   </span>
                   <button
                     type="button"
                     onClick={() => setStep(STEP.EMAIL)}
-                    className="text-slate-500 hover:text-slate-400 transition-colors"
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     Wrong email?
                   </button>
                 </div>
 
+                {/* BLUE Button */}
                 <button
                   type="submit"
                   disabled={isLoading || otp.some((d) => !d)}
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/30"
+                  className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-600/20"
                 >
-                  Verify code
+                  Verify Code
                 </button>
               </form>
             )}
@@ -455,17 +480,16 @@ export default function ForgotPassword() {
                 onSubmit={handlePasswordSubmit}
                 className="flex flex-col gap-6"
               >
-                <div>
-                  <h1 className="text-xl font-semibold text-white">
-                    Create new password
-                  </h1>
-                  <p className="text-sm text-slate-400 mt-1">
-                    Must be at least 8 characters with a number and uppercase
-                    letter.
+                <div className="text-center">
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    Create New Password
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Must be at least 8 characters with uppercase & number.
                   </p>
                 </div>
 
-                <Field label="New password" error={errors.newPassword}>
+                <Field label="New Password" error={errors.newPassword}>
                   <div className="relative">
                     <input
                       type={showNew ? "text" : "password"}
@@ -474,16 +498,16 @@ export default function ForgotPassword() {
                       placeholder="••••••••"
                       autoFocus
                       className={`
-                        w-full bg-white/5 border rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-slate-600
+                        w-full bg-gray-50 border rounded-xl px-4 py-3 pr-11 text-sm text-gray-700 placeholder-gray-400
                         outline-none transition-all duration-200
-                        focus:bg-white/[0.07] focus:ring-2 focus:ring-indigo-500/50
-                        ${errors.newPassword ? "border-rose-500/60" : "border-white/10 hover:border-white/20"}
+                        focus:bg-white focus:ring-2 focus:ring-green-500/30 focus:border-green-400
+                        ${errors.newPassword ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"}
                       `}
                     />
                     <button
                       type="button"
                       onClick={() => setShowNew((p) => !p)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     >
                       <Eye open={showNew} />
                     </button>
@@ -492,7 +516,7 @@ export default function ForgotPassword() {
                   {newPassword && <StrengthBar password={newPassword} />}
                 </Field>
 
-                <Field label="Confirm password" error={errors.confirmPassword}>
+                <Field label="Confirm Password" error={errors.confirmPassword}>
                   <div className="relative">
                     <input
                       type={showConfirm ? "text" : "password"}
@@ -500,33 +524,34 @@ export default function ForgotPassword() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
                       className={`
-                        w-full bg-white/5 border rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-slate-600
+                        w-full bg-gray-50 border rounded-xl px-4 py-3 pr-11 text-sm text-gray-700 placeholder-gray-400
                         outline-none transition-all duration-200
-                        focus:bg-white/[0.07] focus:ring-2 focus:ring-indigo-500/50
-                        ${errors.confirmPassword ? "border-rose-500/60" : "border-white/10 hover:border-white/20"}
+                        focus:bg-white focus:ring-2 focus:ring-green-500/30 focus:border-green-400
+                        ${errors.confirmPassword ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"}
                       `}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirm((p) => !p)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     >
                       <Eye open={showConfirm} />
                     </button>
                   </div>
                 </Field>
 
+                {/* BLUE Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/30"
+                  className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-600/20"
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center gap-2">
                       <Spinner /> Resetting…
                     </span>
                   ) : (
-                    "Reset password"
+                    "Reset Password"
                   )}
                 </button>
               </form>
@@ -550,56 +575,34 @@ function StrengthBar({ password }) {
   const labels = ["", "Weak", "Fair", "Good", "Strong"];
   const colors = [
     "",
-    "bg-rose-500",
+    "bg-red-400",
     "bg-amber-400",
     "bg-blue-400",
-    "bg-emerald-400",
+    "bg-green-500",
   ];
   const textColors = [
     "",
-    "text-rose-400",
-    "text-amber-400",
-    "text-blue-400",
-    "text-emerald-400",
+    "text-red-500",
+    "text-amber-500",
+    "text-blue-500",
+    "text-green-600",
   ];
 
   return (
-    <div className="flex items-center gap-2 mt-1">
+    <div className="flex items-center gap-2 mt-2">
       <div className="flex gap-1 flex-1">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= score ? colors[score] : "bg-white/10"}`}
+            className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= score ? colors[score] : "bg-gray-200"}`}
           />
         ))}
       </div>
       {score > 0 && (
-        <span className={`text-[11px] font-medium ${textColors[score]}`}>
+        <span className={`text-xs font-medium ${textColors[score]}`}>
           {labels[score]}
         </span>
       )}
     </div>
-  );
-}
-
-// ── Spinner ─────────────────────────────────────────────────────────────────
-function Spinner() {
-  return (
-    <svg
-      className="animate-spin"
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-    >
-      <path
-        d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
-        opacity=".3"
-      />
-      <path d="M12 2v4" />
-    </svg>
   );
 }

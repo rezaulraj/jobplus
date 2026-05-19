@@ -79,15 +79,15 @@ const EmployerSidebar = ({
           icon: <FaUserCircle />,
           path: "/employer/profile",
         },
-        {
-          label: "Change Password",
-          icon: <FaKey />,
-          path: "#",
-        },
+        // {
+        //   label: "Change Password",
+        //   icon: <FaKey />,
+        //   path: "#",
+        // },
         {
           label: "Account Overview",
           icon: <FaChartBar />,
-          path: "#",
+          path: "/employer/account-overview",
         },
         // {
         //   label: "Settings",

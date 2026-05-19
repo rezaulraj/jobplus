@@ -388,7 +388,7 @@ const JobSeekerAuth = () => {
                       </h2>
                       <button
                         onClick={handleShowSignup}
-                        className="text-sm lg:text-base text-[#1e2558] hover:text-[#4eb956] font-medium"
+                        className="text-sm lg:text-base text-[#1e2558] hover:text-[#4eb956] underline font-medium"
                       >
                         Create account
                       </button>
@@ -476,8 +476,8 @@ const JobSeekerAuth = () => {
                           </span>
                         </label>
                         <a
-                          href="#"
-                          className="text-xs lg:text-sm text-[#1e2558] hover:text-[#4eb956] hover:underline"
+                          href="/jobseeker/forgot-password"
+                          className="text-xs lg:text-sm text-[#1e2558] hover:text-[#4eb956] underline"
                         >
                           Forgot password?
                         </a>
