@@ -1,6 +1,7 @@
 // pages/employer/JobApplications.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   FaArrowLeft,
   FaMapMarkerAlt,
@@ -34,9 +35,23 @@ import {
   FaExternalLinkAlt,
 } from "react-icons/fa";
 import useJobPostStore from "../../store/jobPostStore";
-import useApplicationStore from "../../store/applicationStore";
+import useAuthStore from "../../store/authStore";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+
+// ── Auth helper (axios config with Bearer token) ───────────────────────────
+const getAuthConfig = (extra = {}) => {
+  const { getBearerToken } = useAuthStore.getState();
+  const token = getBearerToken();
+  return {
+    withCredentials: true,
+    ...extra,
+    headers: {
+      ...(extra.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  };
+};
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const APP_STATUS = {
@@ -87,7 +102,7 @@ const APP_STATUS = {
   },
 };
 
-// ── Avatar ────────────────────────────────────────────────────────────────────
+// ── Avatar helpers ────────────────────────────────────────────────────────────
 const AVATAR_GRADIENTS = [
   "from-violet-500 to-purple-600",
   "from-blue-500 to-cyan-500",
@@ -101,7 +116,7 @@ const getInitials = (name = "") => {
   const parts = name.trim().split(" ");
   return parts.length >= 2
     ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-    : name.slice(0, 2).toUpperCase();
+    : name.slice(0, 2).toUpperCase() || "??";
 };
 
 const getAvatarGradient = (name = "") =>
@@ -116,41 +131,33 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
   if (!seeker) return null;
 
   const info = seeker.personalInfo || {};
-  const name = info.name || "Unknown Applicant";
+  const name =
+    info.name || info.firstName
+      ? `${info.firstName || ""} ${info.lastName || ""}`.trim()
+      : "Unknown Applicant";
   const avatarGradient = getAvatarGradient(name);
 
-  const proficiencyColor = (p) => {
-    const map = {
+  const proficiencyColor = (p) =>
+    ({
       native: "bg-emerald-500",
       fluent: "bg-blue-500",
       advanced: "bg-violet-500",
       intermediate: "bg-amber-500",
       beginner: "bg-gray-400",
-    };
-    return map[p] || "bg-gray-400";
-  };
+    })[p] || "bg-gray-400";
 
-  const proficiencyWidth = (p) => {
-    const map = {
+  const proficiencyWidth = (p) =>
+    ({
       native: "100%",
       fluent: "85%",
       advanced: "70%",
       intermediate: "55%",
       beginner: "30%",
-    };
-    return map[p] || "40%";
-  };
+    })[p] || "40%";
 
-  const skillProficiencyDots = (p) => {
-    const map = {
-      expert: 5,
-      advanced: 4,
-      intermediate: 3,
-      beginner: 2,
-      basic: 1,
-    };
-    return map[p] || 3;
-  };
+  const skillDots = (p) =>
+    ({ expert: 5, advanced: 4, intermediate: 3, beginner: 2, basic: 1 })[p] ||
+    3;
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -158,17 +165,16 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
       <div
         className="flex-1 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
-        style={{ animation: "fadeIn 0.2s ease" }}
+        style={{ animation: "fadeIn .2s ease" }}
       />
 
-      {/* Drawer */}
+      {/* Panel */}
       <div
         className="w-full max-w-xl bg-white flex flex-col shadow-2xl overflow-hidden"
-        style={{ animation: "slideIn 0.3s cubic-bezier(0.16,1,0.3,1)" }}
+        style={{ animation: "slideIn .3s cubic-bezier(.16,1,.3,1)" }}
       >
         {/* ─ Hero Header ─ */}
         <div className="relative overflow-hidden bg-gradient-to-br from-[#1E2558] to-[#0f143a] flex-shrink-0">
-          {/* Decorative circles */}
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-[#4EB956]/20" />
 
@@ -177,8 +183,7 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
               <span
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${statusCfg.gradient} text-white shadow-sm`}
               >
-                {statusCfg.icon}
-                {statusCfg.label}
+                {statusCfg.icon} {statusCfg.label}
               </span>
               <button
                 onClick={onClose}
@@ -207,18 +212,20 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                   {name}
                 </h2>
                 <p className="text-white/60 text-xs mt-0.5">
-                  {info.careerLevel || "Professional"} · {info.experience || ""}
+                  {info.careerLevel ||
+                    seeker.experience?.[0]?.jobTitle ||
+                    "Professional"}
                 </p>
-                {info.city && info.country && (
+                {(info.city || info.country) && (
                   <p className="flex items-center gap-1 text-white/50 text-xs mt-1">
                     <FaMapMarkerAlt size={9} />
-                    {info.city}, {info.country}
+                    {[info.city, info.country].filter(Boolean).join(", ")}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Quick info pills */}
+            {/* Quick pills */}
             <div className="flex flex-wrap gap-2 mt-4">
               {info.email && (
                 <a
@@ -265,9 +272,9 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
 
         {/* ─ Tab Content ─ */}
         <div className="flex-1 overflow-y-auto">
+          {/* Overview */}
           {activeTab === "overview" && (
             <div className="p-6 space-y-5">
-              {/* Summary */}
               {seeker.summary && (
                 <div>
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
@@ -279,7 +286,6 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                 </div>
               )}
 
-              {/* Personal Details */}
               <div>
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
                   Personal Details
@@ -305,7 +311,7 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                       icon: <FaBirthdayCake size={10} />,
                       label: "DOB",
                       value: info.dob
-                        ? `${info.dob.day} ${info.dob.month} ${info.dob.year}`
+                        ? `${info.dob.day ?? ""} ${info.dob.month ?? ""} ${info.dob.year ?? ""}`.trim()
                         : null,
                     },
                     {
@@ -320,20 +326,18 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                     },
                   ]
                     .filter((d) => d.value)
-                    .map((detail, i) => (
+                    .map((d, i) => (
                       <div
                         key={i}
                         className="flex items-start gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100"
                       >
                         <div className="w-6 h-6 rounded-lg bg-[#1E2558]/8 flex items-center justify-center text-[#1E2558] flex-shrink-0 mt-0.5">
-                          {detail.icon}
+                          {d.icon}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs text-gray-400">
-                            {detail.label}
-                          </p>
+                          <p className="text-xs text-gray-400">{d.label}</p>
                           <p className="text-xs font-semibold text-gray-700 mt-0.5 truncate">
-                            {detail.value}
+                            {d.value}
                           </p>
                         </div>
                       </div>
@@ -341,7 +345,6 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                 </div>
               </div>
 
-              {/* Languages */}
               {seeker.languages?.length > 0 && (
                 <div>
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
@@ -375,7 +378,6 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                 </div>
               )}
 
-              {/* Job Preferences */}
               {seeker.jobPreferences && (
                 <div>
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
@@ -445,12 +447,55 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                   </div>
                 </div>
               )}
+
+              {/* Resume assets */}
+              {seeker.resumeAssets?.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                    Resume Assets
+                  </h3>
+                  <div className="space-y-2">
+                    {seeker.resumeAssets.map((asset, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FaFileAlt className="text-[#1E2558]" size={13} />
+                          <span className="text-xs font-medium text-gray-700 capitalize">
+                            {asset.type === "resume_file"
+                              ? "Resume PDF"
+                              : asset.type === "resume_video"
+                                ? "Video Resume"
+                                : "Profile Photo"}
+                          </span>
+                          {asset.isActive && (
+                            <span className="px-1.5 py-0.5 bg-[#4EB956]/10 text-[#4EB956] rounded text-xs font-bold">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        {asset.url && (
+                          <a
+                            href={asset.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-7 h-7 rounded-lg bg-[#1E2558]/8 hover:bg-[#1E2558] hover:text-white flex items-center justify-center text-[#1E2558] transition-all"
+                          >
+                            <FaExternalLinkAlt size={10} />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
+          {/* Experience */}
           {activeTab === "experience" && (
             <div className="p-6 space-y-5">
-              {/* Work Experience */}
               {seeker.experience?.length > 0 && (
                 <div>
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
@@ -489,14 +534,6 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                                 {exp.description}
                               </p>
                             )}
-                            {exp.managedTeam && (
-                              <div className="flex items-center gap-1 mt-2">
-                                <FaUsers size={9} className="text-[#4EB956]" />
-                                <span className="text-xs text-gray-400">
-                                  Managed a team
-                                </span>
-                              </div>
-                            )}
                           </div>
                         </div>
                       ))}
@@ -505,7 +542,6 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                 </div>
               )}
 
-              {/* Education */}
               {seeker.education?.length > 0 && (
                 <div>
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
@@ -531,7 +567,10 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                             {edu.field} · Grade: {edu.grade}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {new Date(edu.startDate).getFullYear()} –{" "}
+                            {edu.startDate
+                              ? new Date(edu.startDate).getFullYear()
+                              : ""}{" "}
+                            –{" "}
                             {edu.endDate
                               ? new Date(edu.endDate).getFullYear()
                               : "Present"}
@@ -542,9 +581,17 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                   </div>
                 </div>
               )}
+
+              {!seeker.experience?.length && !seeker.education?.length && (
+                <div className="text-center py-10 text-gray-300">
+                  <FaBriefcase size={32} className="mx-auto mb-2" />
+                  <p className="text-sm">No experience or education listed</p>
+                </div>
+              )}
             </div>
           )}
 
+          {/* Skills */}
           {activeTab === "skills" && (
             <div className="p-6 space-y-5">
               {seeker.skills?.length > 0 && (
@@ -570,11 +617,7 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
                           {Array.from({ length: 5 }).map((_, dot) => (
                             <div
                               key={dot}
-                              className={`w-2 h-2 rounded-full transition-all ${
-                                dot < skillProficiencyDots(s.proficiency)
-                                  ? "bg-[#4EB956]"
-                                  : "bg-gray-200"
-                              }`}
+                              className={`w-2 h-2 rounded-full transition-all ${dot < skillDots(s.proficiency) ? "bg-[#4EB956]" : "bg-gray-200"}`}
                             />
                           ))}
                           <span className="text-xs text-gray-400 ml-1 capitalize">
@@ -615,6 +658,7 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
             </div>
           )}
 
+          {/* Projects */}
           {activeTab === "projects" && (
             <div className="p-6 space-y-4">
               {seeker.projects?.length > 0 ? (
@@ -685,9 +729,7 @@ const SeekerDrawer = ({ seeker, application, onClose, onAction }) => {
         <div className="flex-shrink-0 border-t border-gray-100 bg-gray-50/50 px-5 py-4">
           <div className="flex items-center gap-2.5">
             <button
-              onClick={() => {
-                onAction("shortlist", application);
-              }}
+              onClick={() => onAction("shortlist", application)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex-1 justify-center border ${
                 application?.status === "shortlisted"
                   ? "bg-amber-50 text-amber-600 border-amber-200"
@@ -733,11 +775,11 @@ const ActionDropdown = ({ application, onAction }) => {
   const ref = useRef(null);
 
   useEffect(() => {
-    const handler = (e) => {
+    const h = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
   }, []);
 
   const actions = [
@@ -802,7 +844,7 @@ const ActionDropdown = ({ application, onAction }) => {
       {open && (
         <div
           className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 z-30 py-1.5 overflow-hidden"
-          style={{ animation: "dropIn 0.15s cubic-bezier(0.16,1,0.3,1)" }}
+          style={{ animation: "dropIn .15s cubic-bezier(.16,1,.3,1)" }}
         >
           {actions.map((action, i) =>
             action.divider ? (
@@ -825,31 +867,62 @@ const ActionDropdown = ({ application, onAction }) => {
           )}
         </div>
       )}
-      <style>{`@keyframes dropIn { from { opacity: 0; transform: translateY(-6px) scale(0.97) } to { opacity: 1; transform: none } }`}</style>
+      <style>{`@keyframes dropIn { from { opacity:0; transform:translateY(-6px) scale(.97) } to { opacity:1; transform:none } }`}</style>
     </div>
   );
 };
 
+// ── Skeleton row ──────────────────────────────────────────────────────────────
+const SkeletonRow = () => (
+  <tr className="animate-pulse">
+    <td className="px-5 py-4">
+      <div className="w-6 h-3 bg-gray-100 rounded" />
+    </td>
+    <td className="px-4 py-4">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-2xl bg-gray-100 flex-shrink-0" />
+        <div className="space-y-1.5">
+          <div className="w-28 h-3 bg-gray-100 rounded" />
+          <div className="w-20 h-2.5 bg-gray-100 rounded" />
+        </div>
+      </div>
+    </td>
+    <td className="px-4 py-4">
+      <div className="w-24 h-3 bg-gray-100 rounded" />
+    </td>
+    <td className="px-4 py-4">
+      <div className="w-32 h-5 bg-gray-100 rounded-full" />
+    </td>
+    <td className="px-4 py-4">
+      <div className="w-20 h-5 bg-gray-100 rounded-full" />
+    </td>
+    <td className="px-4 py-4">
+      <div className="w-16 h-3 bg-gray-100 rounded" />
+    </td>
+    <td className="px-4 py-4">
+      <div className="w-20 h-7 bg-gray-100 rounded-xl" />
+    </td>
+  </tr>
+);
+
 // ── Applicant Row ─────────────────────────────────────────────────────────────
-const ApplicantRow = ({
-  application,
-  index,
-  onAction,
-  onViewProfile,
-  loadingSeeker,
-}) => {
+const ApplicantRow = ({ application, index, onAction, onViewProfile }) => {
   const seeker = application._seekerData;
   const info = seeker?.personalInfo || {};
+  const name = info.name
+    ? info.name
+    : info.firstName
+      ? `${info.firstName} ${info.lastName || ""}`.trim()
+      : "—";
 
-  const name = info.name || application.seekerName || "Loading...";
   const statusKey = application?.status || "applied";
   const statusCfg = APP_STATUS[statusKey] || APP_STATUS.applied;
   const avatarGradient = getAvatarGradient(name);
-  const appliedDate = application?.createdAt;
   const skills =
     seeker?.skills?.map((s) => s.skill) ||
     seeker?.jobPreferences?.preferredSkills ||
     [];
+  const isLoading = application._loadingSeeker;
 
   return (
     <tr className="group hover:bg-gradient-to-r hover:from-[#4EB956]/5 hover:to-transparent transition-all duration-200">
@@ -859,7 +932,9 @@ const ApplicantRow = ({
 
       <td className="px-4 py-4">
         <div className="flex items-center gap-3">
-          {seeker?.profileImage ? (
+          {isLoading ? (
+            <div className="w-10 h-10 rounded-2xl bg-gray-100 animate-pulse flex-shrink-0" />
+          ) : seeker?.profileImage ? (
             <img
               src={seeker.profileImage}
               alt={name}
@@ -869,7 +944,7 @@ const ApplicantRow = ({
             <div
               className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm`}
             >
-              {loadingSeeker ? (
+              {isLoading ? (
                 <FaSpinner className="animate-spin" size={12} />
               ) : (
                 getInitials(name)
@@ -878,26 +953,24 @@ const ApplicantRow = ({
           )}
           <div className="min-w-0">
             <p className="font-semibold text-gray-800 text-sm">{name}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              {info.email && (
-                <span className="flex items-center gap-1 text-xs text-gray-400">
-                  <FaEnvelope size={8} /> {info.email}
-                </span>
-              )}
-            </div>
+            {info.email && (
+              <span className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                <FaEnvelope size={8} /> {info.email}
+              </span>
+            )}
           </div>
         </div>
       </td>
 
       <td className="px-4 py-4">
-        <div className="min-w-0">
-          <p className="text-sm text-gray-700 font-medium truncate max-w-[160px]">
-            {seeker?.experience?.[0]?.jobTitle || info.careerLevel || "—"}
-          </p>
-          <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[160px]">
-            {seeker?.experience?.[0]?.company || info.experience || ""}
-          </p>
-        </div>
+        <p className="text-sm text-gray-700 font-medium truncate max-w-[160px]">
+          {seeker?.experience?.[0]?.jobTitle ||
+            info.careerLevel ||
+            (isLoading ? "Loading…" : "—")}
+        </p>
+        <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[160px]">
+          {seeker?.experience?.[0]?.company || ""}
+        </p>
       </td>
 
       <td className="px-4 py-4">
@@ -915,10 +988,8 @@ const ApplicantRow = ({
               +{skills.length - 3}
             </span>
           )}
-          {!skills.length && !loadingSeeker && (
-            <span className="text-xs text-gray-300 italic">
-              No skills listed
-            </span>
+          {!skills.length && !isLoading && (
+            <span className="text-xs text-gray-300 italic">No skills</span>
           )}
         </div>
       </td>
@@ -936,10 +1007,10 @@ const ApplicantRow = ({
       </td>
 
       <td className="px-4 py-4">
-        {appliedDate ? (
+        {application.createdAt ? (
           <div>
             <p className="text-xs font-medium text-gray-600">
-              {new Date(appliedDate).toLocaleDateString("en-US", {
+              {new Date(application.createdAt).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
                 year: "numeric",
@@ -947,9 +1018,9 @@ const ApplicantRow = ({
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
               {Math.floor(
-                (Date.now() - new Date(appliedDate)) / (1000 * 60 * 60 * 24),
-              )}{" "}
-              days ago
+                (Date.now() - new Date(application.createdAt)) / 86400000,
+              )}
+              d ago
             </p>
           </div>
         ) : (
@@ -997,15 +1068,17 @@ const ApplicantRow = ({
   );
 };
 
-// ── Mobile Applicant Card ─────────────────────────────────────────────────────
-const ApplicantCard = ({ application, index, onAction, onViewProfile }) => {
+// ── Mobile Card ───────────────────────────────────────────────────────────────
+const ApplicantCard = ({ application, onAction, onViewProfile }) => {
   const seeker = application._seekerData;
   const info = seeker?.personalInfo || {};
-  const name = info.name || "Unknown Applicant";
-  const statusKey = application?.status || "applied";
-  const statusCfg = APP_STATUS[statusKey] || APP_STATUS.applied;
-  const avatarGradient = getAvatarGradient(name);
-  const appliedDate = application?.createdAt;
+  const name =
+    info.name ||
+    (info.firstName
+      ? `${info.firstName} ${info.lastName || ""}`.trim()
+      : "Unknown Applicant");
+  const statusCfg =
+    APP_STATUS[application?.status || "applied"] || APP_STATUS.applied;
   const skills =
     seeker?.skills?.map((s) => s.skill) ||
     seeker?.jobPreferences?.preferredSkills ||
@@ -1015,26 +1088,28 @@ const ApplicantCard = ({ application, index, onAction, onViewProfile }) => {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3 hover:border-[#4EB956]/30 hover:shadow-md transition-all duration-200">
       <div className="flex items-start justify-between gap-3">
         <div
-          className="flex items-center gap-3 min-w-0"
+          className="flex items-center gap-3 min-w-0 cursor-pointer"
           onClick={() => onViewProfile(application)}
         >
           {seeker?.profileImage ? (
             <img
               src={seeker.profileImage}
               alt={name}
-              className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 cursor-pointer"
+              className="w-11 h-11 rounded-2xl object-cover flex-shrink-0"
             />
           ) : (
             <div
-              className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white text-sm font-bold flex-shrink-0 cursor-pointer`}
+              className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${getAvatarGradient(name)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}
             >
-              {getInitials(name)}
+              {application._loadingSeeker ? (
+                <FaSpinner className="animate-spin" size={12} />
+              ) : (
+                getInitials(name)
+              )}
             </div>
           )}
           <div className="min-w-0">
-            <p className="font-bold text-gray-800 text-sm cursor-pointer hover:text-[#1E2558]">
-              {name}
-            </p>
+            <p className="font-bold text-gray-800 text-sm">{name}</p>
             <p className="text-xs text-gray-400 truncate mt-0.5">
               {seeker?.experience?.[0]?.jobTitle || info.careerLevel || "—"}
             </p>
@@ -1063,8 +1138,8 @@ const ApplicantCard = ({ application, index, onAction, onViewProfile }) => {
 
       <div className="border-t border-gray-50 pt-3 flex items-center justify-between">
         <p className="text-xs text-gray-400">
-          {appliedDate
-            ? `Applied ${Math.floor((Date.now() - new Date(appliedDate)) / (1000 * 60 * 60 * 24))}d ago`
+          {application.createdAt
+            ? `Applied ${Math.floor((Date.now() - new Date(application.createdAt)) / 86400000)}d ago`
             : ""}
         </p>
         <div className="flex items-center gap-1.5">
@@ -1095,17 +1170,17 @@ const ApplicantCard = ({ application, index, onAction, onViewProfile }) => {
   );
 };
 
-// ── Job Description Modal ─────────────────────────────────────────────────────
+// ── Job Desc Modal ────────────────────────────────────────────────────────────
 const JobDescModal = ({ job, onClose }) => {
   if (!job) return null;
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      style={{ animation: "fadeIn 0.2s ease" }}
+      style={{ animation: "fadeIn .2s ease" }}
     >
       <div
         className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
-        style={{ animation: "scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)" }}
+        style={{ animation: "scaleIn .2s cubic-bezier(.16,1,.3,1)" }}
       >
         <div className="h-1 bg-gradient-to-r from-[#1E2558] via-[#4EB956] to-[#1E2558]" />
         <div className="px-7 py-5 border-b border-gray-100 flex items-start justify-between">
@@ -1118,11 +1193,8 @@ const JobDescModal = ({ job, onClose }) => {
                 </span>
               )}
               {job.jobType && (
-                <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                  <FaBriefcase size={10} />
-                  <span className="capitalize">
-                    {job.jobType.replace(/_/g, " ")}
-                  </span>
+                <span className="flex items-center gap-1.5 text-xs text-gray-400 capitalize">
+                  <FaBriefcase size={10} /> {job.jobType.replace(/_/g, " ")}
                 </span>
               )}
             </div>
@@ -1137,9 +1209,7 @@ const JobDescModal = ({ job, onClose }) => {
         <div className="flex-1 overflow-y-auto px-7 py-6">
           {job.jobDescription ? (
             <div
-              className="prose prose-sm max-w-none text-gray-600 leading-relaxed
-              [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-gray-800 [&_h3]:mt-4 [&_h3]:mb-2
-              [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_li]:mb-1"
+              className="prose prose-sm max-w-none text-gray-600 leading-relaxed [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-gray-800 [&_h3]:mt-4 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_li]:mb-1"
               dangerouslySetInnerHTML={{ __html: job.jobDescription }}
             />
           ) : (
@@ -1149,9 +1219,7 @@ const JobDescModal = ({ job, onClose }) => {
           )}
         </div>
       </div>
-      <style>{`
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95) } to { opacity: 1; transform: scale(1) } }
-      `}</style>
+      <style>{`@keyframes scaleIn { from { opacity:0; transform:scale(.95) } to { opacity:1; transform:scale(1) } }`}</style>
     </div>
   );
 };
@@ -1159,24 +1227,14 @@ const JobDescModal = ({ job, onClose }) => {
 // ── Main Component ────────────────────────────────────────────────────────────
 const JobApplications = () => {
   const { jobId } = useParams();
-  const navigate = useNavigate();
-
   const { myJobs, fetchMyJobs } = useJobPostStore();
-  const applicationStore = (() => {
-    try {
-      return useApplicationStore();
-    } catch {
-      return null;
-    }
-  })();
 
   const [applications, setApplications] = useState([]);
   const [loadingApps, setLoadingApps] = useState(true);
-  const [loadingSeekers, setLoadingSeekers] = useState({});
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [showJobDesc, setShowJobDesc] = useState(false);
-  const [drawerApp, setDrawerApp] = useState(null); // application with seeker data
+  const [drawerApp, setDrawerApp] = useState(null);
 
   const job = myJobs.find((j) => (j.jobId || j._id) === jobId) || null;
 
@@ -1184,80 +1242,79 @@ const JobApplications = () => {
     if (myJobs.length === 0) fetchMyJobs();
   }, []);
 
-  // Fetch seeker profile by userId
-  const fetchSeekerData = useCallback(async (seekerUserId) => {
+  // ── Fetch seeker profile via dedicated endpoint ────────────────────────────
+  const fetchSeekerProfile = useCallback(async (seekerUserId) => {
     if (!seekerUserId) return null;
     try {
-      const { default: axios } = await import("axios");
-      // Try by userId or seekerProfileId
-      const res = await axios.get(`${API_URL}/seekers/user/${seekerUserId}`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${API_URL}/applications/seeker-profile/${seekerUserId}`,
+        getAuthConfig(),
+      );
       if (res.data?.success) return res.data.data;
       return null;
     } catch (e) {
-      // Try alternate endpoint
-      try {
-        const { default: axios } = await import("axios");
-        const res = await axios.get(`${API_URL}/seekers/${seekerUserId}`, {
-          withCredentials: true,
-        });
-        if (res.data?.success) return res.data.data;
-      } catch {}
+      console.warn("seeker-profile fetch failed:", e?.response?.status);
       return null;
     }
   }, []);
 
-  // Fetch applications then enrich with seeker data
+  // ── Load applications then enrich in parallel ──────────────────────────────
   useEffect(() => {
+    if (!jobId) return;
+
     const load = async () => {
       setLoadingApps(true);
       let apps = [];
+
       try {
-        if (applicationStore?.fetchJobApplications) {
-          const result = await applicationStore.fetchJobApplications(jobId);
-          if (result?.success) apps = result.data || [];
-        } else {
-          const { default: axios } = await import("axios");
-          const res = await axios.get(`${API_URL}/applications/job/${jobId}`, {
-            withCredentials: true,
-          });
-          if (res.data?.success) apps = res.data.data || [];
+        const res = await axios.get(
+          `${API_URL}/applications/job/${jobId}`,
+          getAuthConfig(),
+        );
+        if (res.data?.success) {
+          apps = Array.isArray(res.data.data) ? res.data.data : [];
         }
       } catch (e) {
-        console.error("Failed to fetch applications", e);
-      } finally {
-        setLoadingApps(false);
+        console.error("Failed to fetch applications:", e);
       }
 
-      setApplications(apps.map((a) => ({ ...a, _seekerData: null })));
+      // Seed with loading state
+      setApplications(
+        apps.map((a) => ({ ...a, _seekerData: null, _loadingSeeker: true })),
+      );
+      setLoadingApps(false);
 
-      // Fetch seeker data for each application concurrently
+      // Enrich each application with seeker profile concurrently
       apps.forEach(async (app) => {
         const uid = app.seekerUserId || app.seekerId;
-        if (!uid) return;
-        setLoadingSeekers((prev) => ({
-          ...prev,
-          [app.applicationId || app._id]: true,
-        }));
-        const seekerData = await fetchSeekerData(uid);
+        const appKey = app.applicationId || app._id;
+        if (!uid) {
+          setApplications((prev) =>
+            prev.map((a) =>
+              (a.applicationId || a._id) === appKey
+                ? { ...a, _loadingSeeker: false }
+                : a,
+            ),
+          );
+          return;
+        }
+
+        const seekerData = await fetchSeekerProfile(uid);
+
         setApplications((prev) =>
           prev.map((a) =>
-            (a.applicationId || a._id) === (app.applicationId || app._id)
-              ? { ...a, _seekerData: seekerData }
+            (a.applicationId || a._id) === appKey
+              ? { ...a, _seekerData: seekerData, _loadingSeeker: false }
               : a,
           ),
         );
-        setLoadingSeekers((prev) => ({
-          ...prev,
-          [app.applicationId || app._id]: false,
-        }));
       });
     };
 
-    if (jobId) load();
-  }, [jobId]);
+    load();
+  }, [jobId, fetchSeekerProfile]);
 
+  // ── Status update ──────────────────────────────────────────────────────────
   const handleAction = async (actionKey, application) => {
     const appId = application?.applicationId || application?._id;
 
@@ -1265,9 +1322,11 @@ const JobApplications = () => {
       setDrawerApp(application);
       return;
     }
+
     if (actionKey === "download") {
-      const cvUrl =
-        application?._seekerData?.resumeFileUrl || application?.cvUrl;
+      const assets = application?._seekerData?.resumeAssets || [];
+      const resumeFile = assets.find((a) => a.type === "resume_file" && a.url);
+      const cvUrl = resumeFile?.url || application?.resumeFileUrl;
       if (cvUrl) window.open(cvUrl, "_blank");
       else alert("No CV available for this applicant.");
       return;
@@ -1282,11 +1341,10 @@ const JobApplications = () => {
     if (!newStatus) return;
 
     try {
-      const { default: axios } = await import("axios");
       await axios.patch(
         `${API_URL}/applications/${appId}/status`,
         { status: newStatus },
-        { withCredentials: true },
+        getAuthConfig(),
       );
       setApplications((prev) =>
         prev.map((a) =>
@@ -1295,16 +1353,16 @@ const JobApplications = () => {
             : a,
         ),
       );
-      // Update drawer if open
       if (drawerApp && (drawerApp.applicationId || drawerApp._id) === appId) {
         setDrawerApp((prev) => ({ ...prev, status: newStatus }));
       }
     } catch (e) {
-      console.error("Failed to update status", e);
+      console.error("Failed to update status:", e);
     }
   };
 
-  const statusTabCounts = applications.reduce((acc, a) => {
+  // ── Derived ────────────────────────────────────────────────────────────────
+  const statusCounts = applications.reduce((acc, a) => {
     acc[a.status || "applied"] = (acc[a.status || "applied"] || 0) + 1;
     return acc;
   }, {});
@@ -1312,15 +1370,15 @@ const JobApplications = () => {
   const filtered = applications.filter((a) => {
     if (filter !== "all" && (a.status || "applied") !== filter) return false;
     if (search) {
-      const s = search.toLowerCase();
+      const q = search.toLowerCase();
       const info = a._seekerData?.personalInfo || {};
-      const name = (info.name || a.seekerName || "").toLowerCase();
-      const title = (
-        a._seekerData?.experience?.[0]?.jobTitle ||
-        info.careerLevel ||
-        ""
+      const name = (
+        info.name || `${info.firstName || ""} ${info.lastName || ""}`.trim()
       ).toLowerCase();
-      return name.includes(s) || title.includes(s);
+      const role = (
+        a._seekerData?.experience?.[0]?.jobTitle || ""
+      ).toLowerCase();
+      return name.includes(q) || role.includes(q);
     }
     return true;
   });
@@ -1330,25 +1388,19 @@ const JobApplications = () => {
     {
       key: "shortlisted",
       label: "Shortlisted",
-      count: statusTabCounts.shortlisted || 0,
+      count: statusCounts.shortlisted || 0,
     },
-    { key: "applied", label: "Applied", count: statusTabCounts.applied || 0 },
-    {
-      key: "reviewed",
-      label: "Reviewed",
-      count: statusTabCounts.reviewed || 0,
-    },
-    { key: "hired", label: "Hired", count: statusTabCounts.hired || 0 },
-    {
-      key: "rejected",
-      label: "Rejected",
-      count: statusTabCounts.rejected || 0,
-    },
+    { key: "applied", label: "Applied", count: statusCounts.applied || 0 },
+    { key: "reviewed", label: "Reviewed", count: statusCounts.reviewed || 0 },
+    { key: "hired", label: "Hired", count: statusCounts.hired || 0 },
+    { key: "rejected", label: "Rejected", count: statusCounts.rejected || 0 },
   ].filter((t) => t.key === "all" || t.count > 0);
+
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
-      {/* Seeker Profile Drawer */}
+      {/* Seeker Drawer */}
       {drawerApp && (
         <SeekerDrawer
           seeker={drawerApp._seekerData}
@@ -1358,11 +1410,12 @@ const JobApplications = () => {
         />
       )}
 
+      {/* Job Desc Modal */}
       {showJobDesc && (
         <JobDescModal job={job} onClose={() => setShowJobDesc(false)} />
       )}
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Header card ── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="h-1 bg-gradient-to-r from-[#1E2558] via-[#4EB956] to-[#1E2558]" />
         <div className="px-6 py-5">
@@ -1434,21 +1487,21 @@ const JobApplications = () => {
               },
               {
                 label: "Shortlisted",
-                value: statusTabCounts.shortlisted || 0,
+                value: statusCounts.shortlisted || 0,
                 icon: <FaStar size={13} />,
                 color: "text-amber-500",
                 bg: "bg-amber-50",
               },
               {
                 label: "Hired",
-                value: statusTabCounts.hired || 0,
+                value: statusCounts.hired || 0,
                 icon: <FaUserCheck size={13} />,
                 color: "text-emerald-600",
                 bg: "bg-emerald-50",
               },
               {
                 label: "Rejected",
-                value: statusTabCounts.rejected || 0,
+                value: statusCounts.rejected || 0,
                 icon: <FaUserTimes size={13} />,
                 color: "text-red-500",
                 bg: "bg-red-50",
@@ -1464,7 +1517,9 @@ const JobApplications = () => {
                   {s.icon}
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-gray-800 leading-tight">
+                  <p
+                    className={`text-xl font-bold text-gray-800 leading-tight`}
+                  >
                     {loadingApps ? (
                       <FaSpinner className="animate-spin text-sm text-gray-300" />
                     ) : (
@@ -1479,7 +1534,7 @@ const JobApplications = () => {
         </div>
       </div>
 
-      {/* ── Filter & Search ─────────────────────────────────────────────────── */}
+      {/* ── Filter & Search ── */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3">
         <div className="flex flex-wrap gap-2">
           {tabs.map((tab) => {
@@ -1520,19 +1575,36 @@ const JobApplications = () => {
         </div>
       </div>
 
-      {/* ── Desktop Table ───────────────────────────────────────────────────── */}
+      {/* ── Desktop Table ── */}
       <div className="hidden lg:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {loadingApps ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-[#4EB956]/10 flex items-center justify-center">
-                <FaSpinner className="animate-spin text-[#4EB956] text-xl" />
-              </div>
-              <p className="text-gray-500 text-sm font-medium">
-                Loading applicants...
-              </p>
-            </div>
-          </div>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <th className="px-5 py-3 w-10" />
+                {[
+                  "Applicant",
+                  "Current Role",
+                  "Skills",
+                  "Status",
+                  "Applied",
+                  "Actions",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {[...Array(3)].map((_, i) => (
+                <SkeletonRow key={i} />
+              ))}
+            </tbody>
+          </table>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto bg-gray-50 rounded-2xl flex items-center justify-center mb-4 border border-gray-100">
@@ -1580,7 +1652,6 @@ const JobApplications = () => {
                     index={i}
                     onAction={handleAction}
                     onViewProfile={(a) => setDrawerApp(a)}
-                    loadingSeeker={loadingSeekers[app.applicationId || app._id]}
                   />
                 ))}
               </tbody>
@@ -1602,7 +1673,7 @@ const JobApplications = () => {
         )}
       </div>
 
-      {/* ── Mobile Cards ────────────────────────────────────────────────────── */}
+      {/* ── Mobile Cards ── */}
       <div className="lg:hidden space-y-3">
         {loadingApps ? (
           <div className="flex justify-center py-12">
@@ -1618,7 +1689,6 @@ const JobApplications = () => {
             <ApplicantCard
               key={app.applicationId || app._id || i}
               application={app}
-              index={i}
               onAction={handleAction}
               onViewProfile={(a) => setDrawerApp(a)}
             />
