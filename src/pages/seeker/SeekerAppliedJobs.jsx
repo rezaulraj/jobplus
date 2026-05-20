@@ -188,13 +188,13 @@ const ApplicationCard = ({ app }) => {
             <h3 className="font-bold text-gray-900 text-base leading-tight group-hover:text-[#1e2558] transition-colors">
               {app.job?.title || "—"}
             </h3>
-            <span
+            {/* <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${s.bg} ${s.text} ${s.border}`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
               <StatusIcon className="w-3 h-3" />
               {s.label}
-            </span>
+            </span> */}
           </div>
 
           <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-1.5">

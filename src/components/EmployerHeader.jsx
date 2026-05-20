@@ -12,7 +12,7 @@ import {
 import { MdDashboard } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "/logo.png";
-import useAuthStore from "../store/authStore"; 
+import useAuthStore from "../store/authStore";
 
 const EmployerHeader = ({ sidebarOpen, setSidebarOpen, sidebarCollapsed }) => {
   const [scrolled, setScrolled] = useState(false);
@@ -326,18 +326,11 @@ const EmployerHeader = ({ sidebarOpen, setSidebarOpen, sidebarCollapsed }) => {
                     onClick={() => setIsUserDropdownOpen(false)}
                   />
                   <MenuItem
-                    to="/employer/share-access"
+                    to="#"
                     icon={<FaShareAlt />}
                     label="Share Access"
                     description="Manage team permissions"
                     badge="New"
-                    onClick={() => setIsUserDropdownOpen(false)}
-                  />
-                  <MenuItem
-                    to="/employer/change-password"
-                    icon={<FaKey />}
-                    label="Change Password"
-                    description="Update your password"
                     onClick={() => setIsUserDropdownOpen(false)}
                   />
                 </div>

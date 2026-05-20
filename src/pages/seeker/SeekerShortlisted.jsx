@@ -1,485 +1,557 @@
-import React, { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import {
-  FaSearch,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaClock,
-  FaStar,
-  FaBriefcase,
-  FaTimes,
-  FaEye,
-  FaIndustry,
-  FaBuilding,
-} from "react-icons/fa";
+  Search,
+  X,
+  Star,
+  MapPin,
+  Calendar,
+  Eye,
+  Building2,
+  DollarSign,
+  Clock,
+  Loader2,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Briefcase,
+  XCircle,
+  Sparkles,
+} from "lucide-react";
+import useSeekerStore from "../../store/seekerStore";
+import useJobStore from "../../store/JobStore";
 
-const SeekerShortlisted = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+const LIMIT = 100;
 
-  const [shortlistedJobs, setShortlistedJobs] = useState([
-    {
-      id: 1,
-      title: "Senior Software Engineer",
-      company: "Banglalink Digital",
-      location: "Dhaka, Bangladesh",
-      expectedSalary: "৳120,000 - ৳150,000",
-      appliedDate: "2024-01-10",
-      shortlistedDate: "2024-01-18",
-      interviewDate: "2024-01-25",
-      notes: "Technical interview with team lead",
-      companyLogo: "bg-blue-100",
-      isActive: true,
-      industry: "Telecommunications",
-    },
-    {
-      id: 2,
-      title: "Frontend Developer",
-      company: "Pathao",
-      location: "Dhaka, Bangladesh",
-      expectedSalary: "৳80,000 - ৳110,000",
-      appliedDate: "2024-01-05",
-      shortlistedDate: "2024-01-12",
-      interviewDate: null,
-      notes: "React.js specialist position",
-      companyLogo: "bg-green-100",
-      isActive: true,
-      industry: "Transport & Logistics",
-    },
-    {
-      id: 3,
-      title: "Backend Engineer (Node.js)",
-      company: "ShopUp",
-      location: "Dhaka, Bangladesh",
-      expectedSalary: "৳90,000 - ৳130,000",
-      appliedDate: "2024-01-15",
-      shortlistedDate: "2024-01-22",
-      interviewDate: "2024-01-30",
-      notes: "Final technical round",
-      companyLogo: "bg-purple-100",
-      isActive: true,
-      industry: "E-commerce",
-    },
-    {
-      id: 4,
-      title: "UX/UI Designer",
-      company: "Grameenphone",
-      location: "Dhaka, Bangladesh",
-      expectedSalary: "৳70,000 - ৳100,000",
-      appliedDate: "2024-01-08",
-      shortlistedDate: "2024-01-20",
-      interviewDate: null,
-      notes: "Design system implementation",
-      companyLogo: "bg-red-100",
-      isActive: true,
-      industry: "Telecommunications",
-    },
-    {
-      id: 5,
-      title: "DevOps Engineer",
-      company: "bKash Limited",
-      location: "Dhaka, Bangladesh",
-      expectedSalary: "৳110,000 - ৳140,000",
-      appliedDate: "2024-01-12",
-      shortlistedDate: "2024-01-25",
-      interviewDate: null,
-      notes: "AWS infrastructure management",
-      companyLogo: "bg-yellow-100",
-      isActive: true,
-      industry: "FinTech",
-    },
-    {
-      id: 6,
-      title: "Product Manager",
-      company: "Daraz Bangladesh",
-      location: "Dhaka, Bangladesh",
-      expectedSalary: "৳150,000 - ৳200,000",
-      appliedDate: "2024-01-20",
-      shortlistedDate: "2024-01-28",
-      interviewDate: "2024-02-05",
-      notes: "E-commerce product development",
-      companyLogo: "bg-indigo-100",
-      isActive: true,
-      industry: "E-commerce",
-    },
-    {
-      id: 7,
-      title: "Data Analyst",
-      company: "Nagad",
-      location: "Dhaka, Bangladesh",
-      expectedSalary: "৳65,000 - ৳90,000",
-      appliedDate: "2024-01-18",
-      shortlistedDate: "2024-01-26",
-      interviewDate: null,
-      notes: "Financial data analysis",
-      companyLogo: "bg-teal-100",
-      isActive: true,
-      industry: "FinTech",
-    },
-    {
-      id: 8,
-      title: "Mobile App Developer",
-      company: "Chaldal",
-      location: "Dhaka, Bangladesh",
-      expectedSalary: "৳85,000 - ৳115,000",
-      appliedDate: "2024-01-22",
-      shortlistedDate: "2024-01-30",
-      interviewDate: "2024-02-10",
-      notes: "Flutter development position",
-      companyLogo: "bg-orange-100",
-      isActive: true,
-      industry: "E-commerce",
-    },
-  ]);
-
-  const filteredJobs = shortlistedJobs.filter((job) => {
-    if (!job.isActive) return false;
-
-    const matchesSearch =
-      !searchQuery ||
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.industry.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesSearch;
+const formatDate = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const now = new Date();
+  const diffDays = Math.floor((now - d) / 86400000);
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
   });
+};
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not scheduled";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+const formatSalary = (salary) => {
+  if (!salary) return "Negotiable";
+  if (salary.min === 0 && salary.max === 0)
+    return salary.default || "Negotiable";
+  if (salary.min > 0 && salary.max > 0)
+    return `৳${salary.min.toLocaleString()} – ৳${salary.max.toLocaleString()}`;
+  if (salary.min > 0) return `৳${salary.min.toLocaleString()}+`;
+  if (salary.max > 0) return `Up to ৳${salary.max.toLocaleString()}`;
+  return "Negotiable";
+};
 
-  const getDaysUntil = (dateString) => {
-    if (!dateString) return null;
-    const today = new Date();
-    const targetDate = new Date(dateString);
-    const diffTime = targetDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+const getDaysUntil = (dateString) => {
+  if (!dateString) return null;
+  const diffDays = Math.ceil(
+    (new Date(dateString) - new Date()) / (1000 * 60 * 60 * 24),
+  );
+  return diffDays;
+};
+
+const extractItems = (result) => {
+  if (!result) return [];
+  if (Array.isArray(result.data?.items)) return result.data.items;
+  if (Array.isArray(result.data)) return result.data;
+  if (Array.isArray(result.items)) return result.items;
+  return [];
+};
+
+const extractMeta = (result) => {
+  if (!result) return null;
+  if (result.data?.meta) return result.data.meta;
+  if (result.meta) return result.meta;
+  return null;
+};
+
+// ─── skeleton card ──
+
+const SkeletonCard = () => (
+  <div className="p-5 animate-pulse">
+    <div className="flex gap-4">
+      <div className="w-14 h-14 rounded-2xl bg-gray-100 shrink-0" />
+      <div className="flex-1 space-y-3">
+        <div className="h-4 bg-gray-100 rounded-lg w-2/5" />
+        <div className="h-3 bg-gray-100 rounded-lg w-1/4" />
+        <div className="flex gap-3">
+          <div className="h-3 bg-gray-100 rounded-lg w-24" />
+          <div className="h-3 bg-gray-100 rounded-lg w-20" />
+        </div>
+      </div>
+      <div className="w-24 h-16 bg-gray-100 rounded-2xl shrink-0" />
+    </div>
+  </div>
+);
+
+// ─── stat card ────
+
+const StatCard = ({ icon: Icon, label, value, color, bg }) => (
+  <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+          {label}
+        </p>
+        <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      </div>
+      <div
+        className={`w-12 h-12 ${bg} rounded-2xl flex items-center justify-center`}
+      >
+        <Icon className={`w-5 h-5 ${color}`} />
+      </div>
+    </div>
+  </div>
+);
+
+// ─── shortlisted card ──
+
+const ShortlistedCard = ({ app }) => {
+  const interviewDate = app.interviewDate || app.job?.interviewDate || null;
+  const daysUntilInterview = getDaysUntil(interviewDate);
+  // updatedAt = when status changed to shortlisted
+  const shortlistedDate = app.updatedAt || app.createdAt;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="container mx-auto">
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div className="group p-5 hover:bg-gradient-to-r hover:from-indigo-50/40 hover:to-white transition-all duration-200 border-b border-gray-50 last:border-0">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+        {/* Company logo */}
+        <div className="shrink-0">
+          {app.job?.companyLogo &&
+          app.job.companyLogo !== "/images/default-company.png" ? (
+            <img
+              src={app.job.companyLogo}
+              alt={app.job?.company}
+              className="w-14 h-14 rounded-2xl object-contain border border-gray-100 bg-white p-1.5 shadow-sm"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-100 to-[#4eb956]/20 flex items-center justify-center border border-indigo-100">
+              <Building2 className="w-6 h-6 text-[#4eb956]" />
+            </div>
+          )}
+        </div>
+
+        {/* Main info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-start gap-2 mb-1">
+            <h3 className="font-bold text-gray-900 text-base leading-tight group-hover:text-[#4eb956] transition-colors">
+              {app.job?.title || "—"}
+            </h3>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-indigo-50 text-indigo-700 border-indigo-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              <Star className="w-3 h-3" />
+              Shortlisted
+            </span>
+            {app.job?.industry && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                {app.job.industry}
+              </span>
+            )}
+          </div>
+
+          <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            {app.job?.company || "—"}
+          </p>
+
+          <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-3">
+            {app.job?.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                {app.job.location}
+              </span>
+            )}
+            {app.job?.jobType && (
+              <span className="flex items-center gap-1">
+                <Briefcase className="w-3.5 h-3.5 text-gray-400" />
+                {app.job.jobType}
+              </span>
+            )}
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              Applied {formatDate(app.createdAt)}
+            </span>
+            {app.job && (
+              <span className="flex items-center gap-1 font-semibold text-[#4eb956]">
+                <DollarSign className="w-3.5 h-3.5" />
+                {formatSalary(app.job.salary)}
+              </span>
+            )}
+          </div>
+
+          {/* Timeline */}
+          <div className="bg-gray-50 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs mb-3">
             <div>
-              <nav className="text-sm text-gray-600 mb-2">
-                <span className="hover:text-green-600 cursor-pointer">
+              <p className="text-gray-400 mb-0.5">Applied Date</p>
+              <p className="font-medium text-gray-700 flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-gray-400" />
+                {formatDate(app.createdAt)}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400 mb-0.5">Shortlisted Date</p>
+              <p className="font-medium text-indigo-700 flex items-center gap-1">
+                <Star className="w-3 h-3 text-indigo-500" />
+                {formatDate(shortlistedDate)}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400 mb-0.5">
+                {interviewDate ? "Interview Date" : "Interview Status"}
+              </p>
+              <p className="font-medium text-blue-700 flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-blue-500" />
+                {interviewDate
+                  ? new Date(interviewDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "Awaiting Schedule"}
+                {daysUntilInterview && daysUntilInterview > 0 && (
+                  <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-md text-[10px] font-semibold">
+                    in {daysUntilInterview}d
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          {/* Employer note */}
+          {app.notes && (
+            <div className="p-2.5 bg-blue-50 rounded-lg border border-blue-100 text-xs text-gray-700">
+              <span className="font-semibold text-blue-800">
+                Note from Employer:{" "}
+              </span>
+              {app.notes}
+            </div>
+          )}
+        </div>
+
+        {/* Profile views + action */}
+        <div className="shrink-0 self-start sm:self-center flex flex-col items-center gap-2">
+          <div className="text-center bg-gradient-to-b from-gray-50 to-white border border-gray-100 rounded-2xl px-5 py-3 min-w-[90px] shadow-sm">
+            <div className="flex items-center justify-center mb-1">
+              <Eye className="w-3.5 h-3.5 text-[#4eb956]" />
+            </div>
+            <p className="text-2xl font-black text-[#1e2558]">
+              {app.profileViews ?? 0}
+            </p>
+            <p className="text-[10px] text-gray-400 font-medium leading-tight">
+              profile views
+            </p>
+          </div>
+          <button className="w-full py-2 px-4 bg-[#1e2558]/90 hover:bg-[#1e2558] text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5">
+            <Eye className="w-3.5 h-3.5" />
+            View Details
+          </button>
+        </div>
+      </div>
+
+      {/* Skills */}
+      {app.job?.skills?.length > 0 && (
+        <div className="mt-3 ml-[72px] flex flex-wrap gap-1.5">
+          {app.job.skills.slice(0, 4).map((sk, i) => (
+            <span
+              key={i}
+              className="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-lg font-medium"
+            >
+              {sk}
+            </span>
+          ))}
+          {app.job.skills.length > 4 && (
+            <span className="px-2.5 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-lg font-medium">
+              +{app.job.skills.length - 4} more
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── main component ───────────────────────────────────────────────────────────
+
+const SeekerShortlisted = () => {
+  const { fetchMyApplications } = useSeekerStore();
+  const { fetchJobById } = useJobStore();
+
+  const [enriched, setEnriched] = useState([]);
+  const [phase, setPhase] = useState("idle"); // "idle"|"loading"|"enriching"|"done"|"error"
+  const [errorMsg, setErrorMsg] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // ── load ───────────────────────────────────────────────────────────────────
+
+  const load = useCallback(async () => {
+    setPhase("loading");
+    setErrorMsg("");
+    setEnriched([]);
+
+    let result;
+    try {
+      result = await fetchMyApplications({ page: 1, limit: LIMIT });
+    } catch (err) {
+      console.error("fetchMyApplications error:", err);
+      setErrorMsg("Network error. Please try again.");
+      setPhase("error");
+      return;
+    }
+
+    // ── debug: log raw result so you can verify shape in console ──
+    console.log("[SeekerShortlisted] raw result:", result);
+
+    // Support both { success } at top level and nested inside result.data
+    const isSuccess =
+      result?.success === true || result?.data?.success === true;
+
+    if (!isSuccess) {
+      setErrorMsg("Could not load applications. Please try again.");
+      setPhase("error");
+      return;
+    }
+
+    // Extract items regardless of nesting
+    const allItems = extractItems(result);
+    console.log("[SeekerShortlisted] all items:", allItems.length, allItems);
+
+    // ── FILTER: only shortlisted ──
+    const shortlistedItems = allItems.filter(
+      (app) => app.status === "shortlisted",
+    );
+    console.log(
+      "[SeekerShortlisted] shortlisted items:",
+      shortlistedItems.length,
+    );
+
+    if (shortlistedItems.length === 0) {
+      setEnriched([]);
+      setPhase("done");
+      return;
+    }
+
+    // ── enrich with job details ──
+    setPhase("enriching");
+
+    const enrichedItems = await Promise.all(
+      shortlistedItems.map(async (app) => {
+        if (!app.jobId) return { ...app, job: null };
+        try {
+          const jobResult = await fetchJobById(app.jobId);
+          console.log(`[SeekerShortlisted] job ${app.jobId}:`, jobResult);
+          return {
+            ...app,
+            job: jobResult?.success ? jobResult.data : null,
+          };
+        } catch {
+          return { ...app, job: null };
+        }
+      }),
+    );
+
+    setEnriched(enrichedItems);
+    setPhase("done");
+  }, [fetchMyApplications, fetchJobById]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // ── client-side search ─────────────────────────────────────────────────────
+
+  const filtered = enriched.filter((app) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      app.job?.title?.toLowerCase().includes(q) ||
+      app.job?.company?.toLowerCase().includes(q) ||
+      app.job?.industry?.toLowerCase().includes(q)
+    );
+  });
+
+  // ── stats ──────────────────────────────────────────────────────────────────
+
+  const withInterview = enriched.filter(
+    (a) => a.interviewDate || a.job?.interviewDate,
+  ).length;
+  const uniqueCompanies = new Set(
+    enriched.map((a) => a.job?.company).filter(Boolean),
+  ).size;
+  const isLoading = phase === "loading" || phase === "enriching";
+
+  // ──────────────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="min-h-screen bg-gray-50/70">
+      {/* sticky top bar */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <nav className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                <Link to="/" className="hover:text-[#4eb956] transition-colors">
                   Home
-                </span>
-                <span className="mx-2">/</span>
-                <span className="text-green-600 font-medium">
+                </Link>
+                <span>/</span>
+                <span className="text-[#1e2558] font-semibold">
                   Shortlisted Jobs
                 </span>
               </nav>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+              <h1 className="text-xl font-black text-[#1e2558]">
                 Profile Shortlisted Jobs
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Jobs where employers have shortlisted your profile
               </p>
             </div>
 
-            <div className="w-full md:w-auto">
-              <div className="relative md:w-80">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaSearch className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search jobs, companies or industries..."
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <FaTimes className="text-gray-400 hover:text-gray-600" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Shortlisted</p>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {shortlistedJobs.filter((j) => j.isActive).length}
-                  </p>
-                </div>
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <FaStar className="text-green-600 text-xl" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Interview Scheduled</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {
-                      shortlistedJobs.filter(
-                        (j) => j.interviewDate && j.isActive,
-                      ).length
-                    }
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <FaClock className="text-blue-600 text-xl" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Companies</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {
-                      [
-                        ...new Set(
-                          shortlistedJobs
-                            .filter((j) => j.isActive)
-                            .map((j) => j.company),
-                        ),
-                      ].length
-                    }
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <FaBuilding className="text-purple-600 text-xl" />
-                </div>
-              </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search jobs, companies…"
+                className="pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4eb956]/40 focus:border-indigo-400 w-52 bg-gray-50"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
-          <div className="divide-y divide-gray-100">
-            {filteredJobs.length > 0 ? (
-              filteredJobs.map((job) => {
-                const daysUntilInterview = job.interviewDate
-                  ? getDaysUntil(job.interviewDate)
-                  : null;
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* stat cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <StatCard
+            icon={Star}
+            label="Total Shortlisted"
+            value={enriched.length}
+            color="text-[#4eb956]"
+            bg="bg-indigo-50"
+          />
+          <StatCard
+            icon={Clock}
+            label="Interview Scheduled"
+            value={withInterview}
+            color="text-[#4eb956]"
+            bg="bg-blue-50"
+          />
+          <StatCard
+            icon={Building2}
+            label="Companies"
+            value={uniqueCompanies}
+            color="text-[#4eb956]"
+            bg="bg-purple-50"
+          />
+        </div>
 
-                return (
-                  <div
-                    key={job.id}
-                    className="p-6 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex flex-col lg:flex-row gap-6">
-                      <div className="flex-1">
-                        <div className="flex items-start gap-4">
-                          <div
-                            className={`${job.companyLogo} p-3 rounded-lg shrink-0`}
-                          >
-                            <FaBriefcase className="text-gray-700 text-lg" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex flex-wrap items-start gap-3 mb-3">
-                              <div>
-                                <h3 className="text-lg font-semibold text-gray-800">
-                                  {job.title}
-                                </h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                    <FaStar
-                                      className="text-green-600"
-                                      size={10}
-                                    />
-                                    Profile Shortlisted
-                                  </span>
-                                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                                    {job.industry}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
-                              <div className="flex items-center gap-1">
-                                <FaBuilding className="text-gray-400" />
-                                <span className="font-medium">
-                                  {job.company}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <FaMapMarkerAlt className="text-green-600" />
-                                <span>{job.location}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <FaIndustry className="text-gray-400" />
-                                <span>{job.industry}</span>
-                              </div>
-                            </div>
-
-                            {/* Expected Salary */}
-                            <div className="mb-4">
-                              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg">
-                                <span className="text-sm font-medium text-gray-700">
-                                  Expected Salary:
-                                </span>
-                                <span className="text-lg font-bold text-green-700">
-                                  {job.expectedSalary}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Timeline */}
-                            <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                  <p className="text-xs text-gray-500 mb-1">
-                                    Applied Date
-                                  </p>
-                                  <p className="text-sm font-medium text-gray-800 flex items-center gap-2">
-                                    <FaCalendarAlt className="text-gray-400" />
-                                    {formatDate(job.appliedDate)}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-gray-500 mb-1">
-                                    Shortlisted Date
-                                  </p>
-                                  <p className="text-sm font-medium text-green-800 flex items-center gap-2">
-                                    <FaStar className="text-green-600" />
-                                    {formatDate(job.shortlistedDate)}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-gray-500 mb-1">
-                                    {job.interviewDate
-                                      ? "Interview Date"
-                                      : "Interview Status"}
-                                  </p>
-                                  <p className="text-sm font-medium text-blue-800 flex items-center gap-2">
-                                    <FaClock className="text-blue-600" />
-                                    {job.interviewDate
-                                      ? formatDate(job.interviewDate)
-                                      : "Awaiting Schedule"}
-                                    {daysUntilInterview &&
-                                      daysUntilInterview > 0 && (
-                                        <span className="ml-2 text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-                                          in {daysUntilInterview} days
-                                        </span>
-                                      )}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Notes */}
-                            {job.notes && (
-                              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                <p className="text-sm text-gray-700">
-                                  <span className="font-medium text-blue-800">
-                                    Note from Employer:{" "}
-                                  </span>
-                                  {job.notes}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="lg:w-64">
-                        <div className="bg-gray-50 rounded-lg p-4 h-full">
-                          <h4 className="font-medium text-gray-800 mb-4 flex items-center gap-2">
-                            <FaStar className="text-green-600" />
-                            Application Status
-                          </h4>
-
-                          <div className="space-y-4">
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="p-1 bg-green-100 rounded">
-                                  <FaStar
-                                    className="text-green-600"
-                                    size={14}
-                                  />
-                                </div>
-                                <span className="text-sm font-medium text-green-800">
-                                  Profile Shortlisted
-                                </span>
-                              </div>
-                              <p className="text-xs text-green-700">
-                                Your profile has been selected by the employer
-                                for further consideration.
-                              </p>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">
-                                  Next Step:
-                                </span>
-                                <span className="text-sm font-medium text-blue-600">
-                                  {job.interviewDate ? "Interview" : "Review"}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">
-                                  Location:
-                                </span>
-                                <span className="text-sm font-medium text-gray-800">
-                                  Bangladesh
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
-                            <button className="w-full py-2.5 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
-                              <FaEye />
-                              View Details
-                            </button>
-                            {/* <button className="w-full py-2.5 px-4 border border-green-600 text-green-600 hover:bg-green-50 font-medium rounded-lg transition-colors">
-                              Update Profile
-                            </button> */}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="p-12 text-center">
-                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <FaStar className="text-gray-400 text-2xl" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-800 mb-2">
-                  {searchQuery
-                    ? "No matching jobs found"
-                    : "No profile shortlisted jobs yet"}
-                </h3>
-                <p className="text-gray-600 max-w-md mx-auto mb-4">
-                  {searchQuery
-                    ? "Try adjusting your search terms."
-                    : "Your profile needs to be shortlisted by employers in Bangladesh to appear here."}
-                </p>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg">
-                  <FaMapMarkerAlt className="text-blue-600" />
-                  <span className="text-sm text-blue-700">
-                    All jobs shown are from Bangladesh
-                  </span>
-                </div>
-              </div>
-            )}
+        {/* main card */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {/* card header */}
+          <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#4eb956]" />
+              <h2 className="font-bold text-gray-800 text-sm">
+                {searchQuery
+                  ? `Filtered (${filtered.length})`
+                  : `All Shortlisted (${enriched.length})`}
+              </h2>
+            </div>
+            <button
+              onClick={load}
+              disabled={isLoading}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              title="Refresh"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 cursor-pointer ${isLoading ? "animate-spin" : ""}`}
+              />
+            </button>
           </div>
+
+          {/* loading skeletons */}
+          {isLoading && (
+            <div className="divide-y divide-gray-50">
+              {[...Array(3)].map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+              {phase === "enriching" && (
+                <div className="px-5 py-3 flex items-center gap-2 text-xs text-gray-400 bg-amber-50/50">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                  Fetching job details…
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* error */}
+          {phase === "error" && (
+            <div className="py-14 px-6 text-center">
+              <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <XCircle className="w-7 h-7 text-red-400" />
+              </div>
+              <p className="font-semibold text-gray-700 mb-1">{errorMsg}</p>
+              <button
+                onClick={load}
+                className="mt-3 inline-flex items-center gap-2 px-5 py-2 bg-[#1e2558] text-white text-sm font-semibold rounded-xl hover:bg-[#161c45] transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* empty */}
+          {phase === "done" && filtered.length === 0 && (
+            <div className="py-16 px-6 text-center">
+              <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100">
+                <Star className="w-7 h-7 text-indigo-300" />
+              </div>
+              <h3 className="font-bold text-gray-700 mb-1">
+                {searchQuery
+                  ? "No matching shortlisted jobs"
+                  : "No shortlisted jobs yet"}
+              </h3>
+              <p className="text-sm text-gray-400 max-w-xs mx-auto">
+                {searchQuery
+                  ? "Try adjusting your search terms."
+                  : "Employers will shortlist your profile when they're interested. Keep applying!"}
+              </p>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-gray-600 text-sm rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Clear search
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* list */}
+          {phase === "done" && filtered.length > 0 && (
+            <div>
+              {filtered.map((app) => (
+                <ShortlistedCard key={app._id || app.applicationId} app={app} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

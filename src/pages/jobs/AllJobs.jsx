@@ -23,6 +23,8 @@ import {
   Loader2,
 } from "lucide-react";
 import DOMPurify from "dompurify";
+import useSeekerStore from "../../store/seekerStore";
+import useAuthStore from "../../store/authStore";
 import useJobStore from "../../store/JobStore";
 import ApplyJobModal from "../../components/ApplyJobModal";
 const AllJobs = () => {
@@ -47,6 +49,9 @@ const AllJobs = () => {
     countries,
     isLoading,
   } = useJobStore();
+  const { fetchMyApplications } = useSeekerStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const [appliedJobIds, setAppliedJobIds] = useState({});
 
   const [selectedJob, setSelectedJob] = useState(null);
   const [showMobileDescription, setShowMobileDescription] = useState(false);
@@ -386,6 +391,68 @@ const AllJobs = () => {
       setSelectedJob(null);
     }
   }, [filteredJobs.length]);
+
+  // filter job already apply or not
+  useEffect(() => {
+    const loadApplications = async () => {
+      const authState = useAuthStore.getState();
+      if (!authState.isAuthenticated || authState.user?.role !== "seeker")
+        return;
+
+      try {
+        const result = await fetchMyApplications({ limit: 100 });
+        if (result?.success && Array.isArray(result.data)) {
+          const map = {};
+          result.data.forEach((app) => {
+            if (app.jobId) map[app.jobId] = app.status;
+          });
+          setAppliedJobIds(map);
+        }
+      } catch (e) {
+        console.error("Failed to fetch applications:", e);
+      }
+    };
+
+    loadApplications();
+  }, []);
+
+  const STATUS_CONFIG = {
+    applied: {
+      label: "Applied",
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+      border: "border-blue-200",
+      dot: "bg-blue-500",
+    },
+    shortlisted: {
+      label: "Shortlisted",
+      bg: "bg-amber-50",
+      text: "text-amber-700",
+      border: "border-amber-200",
+      dot: "bg-amber-500",
+    },
+    reviewed: {
+      label: "Under Review",
+      bg: "bg-purple-50",
+      text: "text-purple-700",
+      border: "border-purple-200",
+      dot: "bg-purple-500",
+    },
+    hired: {
+      label: "Hired!",
+      bg: "bg-emerald-50",
+      text: "text-emerald-700",
+      border: "border-emerald-200",
+      dot: "bg-emerald-500",
+    },
+    rejected: {
+      label: "Not Selected",
+      bg: "bg-red-50",
+      text: "text-red-600",
+      border: "border-red-200",
+      dot: "bg-red-400",
+    },
+  };
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -1330,16 +1397,40 @@ const AllJobs = () => {
                               Save Job
                             </button>
 
-                            <button
-                              onClick={() => handleOpenApply(selectedJob)}
-                              className="flex-1 px-3 py-3 rounded-lg font-semibold cursor-pointer"
-                              style={{
-                                backgroundColor: colors.secondary,
-                                color: "white",
-                              }}
-                            >
-                              Apply Now
-                            </button>
+                            {appliedJobIds[
+                              selectedJob?.jobId || selectedJob?.id
+                            ] ? (
+                              (() => {
+                                const status =
+                                  appliedJobIds[
+                                    selectedJob?.jobId || selectedJob?.id
+                                  ];
+                                const cfg =
+                                  STATUS_CONFIG[status] ||
+                                  STATUS_CONFIG.applied;
+                                return (
+                                  <div
+                                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border font-semibold text-sm ${cfg.bg} ${cfg.text} ${cfg.border}`}
+                                  >
+                                    <span
+                                      className={`w-2 h-2 rounded-full ${cfg.dot}`}
+                                    />
+                                    {cfg.label}
+                                  </div>
+                                );
+                              })()
+                            ) : (
+                              <button
+                                onClick={() => handleOpenApply(selectedJob)}
+                                className="flex-1 px-3 py-3 rounded-lg font-semibold cursor-pointer"
+                                style={{
+                                  backgroundColor: colors.secondary,
+                                  color: "white",
+                                }}
+                              >
+                                Apply Now
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1552,16 +1643,40 @@ const AllJobs = () => {
                                 Don't miss this opportunity!
                               </p>
 
-                              <button
-                                onClick={() => handleOpenApply(selectedJob)}
-                                className="px-8 py-3 rounded-lg font-semibold transition-colors hover:shadow-lg cursor-pointer"
-                                style={{
-                                  backgroundColor: colors.secondary,
-                                  color: "white",
-                                }}
-                              >
-                                Apply Now
-                              </button>
+                              {appliedJobIds[
+                                selectedJob?.jobId || selectedJob?.id
+                              ] ? (
+                                (() => {
+                                  const status =
+                                    appliedJobIds[
+                                      selectedJob?.jobId || selectedJob?.id
+                                    ];
+                                  const cfg =
+                                    STATUS_CONFIG[status] ||
+                                    STATUS_CONFIG.applied;
+                                  return (
+                                    <div
+                                      className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg border font-semibold ${cfg.bg} ${cfg.text} ${cfg.border}`}
+                                    >
+                                      <span
+                                        className={`w-2 h-2 rounded-full ${cfg.dot}`}
+                                      />
+                                      ✓ {cfg.label}
+                                    </div>
+                                  );
+                                })()
+                              ) : (
+                                <button
+                                  onClick={() => handleOpenApply(selectedJob)}
+                                  className="px-8 py-3 rounded-lg font-semibold hover:shadow-lg cursor-pointer"
+                                  style={{
+                                    backgroundColor: colors.secondary,
+                                    color: "white",
+                                  }}
+                                >
+                                  Apply Now
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1709,13 +1824,32 @@ const AllJobs = () => {
                   Save
                 </button>
 
-                <button
-                  onClick={() => handleOpenApply(selectedJob)}
-                  className="px-8 py-3 rounded-lg font-semibold text-lg transition-transform hover:scale-105 cursor-pointer"
-                  style={{ backgroundColor: colors.primary, color: "white" }}
-                >
-                  Apply Now
-                </button>
+                {appliedJobIds[selectedJob?.jobId || selectedJob?.id] ? (
+                  (() => {
+                    const status =
+                      appliedJobIds[selectedJob?.jobId || selectedJob?.id];
+                    const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.applied;
+                    return (
+                      <div
+                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg border font-semibold ${cfg.bg} ${cfg.text} ${cfg.border}`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />✓{" "}
+                        {cfg.label}
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <button
+                    onClick={() => handleOpenApply(selectedJob)}
+                    className="px-8 py-3 rounded-lg font-semibold hover:shadow-lg cursor-pointer"
+                    style={{
+                      backgroundColor: colors.secondary,
+                      color: "white",
+                    }}
+                  >
+                    Apply Now
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1726,7 +1860,13 @@ const AllJobs = () => {
         job={applyTargetJob}
         isOpen={applyModalOpen}
         onClose={() => setApplyModalOpen(false)}
-        onSuccess={() => setApplyModalOpen(false)}
+        onSuccess={() => {
+          setApplyModalOpen(false);
+          if (applyTargetJob) {
+            const jobId = applyTargetJob.jobId || applyTargetJob.id;
+            setAppliedJobIds((prev) => ({ ...prev, [jobId]: "applied" }));
+          }
+        }}
       />
     </div>
   );

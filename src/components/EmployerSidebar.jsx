@@ -16,6 +16,7 @@ import {
   FaStar,
   FaChevronLeft,
   FaChevronRight,
+  FaBell,
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 
@@ -45,7 +46,7 @@ const EmployerSidebar = ({
           label: "Posted Jobs",
           icon: <FaBriefcase />,
           path: "/employer/jobs",
-          badge: 5,
+          // badge: 5,
         },
         // {
         //   label: "Applications",
@@ -100,10 +101,16 @@ const EmployerSidebar = ({
       section: "Engagement",
       items: [
         {
+          label: "Notifications",
+          icon: <FaBell />,
+          path: "#",
+          // badge: 3,
+        },
+        {
           label: "Messages",
           icon: <FaEnvelope />,
           path: "#",
-          badge: 3,
+          // badge: 3,
         },
         {
           label: "Calendar",

@@ -354,7 +354,7 @@ const NotFoundPage = () => {
           </motion.p>
         </motion.div>
 
-        <motion.div
+        {/* <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 w-full max-w-5xl"
           variants={containerVariants}
         >
@@ -433,7 +433,7 @@ const NotFoundPage = () => {
               </div>
             </motion.a>
           ))}
-        </motion.div>
+        </motion.div> */}
 
         <motion.div
           variants={itemVariants}
