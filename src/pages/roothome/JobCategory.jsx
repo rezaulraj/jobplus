@@ -295,7 +295,7 @@ const JobCategory = () => {
 
   useEffect(() => {
     fetchJobFilters();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const categoryList = Array.isArray(categories) ? categories : [];
   const countryList = Array.isArray(countries) ? countries : [];
@@ -352,7 +352,7 @@ const JobCategory = () => {
       <div className="container mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
           {/* ── Main Panel ─────────────────────────────── */}
-          <div className="lg:col-span-3 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="lg:col-span-3 bg-white rounded-2xl shadow-xs p-6 border border-gray-100">
             {/* Header */}
             <div className="mb-5">
               <div className="flex items-center gap-2 mb-1">
@@ -388,7 +388,7 @@ const JobCategory = () => {
               ))}
             </div>
 
-            {/* Content — AnimatePresence only wraps the tab switch, NOT each card */}
+            {/* Content */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -404,7 +404,7 @@ const JobCategory = () => {
           </div>
 
           {/* ── Sidebar ─────────────────────────────────── */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 h-fit lg:sticky lg:top-6">
+          <div className="bg-white rounded-2xl shadow-xs p-6 border border-gray-100 h-fit lg:sticky lg:top-6">
             <div className="flex justify-between items-center mb-5">
               <div>
                 <div className="flex items-center gap-1.5 mb-0.5">

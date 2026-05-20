@@ -169,18 +169,18 @@ const SeekerDashboard = () => {
     videoCV: null,
   });
 
-  // ── Real application stats ──────────────────────────────────────────────────
+  // ── Real application stats ───
   const [appStats, setAppStats] = useState({
     total: 0,
     shortlisted: 0,
     savedJobs: 0,
     profileViews: 0,
-    statusBreakdown: {}, // { applied: N, shortlisted: N, ... }
-    recentItems: [], // enriched with job info for the list
+    statusBreakdown: {},
+    recentItems: [],
     monthlyData: [],
   });
 
-  // ── Load profile ────────────────────────────────────────────────────────────
+  // ── Load profile ────
   const loadProfile = useCallback(async () => {
     const result = await fetchSeekerProfile();
     if (result?.success && result?.data) {
@@ -204,7 +204,7 @@ const SeekerDashboard = () => {
   const loadApplicationStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      // Fetch all applications (high limit so we get full picture for stats)
+      // Fetch all applications
       const result = await fetchMyApplications({ page: 1, limit: 100 });
       if (!result?.success) return;
 
@@ -223,7 +223,7 @@ const SeekerDashboard = () => {
       const totalApplications = meta.total ?? items.length;
       const shortlistedCount = statusBreakdown["shortlisted"] || 0;
 
-      // --- Monthly breakdown (last 6 months) ---
+      // --- Monthly breakdown ---
       const monthMap = {};
       const now = new Date();
       for (let i = 5; i >= 0; i--) {
