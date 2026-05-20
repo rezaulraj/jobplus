@@ -37,6 +37,7 @@ import {
   Area,
 } from "recharts";
 import useSeekerStore from "../../store/seekerStore";
+import useJobStore from "../../store/JobStore";
 import useAuthStore from "../../store/authStore";
 
 const EM = "#10b981";
@@ -49,7 +50,14 @@ const Card = ({ children, className = "" }) => (
   </div>
 );
 
-const StatCard = ({ label, value, change, icon: Icon, delay = 0 }) => (
+const StatCard = ({
+  label,
+  value,
+  change,
+  icon: Icon,
+  delay = 0,
+  loading = false,
+}) => (
   <div
     className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
     style={{ animationDelay: `${delay}ms` }}
@@ -63,8 +71,12 @@ const StatCard = ({ label, value, change, icon: Icon, delay = 0 }) => (
       </span>
     </div>
     <div className="flex items-end justify-between">
-      <span className="text-2xl font-bold text-gray-900">{value}</span>
-      {change && (
+      {loading ? (
+        <div className="h-8 w-12 bg-gray-100 animate-pulse rounded-lg" />
+      ) : (
+        <span className="text-2xl font-bold text-gray-900">{value}</span>
+      )}
+      {change && !loading && (
         <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
           <FiArrowUpRight size={10} /> {change}
         </span>
@@ -99,27 +111,51 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const StatusBadge = ({ status }) => {
   const map = {
-    New: "bg-sky-50 text-sky-700 border-sky-100",
-    Viewed: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    Processing: "bg-amber-50 text-amber-700 border-amber-100",
-    Completed: "bg-violet-50 text-violet-700 border-violet-100",
-    Shortlisted: "bg-rose-50 text-rose-700 border-rose-100",
+    applied: "bg-sky-50 text-sky-700 border-sky-100",
+    under_review: "bg-amber-50 text-amber-700 border-amber-100",
+    reviewed: "bg-purple-50 text-purple-700 border-purple-100",
+    shortlisted: "bg-rose-50 text-rose-700 border-rose-100",
+    accepted: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    rejected: "bg-red-50 text-red-700 border-red-100",
+    pending: "bg-gray-50 text-gray-500 border-gray-100",
+  };
+  const labels = {
+    applied: "Applied",
+    under_review: "Under Review",
+    reviewed: "Reviewed",
+    shortlisted: "Shortlisted",
+    accepted: "Accepted",
+    rejected: "Rejected",
+    pending: "Pending",
   };
   return (
     <span
       className={`text-[10px] font-bold px-2 py-1 rounded-full border ${map[status] || "bg-gray-50 text-gray-500 border-gray-100"}`}
     >
-      {status}
+      {labels[status] || status}
     </span>
   );
 };
 
+const formatDate = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const now = new Date();
+  const diffDays = Math.floor((now - d) / 86400000);
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
 
 const SeekerDashboard = () => {
-  const { fetchSeekerProfile } = useSeekerStore();
+  const { fetchSeekerProfile, fetchMyApplications } = useSeekerStore();
+  const { fetchJobById } = useJobStore();
   const { user } = useAuthStore();
 
   const [pageLoading, setPageLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+
   const [profile, setProfile] = useState({
     personalInfo: null,
     summary: "",
@@ -133,6 +169,18 @@ const SeekerDashboard = () => {
     videoCV: null,
   });
 
+  // ── Real application stats ──────────────────────────────────────────────────
+  const [appStats, setAppStats] = useState({
+    total: 0,
+    shortlisted: 0,
+    savedJobs: 0,
+    profileViews: 0,
+    statusBreakdown: {}, // { applied: N, shortlisted: N, ... }
+    recentItems: [], // enriched with job info for the list
+    monthlyData: [],
+  });
+
+  // ── Load profile ────────────────────────────────────────────────────────────
   const loadProfile = useCallback(async () => {
     const result = await fetchSeekerProfile();
     if (result?.success && result?.data) {
@@ -152,15 +200,87 @@ const SeekerDashboard = () => {
     }
   }, [fetchSeekerProfile]);
 
+  // ── Load application stats ──────────────────────────────────────────────────
+  const loadApplicationStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      // Fetch all applications (high limit so we get full picture for stats)
+      const result = await fetchMyApplications({ page: 1, limit: 100 });
+      if (!result?.success) return;
+
+      const items = result.data?.items || result.data || [];
+      const meta = result.data?.meta || result.meta || {};
+
+      // --- Count by status ---
+      const statusBreakdown = {};
+      let totalProfileViews = 0;
+      items.forEach((app) => {
+        const s = app.status || "applied";
+        statusBreakdown[s] = (statusBreakdown[s] || 0) + 1;
+        totalProfileViews += app.profileViews || 0;
+      });
+
+      const totalApplications = meta.total ?? items.length;
+      const shortlistedCount = statusBreakdown["shortlisted"] || 0;
+
+      // --- Monthly breakdown (last 6 months) ---
+      const monthMap = {};
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = d.toLocaleDateString("en-US", { month: "short" });
+        monthMap[key] = 0;
+      }
+      items.forEach((app) => {
+        if (!app.createdAt) return;
+        const d = new Date(app.createdAt);
+        const key = d.toLocaleDateString("en-US", { month: "short" });
+        if (key in monthMap) monthMap[key]++;
+      });
+      const monthlyData = Object.entries(monthMap).map(
+        ([month, applications]) => ({
+          month,
+          applications,
+        }),
+      );
+
+      // --- Enrich recent 5 applications with job info ---
+      const recent = [...items]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+
+      const enriched = await Promise.all(
+        recent.map(async (app) => {
+          if (!app.jobId) return { ...app, job: null };
+          const jobResult = await fetchJobById(app.jobId);
+          return { ...app, job: jobResult?.success ? jobResult.data : null };
+        }),
+      );
+
+      setAppStats({
+        total: totalApplications,
+        shortlisted: shortlistedCount,
+        savedJobs: 0, // no saved-jobs API provided; hardcode 0
+        profileViews: totalProfileViews,
+        statusBreakdown,
+        recentItems: enriched,
+        monthlyData,
+      });
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [fetchMyApplications, fetchJobById]);
+
+  // ── Bootstrap ───────────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       setPageLoading(true);
-      await loadProfile();
+      await Promise.all([loadProfile(), loadApplicationStats()]);
       setPageLoading(false);
     })();
-  }, [loadProfile]);
+  }, [loadProfile, loadApplicationStats]);
 
-  // ── Profile completion ─────
+  // ── Profile completion ───────────────────────────────────────────────────
   const completionItems = [
     { label: "Personal Info", done: !!profile.personalInfo },
     { label: "Work History", done: profile.experiences.length > 0 },
@@ -190,20 +310,34 @@ const SeekerDashboard = () => {
     .join(", ");
   const careerLevel = profile.personalInfo?.careerLevel || "";
 
-  const applicationData = [
-    { name: "Applied", value: 42, color: "#10b981" },
-    { name: "Viewed", value: 28, color: "#059669" },
-    { name: "Pending", value: 18, color: "#34d399" },
-    { name: "Shortlisted", value: 12, color: "#6ee7b7" },
-  ];
-  const monthlyData = [
-    { month: "Jan", applications: 8 },
-    { month: "Feb", applications: 12 },
-    { month: "Mar", applications: 15 },
-    { month: "Apr", applications: 10 },
-    { month: "May", applications: 18 },
-    { month: "Jun", applications: 14 },
-  ];
+  // ── Pie chart data from real status breakdown ────────────────────────────
+  const STATUS_COLORS = {
+    applied: "#10b981",
+    under_review: "#f59e0b",
+    reviewed: "#8b5cf6",
+    shortlisted: "#059669",
+    accepted: "#34d399",
+    rejected: "#f87171",
+    pending: "#9ca3af",
+  };
+  const STATUS_LABELS = {
+    applied: "Applied",
+    under_review: "Under Review",
+    reviewed: "Reviewed",
+    shortlisted: "Shortlisted",
+    accepted: "Accepted",
+    rejected: "Rejected",
+    pending: "Pending",
+  };
+
+  const pieData = Object.entries(appStats.statusBreakdown).map(
+    ([key, val]) => ({
+      name: STATUS_LABELS[key] || key,
+      value: val,
+      color: STATUS_COLORS[key] || "#9ca3af",
+    }),
+  );
+
   const activityData = [
     { day: "Mon", activity: 40 },
     { day: "Tue", activity: 60 },
@@ -213,80 +347,60 @@ const SeekerDashboard = () => {
     { day: "Sat", activity: 45 },
     { day: "Sun", activity: 35 },
   ];
+
   const stats = [
     {
       label: "Total Applications",
-      value: "42",
-      change: "+18%",
+      value: appStats.total,
+      change: "",
       icon: FiBriefcase,
     },
-    { label: "Profile Views", value: "128", change: "+32%", icon: FiEye },
-    { label: "Saved Jobs", value: "18", change: "+5%", icon: FiHeart },
+    {
+      label: "Profile Views",
+      value: appStats.profileViews,
+      change: "",
+      icon: FiEye,
+    },
+    {
+      label: "Saved Jobs",
+      value: appStats.savedJobs,
+      change: "",
+      icon: FiHeart,
+    },
     {
       label: "Shortlisted",
-      value: "12",
+      value: appStats.shortlisted,
       change: "",
       icon: HiOutlineClipboardCheck,
     },
   ];
-  const recentApplications = [
-    {
-      company: "TechCorp Solutions",
-      position: "Senior Frontend Developer",
-      date: "Today",
-      time: "2 hours ago",
-      status: "New",
-    },
-    {
-      company: "DesignStudio Pro",
-      position: "UI/UX Designer",
-      date: "Yesterday",
-      time: "1 day ago",
-      status: "Viewed",
-    },
-    {
-      company: "StartupXYZ Inc",
-      position: "Product Manager",
-      date: "Jun 15",
-      time: "1 week ago",
-      status: "Processing",
-    },
-    {
-      company: "GlobalTech Ltd",
-      position: "Full Stack Developer",
-      date: "Jun 10",
-      time: "2 weeks ago",
-      status: "Completed",
-    },
-    {
-      company: "DigitalAgency Co",
-      position: "React Native Developer",
-      date: "Jun 5",
-      time: "3 weeks ago",
-      status: "Viewed",
-    },
-  ];
+
   const quickLinks = [
     {
       icon: FiHeart,
       label: "Saved Jobs",
       path: "/seeker/saved-jobs",
-      count: 18,
+      count: appStats.savedJobs,
     },
-    { icon: FiBell, label: "Job Alerts", path: "/seeker/job-alerts", count: 7 },
+    {
+      icon: FiBell,
+      label: "Job Alerts",
+      path: "/seeker/job-alerts",
+      count: null,
+    },
     { icon: FiFileText, label: "My CV", path: "/seeker/cv-upload" },
     {
       icon: FiBriefcase,
       label: "Applications",
       path: "/seeker/applied-jobs",
-      count: 42,
+      count: appStats.total,
     },
     { icon: FiTrendingUp, label: "Career Tips", path: "/features/career-tips" },
     {
       icon: FiEye,
       label: "Profile Views",
       path: "/seeker/profile",
-      count: 128,
+      count: appStats.profileViews,
     },
     { icon: FiSettings, label: "Settings", path: "" },
     { icon: FiAward, label: "Achievements", path: "" },
@@ -322,10 +436,10 @@ const SeekerDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Stat cards */}
+        {/* Stat cards — real data */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((s, i) => (
-            <StatCard key={i} {...s} delay={i * 60} />
+            <StatCard key={i} {...s} delay={i * 60} loading={statsLoading} />
           ))}
         </div>
 
@@ -335,16 +449,13 @@ const SeekerDashboard = () => {
               {/* Banner */}
               <div className="relative h-32 md:h-36 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-400" />
-                {/* Decorative circles */}
                 <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10" />
                 <div className="absolute top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
                 <div className="absolute -bottom-6 left-12 w-28 h-28 rounded-full bg-emerald-700/30" />
               </div>
 
-              {/* Content below */}
               <div className="px-6 pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-10">
-                  {/* Avatar + info */}
                   <div className="flex items-end gap-4">
                     <div className="relative shrink-0">
                       <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg bg-gray-100 overflow-hidden">
@@ -360,7 +471,6 @@ const SeekerDashboard = () => {
                           </div>
                         )}
                       </div>
-                      {/* Online indicator */}
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white" />
                     </div>
                     <div className="pb-1">
@@ -375,7 +485,6 @@ const SeekerDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Profile strength */}
                   <div className="w-full sm:w-48 pt-20 pb-1">
                     <div className="flex items-center justify-between text-xs mb-1.5">
                       <span className="text-gray-500 font-medium">
@@ -397,7 +506,6 @@ const SeekerDashboard = () => {
                   </div>
                 </div>
 
-                {/* Contact info row */}
                 <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 pt-4 border-t border-gray-50">
                   {displayEmail && (
                     <div className="flex items-center gap-1.5 text-xs text-gray-500">
@@ -427,7 +535,6 @@ const SeekerDashboard = () => {
                   )}
                 </div>
 
-                {/* Skills preview */}
                 {profile.skills.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {profile.skills.slice(0, 6).map((s) => (
@@ -466,92 +573,117 @@ const SeekerDashboard = () => {
               />
               <div className="p-5 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Bar chart */}
+                  {/* Bar chart — real monthly data */}
                   <div className="bg-gray-50 rounded-2xl p-4">
                     <p className="text-xs font-bold text-gray-700 mb-3">
                       Monthly Applications
                     </p>
-                    <div className="h-40">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={monthlyData} barSize={10}>
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            stroke="#f0fdf4"
-                            vertical={false}
-                          />
-                          <XAxis
-                            dataKey="month"
-                            stroke="#9ca3af"
-                            fontSize={10}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <YAxis
-                            stroke="#9ca3af"
-                            fontSize={10}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <Tooltip
-                            content={<CustomTooltip />}
-                            cursor={{ fill: "#ecfdf5" }}
-                          />
-                          <Bar
-                            dataKey="applications"
-                            fill={EM}
-                            radius={[6, 6, 0, 0]}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
+                    {statsLoading ? (
+                      <div className="h-40 flex items-center justify-center">
+                        <FiLoader
+                          size={20}
+                          className="text-emerald-400 animate-spin"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-40">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={appStats.monthlyData} barSize={10}>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              stroke="#f0fdf4"
+                              vertical={false}
+                            />
+                            <XAxis
+                              dataKey="month"
+                              stroke="#9ca3af"
+                              fontSize={10}
+                              tickLine={false}
+                              axisLine={false}
+                            />
+                            <YAxis
+                              stroke="#9ca3af"
+                              fontSize={10}
+                              tickLine={false}
+                              axisLine={false}
+                              allowDecimals={false}
+                            />
+                            <Tooltip
+                              content={<CustomTooltip />}
+                              cursor={{ fill: "#ecfdf5" }}
+                            />
+                            <Bar
+                              dataKey="applications"
+                              fill={EM}
+                              radius={[6, 6, 0, 0]}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Pie chart */}
+                  {/* Pie chart — real status distribution */}
                   <div className="bg-gray-50 rounded-2xl p-4">
                     <p className="text-xs font-bold text-gray-700 mb-3">
                       Status Distribution
                     </p>
-                    <div className="h-40">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={applicationData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={38}
-                            outerRadius={58}
-                            paddingAngle={2}
-                            dataKey="value"
-                            strokeWidth={0}
-                          >
-                            {applicationData.map((e, i) => (
-                              <Cell key={i} fill={e.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            contentStyle={{
-                              borderRadius: 12,
-                              border: "none",
-                              fontSize: 11,
-                              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                            }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {applicationData.map((item, i) => (
-                        <div key={i} className="flex items-center gap-1.5">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <span className="text-[10px] text-gray-600 font-medium">
-                            {item.name}: {item.value}
-                          </span>
+                    {statsLoading ? (
+                      <div className="h-40 flex items-center justify-center">
+                        <FiLoader
+                          size={20}
+                          className="text-emerald-400 animate-spin"
+                        />
+                      </div>
+                    ) : pieData.length === 0 ? (
+                      <div className="h-40 flex items-center justify-center text-xs text-gray-400">
+                        No applications yet
+                      </div>
+                    ) : (
+                      <>
+                        <div className="h-40">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={pieData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={38}
+                                outerRadius={58}
+                                paddingAngle={2}
+                                dataKey="value"
+                                strokeWidth={0}
+                              >
+                                {pieData.map((e, i) => (
+                                  <Cell key={i} fill={e.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                contentStyle={{
+                                  borderRadius: 12,
+                                  border: "none",
+                                  fontSize: 11,
+                                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                                }}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {pieData.map((item, i) => (
+                            <div key={i} className="flex items-center gap-1.5">
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <span className="text-[10px] text-gray-600 font-medium">
+                                {item.name}: {item.value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -612,7 +744,7 @@ const SeekerDashboard = () => {
               </div>
             </Card>
 
-            {/* Recent applications */}
+            {/* Recent applications — real enriched data */}
             <Card>
               <SectionHeader
                 icon={FiBriefcase}
@@ -627,38 +759,60 @@ const SeekerDashboard = () => {
                 }
               />
               <div className="p-2">
-                {recentApplications.map((app, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-emerald-50/40 transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-sm font-bold shadow-sm shadow-emerald-200 shrink-0">
-                        {app.company.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors leading-tight">
-                          {app.position}
-                        </p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[11px] text-gray-500">
-                            {app.company}
-                          </span>
-                          <span className="text-gray-300">·</span>
-                          <span className="text-[11px] text-gray-400 flex items-center gap-0.5">
-                            <FiCalendar size={10} /> {app.date}
-                          </span>
+                {statsLoading ? (
+                  <div className="space-y-2 p-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-14 bg-gray-50 animate-pulse rounded-2xl"
+                      />
+                    ))}
+                  </div>
+                ) : appStats.recentItems.length === 0 ? (
+                  <div className="py-10 text-center text-xs text-gray-400">
+                    No applications yet.{" "}
+                    <Link
+                      to="/jobs"
+                      className="text-emerald-600 font-semibold underline"
+                    >
+                      Browse jobs
+                    </Link>
+                  </div>
+                ) : (
+                  appStats.recentItems.map((app, i) => (
+                    <div
+                      key={app._id || i}
+                      className="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-emerald-50/40 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-sm font-bold shadow-sm shadow-emerald-200 shrink-0">
+                          {app.job?.company?.charAt(0) || "?"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors leading-tight">
+                            {app.job?.title || "—"}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[11px] text-gray-500">
+                              {app.job?.company || "—"}
+                            </span>
+                            <span className="text-gray-300">·</span>
+                            <span className="text-[11px] text-gray-400 flex items-center gap-0.5">
+                              <FiCalendar size={10} />{" "}
+                              {formatDate(app.createdAt)}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <StatusBadge status={app.status} />
+                        <span className="text-[10px] text-gray-400">
+                          {formatDate(app.createdAt)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <StatusBadge status={app.status} />
-                      <span className="text-[10px] text-gray-400">
-                        {app.time}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </Card>
           </div>
@@ -740,7 +894,7 @@ const SeekerDashboard = () => {
               </div>
             </Card>
 
-            {/* Quick links */}
+            {/* Quick links — counts from real data */}
             <Card>
               <SectionHeader icon={FiTarget} title="Quick Links" />
               <div className="p-4 grid grid-cols-2 gap-2">
@@ -756,9 +910,9 @@ const SeekerDashboard = () => {
                     <span className="text-[11px] font-bold text-gray-700 text-center leading-tight">
                       {link.label}
                     </span>
-                    {link.count && (
+                    {link.count != null && (
                       <span className="text-[10px] font-bold text-emerald-600 mt-0.5">
-                        {link.count}
+                        {statsLoading ? "…" : link.count}
                       </span>
                     )}
                   </Link>
