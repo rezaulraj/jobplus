@@ -1,1671 +1,1235 @@
-import React, { useState, useEffect, useCallback } from "react";
+// pages/employer/FreelancerJobPost.jsx
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import {
   FaBriefcase,
   FaMapMarkerAlt,
   FaDollarSign,
-  FaClock,
-  FaCalendarAlt,
-  FaUserGraduate,
-  FaFileAlt,
-  FaTags,
-  FaGlobe,
-  FaLaptop,
   FaUsers,
-  FaArrowLeft,
-  FaArrowRight,
-  FaCheckCircle,
-  FaPlus,
-  FaTrash,
+  FaChevronDown,
+  FaTimes,
+  FaSpinner,
   FaCheck,
-  FaHome,
-  FaCode,
-  FaPaintBrush,
-  FaPencilAlt,
-  FaChartLine,
-  FaCamera,
-  FaMusic,
-  FaLanguage,
-  FaTools,
-  FaDatabase,
-  FaMobileAlt,
+  FaSave,
+  FaPaperPlane,
+  FaExclamationCircle,
+  FaTag,
   FaSearch,
-  FaStar,
-  FaPaperclip,
-  FaRegFileAlt,
+  FaBold,
+  FaItalic,
+  FaListUl,
+  FaListOl,
+  FaUnderline,
+  FaHeading,
+  FaQuoteLeft,
+  FaUndo,
+  FaRedo,
+  FaLock,
+  FaSignInAlt,
+  FaUserPlus,
+  FaUserSlash,
+  FaCrown,
+  FaExclamationTriangle,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { State, City } from "country-state-city";
+import useJobPostStore from "../../store/jobPostStore";
 
-const FreelancerJobPost = () => {
-  // Step state
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mounted, setMounted] = useState(false);
+// ── Color Constants ─────────────────────────────────────────────────────────
+const NAVY = "#1e2558";
+const GREEN = "#4eb956";
 
-  // Job form state
-  const [jobData, setJobData] = useState({
-    // Project Details
-    projectTitle: "",
-    projectType: "",
-    projectCategory: "",
-    projectDescription: "",
-    projectDuration: "",
+const DEFAULT_COUNTRY_CODE = "BD";
 
-    // Skills & Requirements
-    requiredSkills: [],
-    experienceLevel: "",
-    languageRequirements: [],
-    toolsRequired: [],
+const getCountryNameFromApi = (countries, code) => {
+  return countries.find((c) => c.isoCode === code)?.name || "";
+};
 
-    // Budget & Timeline
-    budgetType: "fixed",
-    budget: {
-      min: "",
-      max: "",
-      currency: "USD",
-    },
-    timeline: {
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      estimatedHours: "",
-    },
+const getStateName = (stateCode, countryCode) => {
+  if (!countryCode || !stateCode) return "";
+  return State.getStatesOfCountry(countryCode).find(
+    (s) => s.isoCode === stateCode,
+  )?.name;
+};
 
-    // Client Preferences
-    clientLocation: {
-      preferredLocation: "",
-      timezone: "",
-    },
-    communicationPreferences: [],
-    meetingFrequency: "",
+const buildLocation = ({ city, state, country, countries = [] }) => {
+  const countryName = getCountryNameFromApi(countries, country);
+  const stateName = getStateName(state, country);
+  return [city, stateName, countryName].filter(Boolean).join(", ");
+};
 
-    // Submission Details
-    submissionRequirements: "",
-    attachments: [],
-    applicationDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+// ── Rich Text Editor Component ─────────────────────────────────────────────
+const RichTextEditor = ({ value, onChange, error }) => {
+  const editorRef = useRef(null);
+  const [wordCount, setWordCount] = useState(0);
 
-    // Review & Post
-    visibility: "public",
-    tags: [],
-  });
+  const sync = useCallback(() => {
+    if (!editorRef.current) return;
+    const html = editorRef.current.innerHTML;
+    onChange(html);
+    const text = editorRef.current.innerText || "";
+    setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
+  }, [onChange]);
 
-  // Input states
-  const [skillInput, setSkillInput] = useState("");
-  const [languageInput, setLanguageInput] = useState("");
-  const [toolInput, setToolInput] = useState("");
-  const [tagInput, setTagInput] = useState("");
+  const exec = (command, val = null) => {
+    document.execCommand(command, false, val);
+    editorRef.current?.focus();
+    sync();
+  };
 
-  // Set mounted state
   useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  // Freelance categories
-  const projectCategories = [
-    {
-      id: "web-dev",
-      label: "Web Development",
-      icon: <FaCode />,
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      id: "mobile-dev",
-      label: "Mobile App",
-      icon: <FaMobileAlt />,
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      id: "design",
-      label: "UI/UX Design",
-      icon: <FaPaintBrush />,
-      color: "from-pink-500 to-rose-500",
-    },
-    {
-      id: "writing",
-      label: "Content Writing",
-      icon: <FaPencilAlt />,
-      color: "from-green-500 to-emerald-500",
-    },
-    {
-      id: "marketing",
-      label: "Digital Marketing",
-      icon: <FaChartLine />,
-      color: "from-orange-500 to-yellow-500",
-    },
-    {
-      id: "graphics",
-      label: "Graphic Design",
-      icon: <FaCamera />,
-      color: "from-red-500 to-orange-500",
-    },
-    {
-      id: "video",
-      label: "Video Editing",
-      icon: <FaMusic />,
-      color: "from-indigo-500 to-purple-500",
-    },
-    {
-      id: "translation",
-      label: "Translation",
-      icon: <FaLanguage />,
-      color: "from-teal-500 to-cyan-500",
-    },
-    {
-      id: "data",
-      label: "Data Analysis",
-      icon: <FaDatabase />,
-      color: "from-gray-700 to-gray-900",
-    },
-    {
-      id: "consulting",
-      label: "Consulting",
-      icon: <FaBriefcase />,
-      color: "from-blue-600 to-indigo-600",
-    },
-  ];
-
-  const projectTypes = [
-    {
-      value: "one-time",
-      label: "One-time Project",
-      description: "Single deliverable project",
-    },
-    {
-      value: "ongoing",
-      label: "Ongoing Work",
-      description: "Long-term collaboration",
-    },
-    {
-      value: "hourly",
-      label: "Hourly Work",
-      description: "Pay per hour basis",
-    },
-    {
-      value: "milestone",
-      label: "Milestone-based",
-      description: "Payment at milestones",
-    },
-  ];
-
-  const experienceLevels = [
-    {
-      value: "entry",
-      label: "Entry Level",
-      description: "0-2 years experience",
-    },
-    {
-      value: "intermediate",
-      label: "Intermediate",
-      description: "2-5 years experience",
-    },
-    { value: "expert", label: "Expert", description: "5+ years experience" },
-  ];
-
-  const budgetTypes = [
-    { value: "fixed", label: "Fixed Price", icon: "💵" },
-    { value: "hourly", label: "Hourly Rate", icon: "⏰" },
-    { value: "negotiable", label: "Negotiable", icon: "🤝" },
-  ];
-
-  const languages = [
-    { code: "en", name: "English" },
-    { code: "es", name: "Spanish" },
-    { code: "fr", name: "French" },
-    { code: "de", name: "German" },
-    { code: "zh", name: "Chinese" },
-    { code: "ja", name: "Japanese" },
-    { code: "ko", name: "Korean" },
-    { code: "ar", name: "Arabic" },
-  ];
-
-  const timezones = ["GMT", "EST", "PST", "CET", "IST", "AEST", "JST", "CST"];
-
-  const communicationPreferences = [
-    { value: "email", label: "Email", icon: "📧" },
-    { value: "video", label: "Video Calls", icon: "📹" },
-    { value: "chat", label: "Chat/Messaging", icon: "💬" },
-    { value: "phone", label: "Phone Calls", icon: "📞" },
-    { value: "in-person", label: "In-person", icon: "👥" },
-  ];
-
-  const meetingFrequencies = [
-    { value: "daily", label: "Daily" },
-    { value: "weekly", label: "Weekly" },
-    { value: "bi-weekly", label: "Bi-weekly" },
-    { value: "monthly", label: "Monthly" },
-    { value: "as-needed", label: "As Needed" },
-  ];
-
-  const visibilityOptions = [
-    {
-      value: "public",
-      label: "Public",
-      description: "Visible to all freelancers",
-    },
-    { value: "private", label: "Private", description: "Invite-only" },
-    { value: "featured", label: "Featured", description: "Promoted listing" },
-  ];
-
-  // Handle input changes
-  const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".");
-      setJobData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value,
-        },
-      }));
-    } else {
-      setJobData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+    if (editorRef.current && value && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value;
+      const text = editorRef.current.innerText || "";
+      setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
     }
   }, []);
 
-  // Handle date changes
-  const handleDateChange = useCallback((date, field) => {
-    setJobData((prev) => ({
-      ...prev,
-      timeline: {
-        ...prev.timeline,
-        [field]: date,
-      },
-    }));
-  }, []);
-
-  // Handle file upload
-  const handleFileUpload = useCallback((e) => {
-    const files = Array.from(e.target.files);
-    setJobData((prev) => ({
-      ...prev,
-      attachments: [...prev.attachments, ...files],
-    }));
-  }, []);
-
-  // Remove attachment
-  const removeAttachment = useCallback((index) => {
-    setJobData((prev) => ({
-      ...prev,
-      attachments: prev.attachments.filter((_, i) => i !== index),
-    }));
-  }, []);
-
-  // Add skill
-  const addSkill = useCallback(() => {
-    if (
-      skillInput.trim() &&
-      !jobData.requiredSkills.includes(skillInput.trim())
-    ) {
-      setJobData((prev) => ({
-        ...prev,
-        requiredSkills: [...prev.requiredSkills, skillInput.trim()],
-      }));
-      setSkillInput("");
-    }
-  }, [skillInput, jobData.requiredSkills]);
-
-  // Remove skill
-  const removeSkill = useCallback((skill) => {
-    setJobData((prev) => ({
-      ...prev,
-      requiredSkills: prev.requiredSkills.filter((s) => s !== skill),
-    }));
-  }, []);
-
-  // Add language
-  const addLanguage = useCallback(() => {
-    if (
-      languageInput.trim() &&
-      !jobData.languageRequirements.includes(languageInput.trim())
-    ) {
-      setJobData((prev) => ({
-        ...prev,
-        languageRequirements: [
-          ...prev.languageRequirements,
-          languageInput.trim(),
-        ],
-      }));
-      setLanguageInput("");
-    }
-  }, [languageInput, jobData.languageRequirements]);
-
-  // Remove language
-  const removeLanguage = useCallback((language) => {
-    setJobData((prev) => ({
-      ...prev,
-      languageRequirements: prev.languageRequirements.filter(
-        (l) => l !== language,
-      ),
-    }));
-  }, []);
-
-  // Add tool
-  const addTool = useCallback(() => {
-    if (toolInput.trim() && !jobData.toolsRequired.includes(toolInput.trim())) {
-      setJobData((prev) => ({
-        ...prev,
-        toolsRequired: [...prev.toolsRequired, toolInput.trim()],
-      }));
-      setToolInput("");
-    }
-  }, [toolInput, jobData.toolsRequired]);
-
-  // Remove tool
-  const removeTool = useCallback((tool) => {
-    setJobData((prev) => ({
-      ...prev,
-      toolsRequired: prev.toolsRequired.filter((t) => t !== tool),
-    }));
-  }, []);
-
-  // Add tag
-  const addTag = useCallback(() => {
-    if (tagInput.trim() && !jobData.tags.includes(tagInput.trim())) {
-      setJobData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()],
-      }));
-      setTagInput("");
-    }
-  }, [tagInput, jobData.tags]);
-
-  // Remove tag
-  const removeTag = useCallback((tag) => {
-    setJobData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((t) => t !== tag),
-    }));
-  }, []);
-
-  // Handle key press for inputs
-  const handleKeyPress = useCallback(
-    (e, type) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (type === "skill") addSkill();
-        if (type === "language") addLanguage();
-        if (type === "tool") addTool();
-        if (type === "tag") addTag();
-      }
+  const toolbarBtns = [
+    { icon: <FaBold size={12} />, cmd: "bold", title: "Bold" },
+    { icon: <FaItalic size={12} />, cmd: "italic", title: "Italic" },
+    { icon: <FaUnderline size={12} />, cmd: "underline", title: "Underline" },
+    {
+      icon: <FaHeading size={12} />,
+      cmd: "formatBlock",
+      val: "h3",
+      title: "Heading",
     },
-    [addSkill, addLanguage, addTool, addTag],
-  );
-
-  // Navigation
-  const nextStep = useCallback(() => {
-    // Validate current step before proceeding
-    if (currentStep === 1) {
-      if (
-        !jobData.projectTitle ||
-        !jobData.projectCategory ||
-        !jobData.projectDescription
-      ) {
-        alert("Please fill in all required project details");
-        return;
-      }
-    } else if (currentStep === 2) {
-      if (jobData.requiredSkills.length === 0) {
-        alert("Please add at least one required skill");
-        return;
-      }
-    } else if (currentStep === 3) {
-      if (jobData.budgetType === "fixed" && !jobData.budget.min) {
-        alert("Please specify the budget");
-        return;
-      }
-    } else if (currentStep === 4) {
-      if (!jobData.clientLocation.timezone) {
-        alert("Please select a timezone for communication");
-        return;
-      }
-    } else if (currentStep === 5) {
-      if (!jobData.submissionRequirements) {
-        alert("Please specify submission requirements");
-        return;
-      }
-    }
-
-    if (currentStep < 6) {
-      setCurrentStep(currentStep + 1);
-    }
-  }, [currentStep, jobData]);
-
-  const prevStep = useCallback(() => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  }, [currentStep]);
-
-  // Handle form submission
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      setIsSubmitting(true);
-
-      // Prepare data for API
-      const submitData = {
-        ...jobData,
-        postedDate: new Date().toISOString(),
-        status: "active",
-        applicationCount: 0,
-        views: 0,
-      };
-
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Freelance job posted:", submitData);
-        setIsSubmitting(false);
-        setIsSubmitted(true);
-      }, 2000);
+    {
+      icon: <FaQuoteLeft size={12} />,
+      cmd: "formatBlock",
+      val: "blockquote",
+      title: "Quote",
     },
-    [jobData],
-  );
-
-  // Progress percentage
-  const progressPercentage = ((currentStep - 1) / 6) * 100;
-
-  // Step titles
-  const stepTitles = [
-    "Project Details",
-    "Skills & Requirements",
-    "Budget & Timeline",
-    "Client Preferences",
-    "Submission Details",
-    "Review & Post",
+    {
+      icon: <FaListUl size={12} />,
+      cmd: "insertUnorderedList",
+      title: "Bullet List",
+    },
+    {
+      icon: <FaListOl size={12} />,
+      cmd: "insertOrderedList",
+      title: "Numbered List",
+    },
+    { icon: <FaUndo size={12} />, cmd: "undo", title: "Undo" },
+    { icon: <FaRedo size={12} />, cmd: "redo", title: "Redo" },
   ];
-
-  const resetForm = useCallback(() => {
-    setCurrentStep(1);
-    setJobData({
-      projectTitle: "",
-      projectType: "",
-      projectCategory: "",
-      projectDescription: "",
-      projectDuration: "",
-      requiredSkills: [],
-      experienceLevel: "",
-      languageRequirements: [],
-      toolsRequired: [],
-      budgetType: "fixed",
-      budget: { min: "", max: "", currency: "USD" },
-      timeline: {
-        startDate: new Date(),
-        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        estimatedHours: "",
-      },
-      clientLocation: { preferredLocation: "", timezone: "" },
-      communicationPreferences: [],
-      meetingFrequency: "",
-      submissionRequirements: "",
-      attachments: [],
-      applicationDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-      visibility: "public",
-      tags: [],
-    });
-    setIsSubmitted(false);
-  }, []);
-
-  if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-4 md:p-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl mb-4 shadow-lg"
+    <div
+      className={`border rounded-xl overflow-hidden transition-all duration-200 ${error ? "border-red-400 ring-2 ring-red-100" : "border-gray-200 focus-within:border-[#4EB956] focus-within:ring-2 focus-within:ring-[#4EB956]/10"}`}
+    >
+      <div className="flex items-center gap-0.5 px-3 py-2 bg-gray-50 border-b border-gray-100 flex-wrap">
+        {toolbarBtns.map((btn, i) => (
+          <button
+            key={i}
+            type="button"
+            title={btn.title}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              exec(btn.cmd, btn.val || null);
+            }}
+            className="p-1.5 rounded-lg text-gray-500 hover:bg-white hover:text-[#1E2558] hover:shadow-sm transition-all duration-150"
           >
-            <FaLaptop className="text-3xl text-white" />
-          </motion.div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Post a Freelance Project
-          </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Find the perfect freelancer for your project. Fill in the details
-            step by step.
-          </p>
+            {btn.icon}
+          </button>
+        ))}
+        <div className="ml-auto text-xs text-gray-400 font-medium">
+          {wordCount} words
         </div>
+      </div>
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={sync}
+        onBlur={sync}
+        className="min-h-[220px] max-h-[420px] overflow-y-auto p-4 text-sm text-gray-700 outline-none leading-relaxed [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-gray-800 [&_h3]:mt-3 [&_h3]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-[#4EB956] [&_blockquote]:pl-3 [&_blockquote]:text-gray-500 [&_blockquote]:italic [&_blockquote]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ul_li]:mb-0.5 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_ol_li]:mb-0.5"
+        data-placeholder="Describe the role, responsibilities, requirements, and other details..."
+        style={{ caretColor: "#4EB956" }}
+      />
+      <style>{`[contenteditable]:empty:before { content: attr(data-placeholder); color: #9ca3af; pointer-events: none; }`}</style>
+    </div>
+  );
+};
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              Step {currentStep} of 6: {stepTitles[currentStep - 1]}
-            </span>
-            <span className="text-sm font-semibold text-purple-600">
-              {Math.round(progressPercentage)}% Complete
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercentage}%` }}
-              className="h-2.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
-            ></motion.div>
-          </div>
+const FieldError = ({ msg }) =>
+  msg ? (
+    <p className="flex items-center gap-1 text-red-500 text-xs mt-1">
+      <FaExclamationCircle size={10} />
+      {msg}
+    </p>
+  ) : null;
 
-          {/* Step Indicators */}
-          <div className="flex justify-between mt-6">
-            {stepTitles.map((title, index) => (
-              <div
-                key={index}
-                className={`flex flex-col items-center ${
-                  index + 1 <= currentStep ? "text-purple-600" : "text-gray-400"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                    index + 1 < currentStep
-                      ? "bg-purple-500 text-white"
-                      : index + 1 === currentStep
-                        ? "bg-gradient-to-br from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-200"
-                        : "bg-gray-200"
-                  }`}
-                >
-                  {index + 1 < currentStep ? (
-                    <FaCheckCircle className="text-sm" />
-                  ) : (
-                    <span className="font-semibold text-sm">{index + 1}</span>
-                  )}
-                </div>
-                <span className="text-xs text-center max-w-16 hidden md:block font-medium">
-                  {title}
-                </span>
+// ── API Search Selector Component ───────────────────────────────────────────
+const ApiSearchSelector = ({
+  items = [],
+  loading,
+  value,
+  onChange,
+  error,
+  placeholder,
+  searchPlaceholder,
+  icon,
+  getId,
+  getLabel,
+  getSubLabel,
+  renderLeft,
+}) => {
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = items.filter((item) =>
+    getLabel(item)?.toLowerCase().includes(search.toLowerCase()),
+  );
+  const selected = items.find((item) => getId(item) === value);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-sm transition-all duration-200 bg-white ${error ? "border-red-400 bg-red-50" : open ? "border-[#4EB956] ring-2 ring-[#4EB956]/10" : "border-gray-200 hover:border-gray-300"}`}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          {selected && renderLeft ? (
+            renderLeft(selected)
+          ) : (
+            <span className={selected ? "text-[#4EB956]" : "text-gray-400"}>
+              {icon}
+            </span>
+          )}
+          <span
+            className={`truncate ${selected ? "text-gray-800 font-medium" : "text-gray-400"}`}
+          >
+            {loading
+              ? "Loading..."
+              : selected
+                ? getLabel(selected)
+                : placeholder}
+          </span>
+        </div>
+        <FaChevronDown
+          className={`text-gray-400 text-xs transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="absolute z-40 w-full mt-1.5 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-gray-50">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={searchPlaceholder}
+                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-100 rounded-lg outline-none focus:border-[#4EB956] bg-gray-50"
+                autoFocus
+              />
+            </div>
+          </div>
+          <div className="max-h-56 overflow-y-auto py-1">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <FaSpinner className="animate-spin text-[#4EB956]" />
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Form Container */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-          <AnimatePresence mode="wait">
-            {isSubmitted ? (
-              // Success Screen
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="p-8 md:p-12 text-center"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200 }}
-                  className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
-                >
-                  <FaCheckCircle className="text-4xl text-white" />
-                </motion.div>
-
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                  Project Posted Successfully!
-                </h2>
-                <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                  Your freelance project is now live and visible to talented
-                  freelancers worldwide.
-                </p>
-
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-6 max-w-md mx-auto mb-8">
-                  <h3 className="font-semibold text-purple-800 mb-3 flex items-center justify-center gap-2">
-                    <FaStar className="text-yellow-500" />
-                    Project Summary
-                  </h3>
-                  <div className="text-left space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                        <FaBriefcase className="text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Project</p>
-                        <p className="font-medium">{jobData.projectTitle}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center">
-                        <FaCode className="text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Category</p>
-                        <p className="font-medium">
-                          {
-                            projectCategories.find(
-                              (c) => c.id === jobData.projectCategory,
-                            )?.label
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                        <FaDollarSign className="text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Budget</p>
-                        <p className="font-medium">
-                          ${jobData.budget.min} - ${jobData.budget.max}{" "}
-                          {jobData.budget.currency}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={resetForm}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:opacity-90 transition-opacity duration-300 shadow-lg shadow-purple-200"
-                  >
-                    Post Another Project
-                  </button>
-                  <button
-                    onClick={() => console.log("View project")}
-                    className="px-6 py-3 border-2 border-purple-600 text-purple-600 rounded-xl hover:bg-purple-50 transition-colors duration-300"
-                  >
-                    View Project
-                  </button>
-                </div>
-              </motion.div>
+            ) : filtered.length === 0 ? (
+              <p className="text-center text-sm text-gray-400 py-6">
+                No data found
+              </p>
             ) : (
-              <motion.div
-                key={`step-${currentStep}`}
-                initial={{ x: 100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -100, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="p-6 md:p-8"
-              >
-                <form
-                  onSubmit={
-                    currentStep === 6
-                      ? handleSubmit
-                      : (e) => {
-                          e.preventDefault();
-                          nextStep();
-                        }
-                  }
-                >
-                  {/* Project Details */}
-                  {currentStep === 1 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg">
-                          <FaBriefcase className="text-xl text-purple-600" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                            Project Details
-                          </h2>
-                          <p className="text-sm text-gray-600">
-                            Describe what you need done
+              filtered.map((item) => {
+                const id = getId(item);
+                const isSelected = id === value;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      onChange(id, item);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors ${isSelected ? "bg-[#4EB956]/10 text-[#4EB956] font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      {renderLeft && renderLeft(item)}
+                      <div className="min-w-0 text-left">
+                        <p className="truncate">{getLabel(item)}</p>
+                        {getSubLabel?.(item) && (
+                          <p className="text-[11px] text-gray-400 truncate">
+                            {getSubLabel(item)}
                           </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Project Title{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            name="projectTitle"
-                            value={jobData.projectTitle}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                            placeholder="e.g., Build an E-commerce Website"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Project Category{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {projectCategories.map((category) => (
-                              <button
-                                key={category.id}
-                                type="button"
-                                onClick={() =>
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    projectCategory: category.id,
-                                  }))
-                                }
-                                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  jobData.projectCategory === category.id
-                                    ? "border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                <div
-                                  className={`w-12 h-12 rounded-lg flex items-center justify-center mb-2 bg-gradient-to-br ${category.color}`}
-                                >
-                                  <span className="text-white text-lg">
-                                    {category.icon}
-                                  </span>
-                                </div>
-                                <span className="text-xs font-medium text-center">
-                                  {category.label}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Project Type
-                          </label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {projectTypes.map((type) => (
-                              <button
-                                key={type.value}
-                                type="button"
-                                onClick={() =>
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    projectType: type.value,
-                                  }))
-                                }
-                                className={`text-left p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  jobData.projectType === type.value
-                                    ? "border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                <div className="font-medium">{type.label}</div>
-                                <div className="text-sm text-gray-500 mt-1">
-                                  {type.description}
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Project Description{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <textarea
-                            name="projectDescription"
-                            value={jobData.projectDescription}
-                            onChange={handleInputChange}
-                            required
-                            rows={6}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                            placeholder="Describe your project in detail. What are the goals, requirements, and deliverables?"
-                          />
-                        </div>
+                        )}
                       </div>
                     </div>
-                  )}
-
-                  {/* Skills & Requirements */}
-                  {currentStep === 2 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-lg">
-                          <FaTools className="text-xl text-blue-600" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                            Skills & Requirements
-                          </h2>
-                          <p className="text-sm text-gray-600">
-                            What skills should freelancers have?
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Required Skills{" "}
-                            <span className="text-red-500">*</span>
-                            <span className="text-xs text-gray-500 ml-2">
-                              (Add at least one skill)
-                            </span>
-                          </label>
-                          <div className="flex space-x-2 mb-3">
-                            <input
-                              type="text"
-                              value={skillInput}
-                              onChange={(e) => setSkillInput(e.target.value)}
-                              onKeyPress={(e) => handleKeyPress(e, "skill")}
-                              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                              placeholder="e.g., React, Python, Figma, SEO"
-                            />
-                            <button
-                              type="button"
-                              onClick={addSkill}
-                              className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:opacity-90 transition-opacity duration-200 flex items-center space-x-2"
-                            >
-                              <FaPlus />
-                              <span>Add</span>
-                            </button>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            {jobData.requiredSkills.map((skill, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center space-x-2 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 rounded-lg border border-purple-100"
-                              >
-                                <span className="font-medium text-purple-700">
-                                  {skill}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => removeSkill(skill)}
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <FaTrash className="text-sm" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Experience Level
-                          </label>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {experienceLevels.map((level) => (
-                              <button
-                                key={level.value}
-                                type="button"
-                                onClick={() =>
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    experienceLevel: level.value,
-                                  }))
-                                }
-                                className={`text-left p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  jobData.experienceLevel === level.value
-                                    ? "border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                <div className="font-medium">{level.label}</div>
-                                <div className="text-sm text-gray-500 mt-1">
-                                  {level.description}
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Language Requirements
-                            </label>
-                            <div className="flex space-x-2 mb-3">
-                              <select
-                                value={languageInput}
-                                onChange={(e) =>
-                                  setLanguageInput(e.target.value)
-                                }
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                              >
-                                <option value="">Select Language</option>
-                                {languages.map((lang) => (
-                                  <option key={lang.code} value={lang.name}>
-                                    {lang.name}
-                                  </option>
-                                ))}
-                              </select>
-                              <button
-                                type="button"
-                                onClick={addLanguage}
-                                className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2"
-                              >
-                                <FaPlus />
-                                <span>Add</span>
-                              </button>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                              {jobData.languageRequirements.map(
-                                (lang, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-lg"
-                                  >
-                                    <span className="font-medium">{lang}</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => removeLanguage(lang)}
-                                      className="text-red-500 hover:text-red-700"
-                                    >
-                                      <FaTrash className="text-sm" />
-                                    </button>
-                                  </div>
-                                ),
-                              )}
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Tools & Software Required
-                            </label>
-                            <div className="flex space-x-2 mb-3">
-                              <input
-                                type="text"
-                                value={toolInput}
-                                onChange={(e) => setToolInput(e.target.value)}
-                                onKeyPress={(e) => handleKeyPress(e, "tool")}
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                placeholder="e.g., Adobe Creative Suite, GitHub, Slack"
-                              />
-                              <button
-                                type="button"
-                                onClick={addTool}
-                                className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2"
-                              >
-                                <FaPlus />
-                                <span>Add</span>
-                              </button>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                              {jobData.toolsRequired.map((tool, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg"
-                                >
-                                  <span className="font-medium">{tool}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeTool(tool)}
-                                    className="text-red-500 hover:text-red-700"
-                                  >
-                                    <FaTrash className="text-sm" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Budget & Timeline */}
-                  {currentStep === 3 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg">
-                          <FaDollarSign className="text-xl text-green-600" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                            Budget & Timeline
-                          </h2>
-                          <p className="text-sm text-gray-600">
-                            Set your budget and timeline
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Budget Type
-                          </label>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {budgetTypes.map((type) => (
-                              <button
-                                key={type.value}
-                                type="button"
-                                onClick={() =>
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    budgetType: type.value,
-                                  }))
-                                }
-                                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  jobData.budgetType === type.value
-                                    ? "border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                <span className="text-2xl mb-2">
-                                  {type.icon}
-                                </span>
-                                <span className="font-medium">
-                                  {type.label}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              {jobData.budgetType === "hourly"
-                                ? "Hourly Rate Range"
-                                : "Project Budget"}
-                              {jobData.budgetType !== "negotiable" && (
-                                <span className="text-red-500">*</span>
-                              )}
-                            </label>
-                            <div className="flex space-x-3">
-                              <div className="flex-1">
-                                <label className="block text-xs text-gray-500 mb-1">
-                                  Min
-                                </label>
-                                <div className="relative">
-                                  <FaDollarSign className="absolute left-3 top-3.5 text-gray-400" />
-                                  <input
-                                    type="number"
-                                    name="budget.min"
-                                    value={jobData.budget.min}
-                                    onChange={handleInputChange}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                    placeholder="0"
-                                  />
-                                </div>
-                              </div>
-                              <div className="flex-1">
-                                <label className="block text-xs text-gray-500 mb-1">
-                                  Max
-                                </label>
-                                <div className="relative">
-                                  <FaDollarSign className="absolute left-3 top-3.5 text-gray-400" />
-                                  <input
-                                    type="number"
-                                    name="budget.max"
-                                    value={jobData.budget.max}
-                                    onChange={handleInputChange}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                    placeholder="0"
-                                  />
-                                </div>
-                              </div>
-                              <div className="w-32">
-                                <label className="block text-xs text-gray-500 mb-1">
-                                  Currency
-                                </label>
-                                <select
-                                  name="budget.currency"
-                                  value={jobData.budget.currency}
-                                  onChange={handleInputChange}
-                                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                >
-                                  <option value="USD">USD</option>
-                                  <option value="EUR">EUR</option>
-                                  <option value="GBP">GBP</option>
-                                  <option value="CAD">CAD</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Estimated Hours
-                            </label>
-                            <input
-                              type="number"
-                              name="timeline.estimatedHours"
-                              value={jobData.timeline.estimatedHours}
-                              onChange={handleInputChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                              placeholder="e.g., 40 hours"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Start Date
-                            </label>
-                            <div className="relative">
-                              <FaCalendarAlt className="absolute left-3 top-3.5 text-gray-400 z-10" />
-                              <DatePicker
-                                selected={jobData.timeline.startDate}
-                                onChange={(date) =>
-                                  handleDateChange(date, "startDate")
-                                }
-                                minDate={new Date()}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                dateFormat="MMMM d, yyyy"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Expected End Date
-                            </label>
-                            <div className="relative">
-                              <FaCalendarAlt className="absolute left-3 top-3.5 text-gray-400 z-10" />
-                              <DatePicker
-                                selected={jobData.timeline.endDate}
-                                onChange={(date) =>
-                                  handleDateChange(date, "endDate")
-                                }
-                                minDate={jobData.timeline.startDate}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                dateFormat="MMMM d, yyyy"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Client Preferences */}
-                  {currentStep === 4 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-lg">
-                          <FaUsers className="text-xl text-orange-600" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                            Client Preferences
-                          </h2>
-                          <p className="text-sm text-gray-600">
-                            How you prefer to work
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Preferred Location (Optional)
-                            </label>
-                            <div className="relative">
-                              <FaMapMarkerAlt className="absolute left-3 top-3.5 text-gray-400" />
-                              <input
-                                type="text"
-                                name="clientLocation.preferredLocation"
-                                value={jobData.clientLocation.preferredLocation}
-                                onChange={handleInputChange}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                placeholder="e.g., North America, Europe, Anywhere"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Timezone <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              name="clientLocation.timezone"
-                              value={jobData.clientLocation.timezone}
-                              onChange={handleInputChange}
-                              required
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                            >
-                              <option value="">Select Timezone</option>
-                              {timezones.map((tz) => (
-                                <option key={tz} value={tz}>
-                                  {tz}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Communication Preferences
-                          </label>
-                          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                            {communicationPreferences.map((pref) => (
-                              <button
-                                key={pref.value}
-                                type="button"
-                                onClick={() => {
-                                  const current =
-                                    jobData.communicationPreferences;
-                                  const updated = current.includes(pref.value)
-                                    ? current.filter((p) => p !== pref.value)
-                                    : [...current, pref.value];
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    communicationPreferences: updated,
-                                  }));
-                                }}
-                                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  jobData.communicationPreferences.includes(
-                                    pref.value,
-                                  )
-                                    ? "border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                <span className="text-2xl mb-2">
-                                  {pref.icon}
-                                </span>
-                                <span className="text-xs font-medium text-center">
-                                  {pref.label}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Meeting Frequency
-                          </label>
-                          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                            {meetingFrequencies.map((freq) => (
-                              <button
-                                key={freq.value}
-                                type="button"
-                                onClick={() =>
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    meetingFrequency: freq.value,
-                                  }))
-                                }
-                                className={`p-3 rounded-xl border-2 transition-all duration-200 text-center ${
-                                  jobData.meetingFrequency === freq.value
-                                    ? "border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 font-medium"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                {freq.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Submission Details */}
-                  {currentStep === 5 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-gradient-to-br from-red-100 to-pink-100 rounded-lg">
-                          <FaFileAlt className="text-xl text-red-600" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                            Submission Details
-                          </h2>
-                          <p className="text-sm text-gray-600">
-                            How freelancers should apply
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Submission Requirements{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <textarea
-                            name="submissionRequirements"
-                            value={jobData.submissionRequirements}
-                            onChange={handleInputChange}
-                            required
-                            rows={5}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                            placeholder="What should freelancers include in their proposal? (e.g., portfolio, cover letter, samples, etc.)"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Project Attachments (Optional)
-                            <span className="text-xs text-gray-500 ml-2">
-                              Max 5 files, 10MB each
-                            </span>
-                          </label>
-                          <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-400 transition-colors duration-200">
-                            <input
-                              type="file"
-                              id="file-upload"
-                              multiple
-                              onChange={handleFileUpload}
-                              className="hidden"
-                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip"
-                            />
-                            <label
-                              htmlFor="file-upload"
-                              className="cursor-pointer"
-                            >
-                              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <FaPaperclip className="text-2xl text-purple-600" />
-                              </div>
-                              <p className="text-gray-600 mb-2">
-                                Drag & drop files or{" "}
-                                <span className="text-purple-600 font-medium">
-                                  browse
-                                </span>
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                PDF, DOC, JPG, PNG, ZIP up to 10MB
-                              </p>
-                            </label>
-                          </div>
-
-                          {jobData.attachments.length > 0 && (
-                            <div className="mt-4 space-y-2">
-                              {jobData.attachments.map((file, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg"
-                                >
-                                  <div className="flex items-center space-x-3">
-                                    <FaRegFileAlt className="text-gray-400" />
-                                    <div>
-                                      <p className="font-medium text-sm">
-                                        {file.name}
-                                      </p>
-                                      <p className="text-xs text-gray-500">
-                                        {(file.size / 1024 / 1024).toFixed(2)}{" "}
-                                        MB
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeAttachment(index)}
-                                    className="text-red-500 hover:text-red-700"
-                                  >
-                                    <FaTrash />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Application Deadline
-                          </label>
-                          <div className="relative">
-                            <FaCalendarAlt className="absolute left-3 top-3.5 text-gray-400 z-10" />
-                            <DatePicker
-                              selected={jobData.applicationDeadline}
-                              onChange={(date) =>
-                                setJobData((prev) => ({
-                                  ...prev,
-                                  applicationDeadline: date,
-                                }))
-                              }
-                              minDate={new Date()}
-                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                              dateFormat="MMMM d, yyyy"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Review & Post */}
-                  {currentStep === 6 && (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-gradient-to-br from-gray-100 to-blue-100 rounded-lg">
-                          <FaSearch className="text-xl text-gray-600" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                            Review & Post
-                          </h2>
-                          <p className="text-sm text-gray-600">
-                            Review your project before posting
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Project Tags
-                            <span className="text-xs text-gray-500 ml-2">
-                              (Helps freelancers find your project)
-                            </span>
-                          </label>
-                          <div className="flex space-x-2 mb-3">
-                            <input
-                              type="text"
-                              value={tagInput}
-                              onChange={(e) => setTagInput(e.target.value)}
-                              onKeyPress={(e) => handleKeyPress(e, "tag")}
-                              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                              placeholder="e.g., react, ecommerce, mobile-app, ui-design"
-                            />
-                            <button
-                              type="button"
-                              onClick={addTag}
-                              className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2"
-                            >
-                              <FaPlus />
-                              <span>Add</span>
-                            </button>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            {jobData.tags.map((tag, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center space-x-2 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 rounded-lg border border-purple-100"
-                              >
-                                <span className="font-medium text-purple-700">
-                                  #{tag}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => removeTag(tag)}
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <FaTrash className="text-sm" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Project Visibility
-                          </label>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {visibilityOptions.map((option) => (
-                              <button
-                                key={option.value}
-                                type="button"
-                                onClick={() =>
-                                  setJobData((prev) => ({
-                                    ...prev,
-                                    visibility: option.value,
-                                  }))
-                                }
-                                className={`text-left p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  jobData.visibility === option.value
-                                    ? "border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                              >
-                                <div className="font-medium">
-                                  {option.label}
-                                </div>
-                                <div className="text-sm text-gray-500 mt-1">
-                                  {option.description}
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Project Summary Preview */}
-                        <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-200">
-                          <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <FaBriefcase className="text-purple-600" />
-                            Project Summary
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                              <div>
-                                <p className="text-sm text-gray-500">
-                                  Project Title
-                                </p>
-                                <p className="font-medium text-lg">
-                                  {jobData.projectTitle}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-gray-500">
-                                  Category
-                                </p>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                                    {
-                                      projectCategories.find(
-                                        (c) => c.id === jobData.projectCategory,
-                                      )?.icon
-                                    }
-                                  </div>
-                                  <p className="font-medium">
-                                    {
-                                      projectCategories.find(
-                                        (c) => c.id === jobData.projectCategory,
-                                      )?.label
-                                    }
-                                  </p>
-                                </div>
-                              </div>
-                              <div>
-                                <p className="text-sm text-gray-500">Budget</p>
-                                <p className="font-medium text-green-600">
-                                  ${jobData.budget.min} - ${jobData.budget.max}{" "}
-                                  {jobData.budget.currency}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="space-y-4">
-                              <div>
-                                <p className="text-sm text-gray-500">
-                                  Timeline
-                                </p>
-                                <p className="font-medium">
-                                  {jobData.timeline.startDate.toLocaleDateString()}{" "}
-                                  -{" "}
-                                  {jobData.timeline.endDate.toLocaleDateString()}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-gray-500">
-                                  Required Skills
-                                </p>
-                                <p className="font-medium">
-                                  {jobData.requiredSkills
-                                    .slice(0, 3)
-                                    .join(", ")}
-                                  {jobData.requiredSkills.length > 3 &&
-                                    ` +${
-                                      jobData.requiredSkills.length - 3
-                                    } more`}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-gray-500">
-                                  Visibility
-                                </p>
-                                <p className="font-medium capitalize">
-                                  {jobData.visibility}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Navigation Buttons */}
-                  <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
-                    {currentStep > 1 && (
-                      <button
-                        type="button"
-                        onClick={prevStep}
-                        className="flex items-center space-x-2 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-200"
-                      >
-                        <FaArrowLeft />
-                        <span>Back</span>
-                      </button>
+                    {isSelected && (
+                      <FaCheck size={11} className="text-[#4EB956]" />
                     )}
-
-                    <div className="ml-auto">
-                      {currentStep < 6 ? (
-                        <button
-                          type="submit"
-                          className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:opacity-90 transition-opacity duration-200 shadow-lg shadow-purple-200"
-                        >
-                          <span>Continue</span>
-                          <FaArrowRight />
-                        </button>
-                      ) : (
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg shadow-purple-200"
-                        >
-                          {isSubmitting ? (
-                            <div className="flex items-center space-x-2">
-                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              <span>Posting Project...</span>
-                            </div>
-                          ) : (
-                            "Post Project Now"
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </form>
-              </motion.div>
+                  </button>
+                );
+              })
             )}
-          </AnimatePresence>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Location Selector Component ─────────────────────────────────────────────
+const LocationSelector = ({
+  form,
+  setForm,
+  countries,
+  countriesLoading,
+  visibleErrors,
+}) => {
+  const states = form.country ? State.getStatesOfCountry(form.country) : [];
+  const cities =
+    form.country && form.state
+      ? City.getCitiesOfState(form.country, form.state)
+      : [];
+
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+        Job Location
+      </label>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <ApiSearchSelector
+          items={countries}
+          loading={countriesLoading}
+          value={form.country}
+          onChange={(countryCode, country) => {
+            const location =
+              buildLocation({
+                city: "",
+                state: "",
+                country: countryCode,
+                countries,
+              }) || country?.name;
+            setForm((p) => ({
+              ...p,
+              country: countryCode,
+              countryId: country?.countryId || "",
+              state: "",
+              city: "",
+              jobLocation: location || "",
+            }));
+          }}
+          error={visibleErrors?.country}
+          placeholder="Select Country"
+          searchPlaceholder="Search country..."
+          icon={<FaMapMarkerAlt />}
+          getId={(item) => item.isoCode}
+          getLabel={(item) => item.name}
+          getSubLabel={(item) => item.isoCode}
+          renderLeft={(item) =>
+            item.flag ? (
+              <img
+                src={item.flag}
+                alt={item.name}
+                className="w-5 h-5 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <FaMapMarkerAlt className="text-gray-400 text-sm" />
+            )
+          }
+        />
+        <div className="relative">
+          <select
+            name="state"
+            value={form.state}
+            disabled={!form.country}
+            onChange={(e) => {
+              const stateCode = e.target.value;
+              const location = buildLocation({
+                city: "",
+                state: stateCode,
+                country: form.country,
+                countries,
+              });
+              setForm((p) => ({
+                ...p,
+                state: stateCode,
+                city: "",
+                jobLocation:
+                  location || getCountryNameFromApi(countries, form.country),
+              }));
+            }}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all bg-white disabled:bg-gray-100 disabled:text-gray-400 appearance-none"
+          >
+            <option value="">Select State/Division</option>
+            {states.map((state) => (
+              <option key={state.isoCode} value={state.isoCode}>
+                {state.name}
+              </option>
+            ))}
+          </select>
+          <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+        </div>
+        <div className="relative">
+          <select
+            name="city"
+            value={form.city}
+            disabled={!form.country || !form.state}
+            onChange={(e) => {
+              const cityName = e.target.value;
+              const location = buildLocation({
+                city: cityName,
+                state: form.state,
+                country: form.country,
+                countries,
+              });
+              setForm((p) => ({
+                ...p,
+                city: cityName,
+                jobLocation:
+                  location || getCountryNameFromApi(countries, form.country),
+              }));
+            }}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all bg-white disabled:bg-gray-100 disabled:text-gray-400 appearance-none"
+          >
+            <option value="">Select City</option>
+            {cities.map((city, index) => (
+              <option key={`${city.name}-${index}`} value={city.name}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+          <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+        </div>
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-xs font-medium text-[#4EB956] bg-[#4EB956]/10 px-3 py-2 rounded-xl w-fit">
+        <FaMapMarkerAlt />
+        <span>{form.jobLocation || "No location selected"}</span>
+      </div>
+    </div>
+  );
+};
+
+// ── Step Indicator ──────────────────────────────────────────────────────────
+const steps = ["Basic Info", "Details", "Description"];
+const StepIndicator = ({ current }) => (
+  <div className="flex items-center gap-0 overflow-x-auto pb-1">
+    {steps.map((step, i) => (
+      <React.Fragment key={step}>
+        <div className="flex items-center gap-2 shrink-0">
+          <div
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${i < current ? "bg-[#4EB956] text-white" : i === current ? "bg-[#1E2558] text-white ring-4 ring-[#1E2558]/15" : "bg-gray-100 text-gray-400"}`}
+          >
+            {i < current ? <FaCheck size={10} /> : i + 1}
+          </div>
+          <span
+            className={`text-sm font-medium ${i === current ? "text-[#1E2558]" : i < current ? "text-[#4EB956]" : "text-gray-400"}`}
+          >
+            {step}
+          </span>
+        </div>
+        {i < steps.length - 1 && (
+          <div
+            className={`flex-1 h-0.5 mx-3 rounded min-w-8 ${i < current ? "bg-[#4EB956]" : "bg-gray-200"}`}
+          />
+        )}
+      </React.Fragment>
+    ))}
+  </div>
+);
+
+// ── Default Form Values ─────────────────────────────────────────────────────
+const EMPTY_FORM = {
+  jobCategoryId: "",
+  jobTitle: "",
+  vacancy: "",
+  country: DEFAULT_COUNTRY_CODE,
+  countryId: "",
+  state: "",
+  city: "",
+  jobLocation: "Bangladesh",
+  jobType: "Freelance",
+  jobTypeId: "",
+  jobDescription: "",
+  salaryMin: "",
+  salaryMax: "",
+  experienceLevel: "",
+};
+
+// ── Validation Function ─────────────────────────────────────────────────────
+function validate(form, step) {
+  const errs = {};
+  if (step === 0) {
+    if (!form.jobCategoryId) errs.jobCategoryId = "Please select a category";
+    if (!form.jobTitle.trim()) errs.jobTitle = "Job title is required";
+    else if (form.jobTitle.trim().length < 2)
+      errs.jobTitle = "Title must be at least 2 characters";
+  }
+  if (step === 1) {
+    if (
+      form.salaryMin &&
+      form.salaryMax &&
+      Number(form.salaryMin) > Number(form.salaryMax)
+    )
+      errs.salaryMax = "Max salary must be greater than min salary";
+  }
+  if (step === 2) {
+    const text = form.jobDescription?.replace(/<[^>]*>/g, "").trim() || "";
+    if (!text) errs.jobDescription = "Job description is required";
+    else if (text.length < 20)
+      errs.jobDescription = "Description must be at least 20 characters";
+  }
+  return errs;
+}
+
+// ── MODAL: Login Required ───────────────────────────────────────────────────
+const LoginRequiredModal = ({ onClose, onLogin, onRegister }) => (
+  <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(15,18,40,0.75)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.86, y: 48 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.86, y: 48 }}
+        transition={{ type: "spring", stiffness: 320, damping: 26 }}
+        className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="h-1.5"
+          style={{ background: `linear-gradient(90deg,${NAVY},${GREEN})` }}
+        />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ background: "#f1f5f9", color: "#94a3b8" }}
+        >
+          <FaTimes size={12} />
+        </button>
+        <div className="bg-white px-8 pt-8 pb-10">
+          <motion.div
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 280 }}
+            className="flex justify-center mb-6"
+          >
+            <div
+              className="relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ background: `linear-gradient(135deg,${NAVY},#2d3a8c)` }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.22, 1], opacity: [0.35, 0, 0.35] }}
+                transition={{ duration: 2.2, repeat: Infinity }}
+                className="absolute inset-0 rounded-2xl"
+                style={{ border: `2px solid ${NAVY}` }}
+              />
+              <FaLock className="text-white text-2xl" />
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="text-center mb-2"
+          >
+            <h2
+              className="text-2xl font-extrabold mb-1"
+              style={{ color: NAVY }}
+            >
+              Employer Login Required
+            </h2>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              You're not logged in. Please sign in to your account
+              <br />
+              to continue posting your job.
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.26 }}
+            className="flex items-center gap-3 my-6"
+          >
+            <div className="flex-1 h-px bg-gray-100" />
+            <span
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+              style={{ background: `${GREEN}15`, color: GREEN }}
+            >
+              <FaBriefcase size={10} /> Your progress is saved
+            </span>
+            <div className="flex-1 h-px bg-gray-100" />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.32 }}
+            className="space-y-3"
+          >
+            <button
+              onClick={onLogin}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-bold text-sm shadow-lg transition-all hover:opacity-90"
+              style={{ background: `linear-gradient(135deg,${NAVY},#2d3a8c)` }}
+            >
+              <FaSignInAlt /> Sign In to Continue
+            </button>
+            <button
+              onClick={onRegister}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-bold text-sm border-2 transition-all"
+              style={{
+                borderColor: GREEN,
+                color: GREEN,
+                background: `${GREEN}08`,
+              }}
+            >
+              <FaUserPlus /> Create New Account
+            </button>
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.42 }}
+            className="text-center text-xs text-gray-400 mt-5"
+          >
+            Your job details are saved — just log in and we'll pick up right
+            where you left off.
+          </motion.p>
+        </div>
+      </motion.div>
+    </motion.div>
+  </AnimatePresence>
+);
+
+// ── MODAL: Not Employer Role ────────────────────────────────────────────────
+const NotEmployerModal = ({ onClose, onUpgrade }) => (
+  <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(15,18,40,0.75)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.86, y: 48 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.86, y: 48 }}
+        transition={{ type: "spring", stiffness: 320, damping: 26 }}
+        className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="h-1.5"
+          style={{ background: "linear-gradient(90deg,#f59e0b,#ef4444)" }}
+        />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ background: "#f1f5f9", color: "#94a3b8" }}
+        >
+          <FaTimes size={12} />
+        </button>
+        <div className="bg-white px-8 pt-8 pb-10">
+          <motion.div
+            initial={{ scale: 0, rotate: 20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 280 }}
+            className="flex justify-center mb-6"
+          >
+            <div
+              className="relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ background: "linear-gradient(135deg,#f59e0b,#ef4444)" }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.22, 1], opacity: [0.3, 0, 0.3] }}
+                transition={{ duration: 2.4, repeat: Infinity }}
+                className="absolute inset-0 rounded-2xl"
+                style={{ border: "2px solid #f59e0b" }}
+              />
+              <FaUserSlash className="text-white text-2xl" />
+              <div
+                className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-sm"
+                style={{ background: NAVY }}
+              >
+                <FaCrown className="text-yellow-300 text-xs" />
+              </div>
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="text-center mb-2"
+          >
+            <h2
+              className="text-2xl font-extrabold mb-1"
+              style={{ color: NAVY }}
+            >
+              Employer Account Required
+            </h2>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              You're logged in, but your account is not registered
+              <br />
+              as an{" "}
+              <span className="font-semibold text-gray-600">Employer</span>.
+              Only employer accounts can post jobs.
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.24 }}
+            className="flex items-start gap-3 my-6 p-4 rounded-2xl border"
+            style={{ background: "#fef9ec", borderColor: "#f59e0b40" }}
+          >
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "#f59e0b20" }}
+            >
+              <FaExclamationTriangle
+                className="text-sm"
+                style={{ color: "#f59e0b" }}
+              />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-yellow-700 mb-0.5">
+                Not Eligible to Post
+              </p>
+              <p className="text-xs text-yellow-600 leading-relaxed">
+                Your current role does not have permission to post job listings.
+                Upgrade to an employer account to unlock this feature.
+              </p>
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.32 }}
+            className="space-y-3"
+          >
+            <button
+              onClick={onUpgrade}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-bold text-sm shadow-lg transition-all hover:opacity-90"
+              style={{ background: `linear-gradient(135deg,${NAVY},#2d3a8c)` }}
+            >
+              <FaCrown className="text-yellow-300" /> Upgrade to Employer
+              Account
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-bold text-sm border-2 transition-all"
+              style={{ borderColor: "#e5e7eb", color: "#6b7280" }}
+            >
+              Go Back
+            </button>
+          </motion.div>
+        </div>
+      </motion.div>
+    </motion.div>
+  </AnimatePresence>
+);
+
+// ── MAIN COMPONENT ──────────────────────────────────────────────────────────
+const FreelancerJobPost = () => {
+  const navigate = useNavigate();
+  const { id: editJobId } = useParams();
+  const {
+    categories,
+    categoriesLoading,
+    fetchCategories,
+    jobTypes,
+    jobTypesLoading,
+    fetchJobTypes,
+    countries,
+    countriesLoading,
+    fetchCountries,
+    createJobPost,
+    updateJobPost,
+    myJobs,
+    isSubmitting,
+  } = useJobPostStore();
+
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  // ── AUTH STATE ────────────────────────────────────────────────────────────
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+
+  // ── KEY: Only the "Freelance" job type is shown ───────────────────────────
+  const freelanceJobTypes = jobTypes.filter(
+    (t) => t.title?.toLowerCase() === "freelance",
+  );
+
+  useEffect(() => {
+    fetchCategories();
+    fetchJobTypes();
+    fetchCountries();
+  }, [fetchCategories, fetchJobTypes, fetchCountries]);
+
+  // Auto-select the Freelance job type as soon as the list loads
+  useEffect(() => {
+    if (freelanceJobTypes.length > 0 && !form.jobTypeId) {
+      const ft = freelanceJobTypes[0];
+      setForm((p) => ({
+        ...p,
+        jobTypeId: ft.jobTypeId || ft._id,
+        jobType: ft.title,
+      }));
+    }
+  }, [freelanceJobTypes]);
+
+  useEffect(() => {
+    if (!countries.length) return;
+    setForm((p) => {
+      const defaultCountry = countries.find((c) => c.isoCode === p.country);
+      return {
+        ...p,
+        countryId: p.countryId || defaultCountry?.countryId || "",
+        jobLocation: p.jobLocation || defaultCountry?.name || "Bangladesh",
+      };
+    });
+  }, [countries]);
+
+  useEffect(() => {
+    if (editJobId && myJobs.length > 0) {
+      const job = myJobs.find((j) => (j.jobId || j._id) === editJobId);
+      if (job) {
+        const countryCode = job.countryCode || DEFAULT_COUNTRY_CODE;
+        const stateCode = job.stateCode || "";
+        const cityName = job.city || "";
+        setForm({
+          jobCategoryId: job.jobCategoryId || "",
+          jobTitle: job.jobTitle || "",
+          vacancy: job.vacancy ?? "",
+          country: countryCode,
+          state: stateCode,
+          city: cityName,
+          jobLocation:
+            job.jobLocation ||
+            buildLocation({
+              city: cityName,
+              state: stateCode,
+              country: countryCode,
+              countries,
+            }) ||
+            "Bangladesh",
+          jobType: job.jobType || "Freelance",
+          jobTypeId: job.jobTypeId || "",
+          jobDescription: job.jobDescription || "",
+          salaryMin: job.salaryMin ?? "",
+          salaryMax: job.salaryMax ?? "",
+          experienceLevel: job.experienceLevel || "",
+        });
+      }
+    }
+  }, [editJobId, myJobs, countries]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((p) => ({ ...p, [name]: value }));
+    setTouched((p) => ({ ...p, [name]: true }));
+  };
+
+  const handleBlur = (e) => {
+    setTouched((p) => ({ ...p, [e.target.name]: true }));
+  };
+
+  const liveErrors = () => {
+    const errs = {
+      ...validate(form, 0),
+      ...validate(form, 1),
+      ...validate(form, 2),
+    };
+    const visible = {};
+    Object.keys(touched).forEach((key) => {
+      if (errs[key]) visible[key] = errs[key];
+    });
+    return visible;
+  };
+
+  const goNext = () => {
+    const errs = validate(form, step);
+    if (Object.keys(errs).length > 0) {
+      const allTouched = {};
+      Object.keys(errs).forEach((key) => {
+        allTouched[key] = true;
+      });
+      setTouched((p) => ({ ...p, ...allTouched }));
+      setErrors(errs);
+      return;
+    }
+    setErrors({});
+    setStep((s) => s + 1);
+  };
+
+  const handleSubmit = async (isDraft = false) => {
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    if (userRole !== "employer") {
+      setShowRoleModal(true);
+      return;
+    }
+
+    const allErrs = {
+      ...validate(form, 0),
+      ...validate(form, 1),
+      ...validate(form, 2),
+    };
+    if (Object.keys(allErrs).length > 0) {
+      setErrors(allErrs);
+      if (allErrs.jobCategoryId || allErrs.jobTitle) {
+        setStep(0);
+        return;
+      }
+      if (allErrs.salaryMax) {
+        setStep(1);
+        return;
+      }
+      setStep(2);
+      return;
+    }
+
+    const payload = {
+      jobCategoryId: form.jobCategoryId,
+      jobTitle: form.jobTitle.trim(),
+      vacancy: form.vacancy ? Number(form.vacancy) : null,
+      countryId: form.countryId,
+      country: getCountryNameFromApi(countries, form.country) || "Bangladesh",
+      countryCode: form.country || DEFAULT_COUNTRY_CODE,
+      state: getStateName(form.state, form.country) || null,
+      stateCode: form.state || null,
+      city: form.city || null,
+      jobLocation: form.jobLocation.trim() || "Bangladesh",
+      jobTypeId: form.jobTypeId || null,
+      jobType: "Freelance",
+      jobDescription: form.jobDescription,
+      salaryMin: form.salaryMin !== "" ? Number(form.salaryMin) : null,
+      salaryMax: form.salaryMax !== "" ? Number(form.salaryMax) : null,
+      experienceLevel: form.experienceLevel.trim() || null,
+      status: isDraft ? "draft" : undefined,
+    };
+
+    const result = editJobId
+      ? await updateJobPost(editJobId, payload)
+      : await createJobPost(payload);
+    if (result.success) navigate("/employer/jobs");
+  };
+
+  const visibleErrors = { ...liveErrors(), ...errors };
+
+  return (
+    <div className="max-w-2xl mx-auto py-10">
+      {/* ── MODALS ───────────────────────────────────────────────────────── */}
+      {showLoginModal && (
+        <LoginRequiredModal
+          onClose={() => setShowLoginModal(false)}
+          onLogin={() => {
+            setShowLoginModal(false);
+            navigate("/employer/login");
+          }}
+          onRegister={() => {
+            setShowLoginModal(false);
+            navigate("/employer/signup");
+          }}
+        />
+      )}
+      {showRoleModal && (
+        <NotEmployerModal
+          onClose={() => setShowRoleModal(false)}
+          onUpgrade={() => {
+            setShowRoleModal(false);
+            navigate("/employer/upgrade");
+          }}
+        />
+      )}
+
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">
+          {editJobId ? "Edit Freelance Job" : "Post a Freelance Job"}
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">
+          {editJobId
+            ? "Update your freelance job posting details"
+            : "Fill in the details to attract the right freelancers"}
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+        <StepIndicator current={step} />
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div
+          className="h-1 bg-gradient-to-r from-[#1E2558] to-[#4EB956]"
+          style={{
+            width: `${((step + 1) / steps.length) * 100}%`,
+            transition: "width 0.4s ease",
+          }}
+        />
+        <div className="p-7 space-y-5">
+          {/* ── STEP 0: Basic Info ──────────────────────────────────────── */}
+          {step === 0 && (
+            <>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Job Category <span className="text-red-400">*</span>
+                </label>
+                <ApiSearchSelector
+                  items={categories}
+                  loading={categoriesLoading}
+                  value={form.jobCategoryId}
+                  onChange={(id) => {
+                    setForm((p) => ({ ...p, jobCategoryId: id }));
+                    setTouched((p) => ({ ...p, jobCategoryId: true }));
+                  }}
+                  error={visibleErrors.jobCategoryId}
+                  placeholder="Select a job category"
+                  searchPlaceholder="Search categories..."
+                  icon={<FaTag />}
+                  getId={(item) => item.jobCategoryId || item._id}
+                  getLabel={(item) => item.title}
+                />
+                <FieldError msg={visibleErrors.jobCategoryId} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Job Title <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="jobTitle"
+                  value={form.jobTitle}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="e.g. Freelance React Developer"
+                  className={`w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all duration-200 ${visibleErrors.jobTitle ? "border-red-400 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100" : "border-gray-200 focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10"}`}
+                />
+                <FieldError msg={visibleErrors.jobTitle} />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* ── Job Type: Freelance only ── */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Job Type
+                  </label>
+                  <ApiSearchSelector
+                    items={freelanceJobTypes}
+                    loading={jobTypesLoading}
+                    value={form.jobTypeId}
+                    onChange={(id, item) => {
+                      setForm((p) => ({
+                        ...p,
+                        jobTypeId: id,
+                        jobType: item.title,
+                      }));
+                    }}
+                    placeholder="Freelance"
+                    searchPlaceholder="Search job types..."
+                    icon={<FaBriefcase />}
+                    getId={(item) => item.jobTypeId || item._id}
+                    getLabel={(item) => item.title}
+                    getSubLabel={(item) =>
+                      item.isActive ? "Active" : "Inactive"
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Vacancies
+                  </label>
+                  <div className="relative">
+                    <FaUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                      type="number"
+                      name="vacancy"
+                      value={form.vacancy}
+                      onChange={handleChange}
+                      min="1"
+                      placeholder="e.g. 3"
+                      className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── STEP 1: Details ─────────────────────────────────────────── */}
+          {step === 1 && (
+            <>
+              <LocationSelector
+                form={form}
+                setForm={setForm}
+                countries={countries}
+                countriesLoading={countriesLoading}
+                visibleErrors={visibleErrors}
+              />
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Experience Level
+                </label>
+                <div className="relative">
+                  <FaBriefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    type="text"
+                    name="experienceLevel"
+                    value={form.experienceLevel}
+                    onChange={handleChange}
+                    placeholder="e.g. 3+ years, Entry level, Senior"
+                    className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Salary Range
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="relative">
+                    <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                      type="number"
+                      name="salaryMin"
+                      value={form.salaryMin}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Min"
+                      min="0"
+                      className="w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10 transition-all"
+                    />
+                  </div>
+                  <div className="relative">
+                    <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                      type="number"
+                      name="salaryMax"
+                      value={form.salaryMax}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Max"
+                      min="0"
+                      className={`w-full pl-8 pr-4 py-3 border rounded-xl text-sm outline-none transition-all ${visibleErrors.salaryMax ? "border-red-400 bg-red-50" : "border-gray-200 focus:border-[#4EB956] focus:ring-2 focus:ring-[#4EB956]/10"}`}
+                    />
+                  </div>
+                </div>
+                <FieldError msg={visibleErrors.salaryMax} />
+                <p className="text-xs text-gray-400 mt-1.5">
+                  Leave blank if not specified
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* ── STEP 2: Description ─────────────────────────────────────── */}
+          {step === 2 && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Job Description <span className="text-red-400">*</span>
+              </label>
+              <p className="text-xs text-gray-400 mb-2">
+                Include responsibilities, requirements, and benefits.
+              </p>
+              <RichTextEditor
+                value={form.jobDescription}
+                onChange={(value) => {
+                  setForm((p) => ({ ...p, jobDescription: value }));
+                  setTouched((p) => ({ ...p, jobDescription: true }));
+                }}
+                error={visibleErrors.jobDescription}
+              />
+              <FieldError msg={visibleErrors.jobDescription} />
+            </div>
+          )}
         </div>
 
-        {/* Help Text */}
-        {!isSubmitted && (
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <p>
-              Need help?{" "}
-              <Link
-                // to="/client/help"
-                className="text-purple-600 hover:underline font-medium"
+        {/* ── Footer nav ───────────────────────────────────────────────── */}
+        <div className="px-7 py-5 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex gap-2">
+            {step > 0 && (
+              <button
+                type="button"
+                onClick={() => setStep((s) => s - 1)}
+                className="px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-white hover:shadow-sm transition-all"
               >
-                View posting guidelines
-              </Link>
-            </p>
+                ← Back
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate("/employer/posted-jobs")}
+              className="px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-white transition-all"
+            >
+              <FaTimes size={11} className="inline mr-1.5" />
+              Cancel
+            </button>
           </div>
-        )}
+          <div className="flex gap-2">
+            {step === steps.length - 1 ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleSubmit(true)}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-white hover:shadow-sm transition-all disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <FaSpinner className="animate-spin" size={12} />
+                  ) : (
+                    <FaSave size={12} />
+                  )}
+                  Save Draft
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSubmit(false)}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#1E2558] to-[#4EB956] text-white rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-[#4EB956]/20 transition-all disabled:opacity-60"
+                >
+                  {isSubmitting ? (
+                    <FaSpinner className="animate-spin" size={12} />
+                  ) : (
+                    <FaPaperPlane size={12} />
+                  )}
+                  {editJobId ? "Update Job" : "Submit for Review"}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={goNext}
+                className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#1E2558] to-[#4EB956] text-white rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-[#4EB956]/20 transition-all"
+              >
+                Continue →
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

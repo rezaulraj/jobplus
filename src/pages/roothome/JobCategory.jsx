@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo, useCallback } from "react";
+import React, { useEffect, useState, memo, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaBriefcase,
@@ -11,7 +11,6 @@ import {
   FaPlusCircle,
   FaFire,
   FaStar,
-  FaMapMarkerAlt,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import useJobStore from "../../store/jobstore";
@@ -92,7 +91,168 @@ const MOCK_COUNTRIES = Array.from({ length: 12 }, (_, i) => ({
 
 const INITIAL_VISIBLE = 20;
 
-// ── Memoized card components (defined OUTSIDE parent) ────────────────────────
+const TABS = [
+  { id: "industry", label: "By Industry", icon: FaIndustry },
+  { id: "company", label: "By Company", icon: FaBuilding },
+  { id: "country", label: "By Country", icon: FaGlobeAsia },
+];
+
+// ── Shimmer keyframes injected once ──────────────────────────────────────────
+
+const SHIMMER_STYLE = `
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+.skeleton-line {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 6px;
+}
+.skeleton-circle {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 9999px;
+}
+.skeleton-card {
+  background: linear-gradient(90deg, #f8f8f8 25%, #efefef 50%, #f8f8f8 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.8s infinite linear;
+  border-radius: 12px;
+}
+`;
+
+function injectShimmerStyles() {
+  if (document.getElementById("__shimmer_styles__")) return;
+  const tag = document.createElement("style");
+  tag.id = "__shimmer_styles__";
+  tag.textContent = SHIMMER_STYLE;
+  document.head.appendChild(tag);
+}
+
+// ── Skeleton primitives ───────────────────────────────────────────────────────
+
+const SkeletonCategoryCard = () => (
+  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div
+      className="skeleton-circle shrink-0"
+      style={{ width: 36, height: 36 }}
+    />
+    <div className="flex-1 space-y-2">
+      <div className="skeleton-line" style={{ height: 13, width: "70%" }} />
+      <div className="skeleton-line" style={{ height: 10, width: "40%" }} />
+    </div>
+    <div
+      className="skeleton-line shrink-0"
+      style={{ height: 20, width: 52, borderRadius: 9999 }}
+    />
+  </div>
+);
+
+const SkeletonCompanyCard = () => (
+  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div
+      className="skeleton-circle shrink-0"
+      style={{ width: 36, height: 36 }}
+    />
+    <div className="flex-1 space-y-2">
+      <div className="skeleton-line" style={{ height: 13, width: "60%" }} />
+      <div className="skeleton-line" style={{ height: 10, width: "35%" }} />
+    </div>
+    <div
+      className="skeleton-line shrink-0"
+      style={{ height: 20, width: 56, borderRadius: 9999 }}
+    />
+  </div>
+);
+
+const SkeletonCountryCard = () => (
+  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div
+      className="skeleton-circle shrink-0"
+      style={{ width: 36, height: 36 }}
+    />
+    <div className="flex-1 space-y-2">
+      <div className="skeleton-line" style={{ height: 13, width: "55%" }} />
+      <div className="skeleton-line" style={{ height: 10, width: "30%" }} />
+    </div>
+    <div
+      className="skeleton-line shrink-0"
+      style={{ height: 20, width: 52, borderRadius: 9999 }}
+    />
+  </div>
+);
+
+const SkeletonEmployerRow = () => (
+  <div className="flex items-center gap-3 p-2.5 rounded-xl">
+    <div
+      className="skeleton-circle shrink-0"
+      style={{ width: 36, height: 36 }}
+    />
+    <div className="flex-1 space-y-2">
+      <div className="skeleton-line" style={{ height: 13, width: "65%" }} />
+      <div className="skeleton-line" style={{ height: 10, width: "40%" }} />
+    </div>
+    <div
+      className="skeleton-circle shrink-0"
+      style={{ width: 12, height: 12 }}
+    />
+  </div>
+);
+
+// ── Skeleton panels (full tab skeletons) ─────────────────────────────────────
+
+const SkeletonIndustryPanel = memo(() => (
+  <div>
+    {/* Faint header label skeleton */}
+    <div className="flex items-center gap-2 mb-4">
+      <div className="skeleton-line" style={{ height: 10, width: 80 }} />
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+      {Array.from({ length: 12 }).map((_, i) => (
+        <SkeletonCategoryCard key={i} />
+      ))}
+      {/* "All Industries" placeholder */}
+      <div className="skeleton-card" style={{ height: 62 }} />
+    </div>
+    {/* Button skeleton */}
+    <div className="flex justify-center mt-5">
+      <div
+        className="skeleton-line"
+        style={{ height: 40, width: 220, borderRadius: 9999 }}
+      />
+    </div>
+  </div>
+));
+SkeletonIndustryPanel.displayName = "SkeletonIndustryPanel";
+
+const SkeletonCompanyPanel = memo(() => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <SkeletonCompanyCard key={i} />
+    ))}
+    <div className="skeleton-card" style={{ height: 62 }} />
+  </div>
+));
+SkeletonCompanyPanel.displayName = "SkeletonCompanyPanel";
+
+const SkeletonCountryPanel = memo(() => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+    {Array.from({ length: 9 }).map((_, i) => (
+      <SkeletonCountryCard key={i} />
+    ))}
+    <div className="skeleton-card" style={{ height: 62 }} />
+  </div>
+));
+SkeletonCountryPanel.displayName = "SkeletonCountryPanel";
+
+// ── Real card components ──────────────────────────────────────────────────────
 
 const CategoryCard = memo(({ category }) => (
   <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-green-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer">
@@ -118,6 +278,7 @@ const CategoryCard = memo(({ category }) => (
     </span>
   </div>
 ));
+CategoryCard.displayName = "CategoryCard";
 
 const CompanyCard = memo(({ company }) => (
   <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-purple-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
@@ -137,6 +298,7 @@ const CompanyCard = memo(({ company }) => (
     </span>
   </div>
 ));
+CompanyCard.displayName = "CompanyCard";
 
 const CountryCard = memo(({ country }) => (
   <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-emerald-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
@@ -162,8 +324,7 @@ const CountryCard = memo(({ country }) => (
     </span>
   </div>
 ));
-
-// ── Sidebar employer row ──────────────────────────────────────────────────────
+CountryCard.displayName = "CountryCard";
 
 const EmployerRow = memo(({ company, index }) => (
   <div
@@ -191,8 +352,9 @@ const EmployerRow = memo(({ company, index }) => (
     <FaChevronRight className="text-gray-300 group-hover:text-blue-400 text-[10px] shrink-0 transition-colors" />
   </div>
 ));
+EmployerRow.displayName = "EmployerRow";
 
-// ── Tab content panels ────────────────────────────────────────────────────────
+// ── Real panels ───────────────────────────────────────────────────────────────
 
 const IndustryPanel = memo(({ categories, expanded, onToggle }) => {
   const displayList = expanded
@@ -215,7 +377,6 @@ const IndustryPanel = memo(({ categories, expanded, onToggle }) => {
           </Link>
         </div>
       </div>
-
       {hasMore && (
         <div className="flex justify-center mt-5">
           <button
@@ -228,8 +389,8 @@ const IndustryPanel = memo(({ categories, expanded, onToggle }) => {
               </>
             ) : (
               <>
-                <FaPlusCircle className="text-xs" />
-                Show {categories.length - INITIAL_VISIBLE} More Categories
+                <FaPlusCircle className="text-xs" /> Show{" "}
+                {categories.length - INITIAL_VISIBLE} More Categories{" "}
                 <FaChevronDown className="text-xs" />
               </>
             )}
@@ -239,6 +400,7 @@ const IndustryPanel = memo(({ categories, expanded, onToggle }) => {
     </div>
   );
 });
+IndustryPanel.displayName = "IndustryPanel";
 
 const CompanyPanel = memo(({ companies }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -255,6 +417,7 @@ const CompanyPanel = memo(({ companies }) => (
     </div>
   </div>
 ));
+CompanyPanel.displayName = "CompanyPanel";
 
 const CountryPanel = memo(({ countries }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -271,6 +434,40 @@ const CountryPanel = memo(({ countries }) => (
     </div>
   </div>
 ));
+CountryPanel.displayName = "CountryPanel";
+
+// ── Sidebar skeleton ─────────────────────────────────────────────────────────
+
+const SkeletonSidebar = memo(() => (
+  <div className="space-y-2">
+    {/* header */}
+    <div className="flex items-center justify-between mb-5">
+      <div className="space-y-2">
+        <div className="skeleton-line" style={{ height: 10, width: 60 }} />
+        <div className="skeleton-line" style={{ height: 16, width: 120 }} />
+      </div>
+      <div
+        className="skeleton-line"
+        style={{ height: 12, width: 52, borderRadius: 9999 }}
+      />
+    </div>
+    {Array.from({ length: 6 }).map((_, i) => (
+      <SkeletonEmployerRow key={i} />
+    ))}
+    <div className="mt-5 pt-4 border-t border-gray-100">
+      <div className="skeleton-card" style={{ height: 42, borderRadius: 12 }} />
+    </div>
+  </div>
+));
+SkeletonSidebar.displayName = "SkeletonSidebar";
+
+// ── Selectors ─────────────────────────────────────────────────────────────────
+
+const selectCategories = (s) => s.categories;
+const selectCountries = (s) => s.countries;
+const selectCompanies = (s) => s.companies;
+const selectIsLoading = (s) => s.isLoading;
+const selectFetchJobFilters = (s) => s.fetchJobFilters;
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -278,57 +475,65 @@ const JobCategory = () => {
   const [activeTab, setActiveTab] = useState("industry");
   const [expanded, setExpanded] = useState(false);
 
-  let storeData = {};
-  try {
-    storeData = useJobStore();
-  } catch {
-    storeData = {};
-  }
+  const categories = useJobStore(selectCategories);
+  const countries = useJobStore(selectCountries);
+  const companies = useJobStore(selectCompanies);
+  const isLoading = useJobStore(selectIsLoading);
+  const fetchJobFilters = useJobStore(selectFetchJobFilters);
 
-  const {
-    categories = MOCK_CATEGORIES,
-    countries = MOCK_COUNTRIES,
-    companies = MOCK_COMPANIES,
-    fetchJobFilters = () => {},
-    isLoading = false,
-  } = storeData;
+  // inject shimmer CSS exactly once
+  useEffect(() => {
+    injectShimmerStyles();
+  }, []);
 
   useEffect(() => {
     fetchJobFilters();
-  }, []);
+  }, [fetchJobFilters]);
 
-  const categoryList = Array.isArray(categories) ? categories : [];
-  const countryList = Array.isArray(countries) ? countries : [];
-  const companyList = Array.isArray(companies)
-    ? companies
-    : companies?.items || [];
-
-  const activeCategories = categoryList.filter((c) => c.isActive !== false);
-  const activeCountries = countryList.filter((c) => c.isActive !== false);
-  const activeCompanies = companyList;
-  const topEmployers = activeCompanies.slice(0, 6);
+  const activeCategories = useMemo(
+    () =>
+      (Array.isArray(categories) && categories.length
+        ? categories
+        : MOCK_CATEGORIES
+      ).filter((c) => c.isActive !== false),
+    [categories],
+  );
+  const activeCountries = useMemo(
+    () =>
+      (Array.isArray(countries) && countries.length
+        ? countries
+        : MOCK_COUNTRIES
+      ).filter((c) => c.isActive !== false),
+    [countries],
+  );
+  const activeCompanies = useMemo(() => {
+    const list = Array.isArray(companies) ? companies : companies?.items || [];
+    return list.length ? list : MOCK_COMPANIES;
+  }, [companies]);
+  const topEmployers = useMemo(
+    () => activeCompanies.slice(0, 6),
+    [activeCompanies],
+  );
 
   const handleToggleExpand = useCallback(() => setExpanded((v) => !v), []);
-
   const handleTabChange = useCallback((id) => {
     setActiveTab(id);
     if (id !== "industry") setExpanded(false);
   }, []);
 
-  const tabs = [
-    { id: "industry", label: "By Industry", icon: FaIndustry },
-    { id: "company", label: "By Company", icon: FaBuilding },
-    { id: "country", label: "By Country", icon: FaGlobeAsia },
-  ];
-
-  const renderPanel = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-48">
-          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
-        </div>
-      );
+  // ── Skeleton panel matched to active tab ─────────────────────────────────
+  const skeletonPanel = useMemo(() => {
+    switch (activeTab) {
+      case "company":
+        return <SkeletonCompanyPanel />;
+      case "country":
+        return <SkeletonCountryPanel />;
+      default:
+        return <SkeletonIndustryPanel />;
     }
+  }, [activeTab]);
+
+  const realPanel = useMemo(() => {
     switch (activeTab) {
       case "industry":
         return (
@@ -345,7 +550,16 @@ const JobCategory = () => {
       default:
         return null;
     }
-  };
+  }, [
+    activeTab,
+    activeCategories,
+    activeCompanies,
+    activeCountries,
+    expanded,
+    handleToggleExpand,
+  ]);
+
+  const panelContent = isLoading ? skeletonPanel : realPanel;
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-gray-100 pb-14 pt-6 px-4 sm:px-6 lg:px-6">
@@ -353,26 +567,49 @@ const JobCategory = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
           {/* ── Main Panel ─────────────────────────────── */}
           <div className="lg:col-span-3 bg-white rounded-2xl shadow-xs p-6 border border-gray-100">
-            {/* Header */}
-            <div className="mb-5">
-              <div className="flex items-center gap-2 mb-1">
-                <FaFire className="text-orange-400 text-sm" />
-                <span className="text-xs font-bold text-orange-400 uppercase tracking-widest">
-                  Live Listings
-                </span>
+            {/* Header skeleton or real */}
+            {isLoading ? (
+              <div className="mb-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="skeleton-circle"
+                    style={{ width: 14, height: 14 }}
+                  />
+                  <div
+                    className="skeleton-line"
+                    style={{ height: 10, width: 80 }}
+                  />
+                </div>
+                <div
+                  className="skeleton-line"
+                  style={{ height: 28, width: "55%" }}
+                />
+                <div
+                  className="skeleton-line"
+                  style={{ height: 13, width: "70%" }}
+                />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-1 leading-tight">
-                Browse Jobs in Bangladesh
-              </h2>
-              <p className="text-gray-400 text-sm">
-                Explore opportunities by industry, company, or destination
-                country.
-              </p>
-            </div>
+            ) : (
+              <div className="mb-5">
+                <div className="flex items-center gap-2 mb-1">
+                  <FaFire className="text-orange-400 text-sm" />
+                  <span className="text-xs font-bold text-orange-400 uppercase tracking-widest">
+                    Live Listings
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-1 leading-tight">
+                  Browse Jobs in Bangladesh
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  Explore opportunities by industry, company, or destination
+                  country.
+                </p>
+              </div>
+            )}
 
-            {/* Tabs */}
+            {/* Tabs — always visible so user can switch while loading */}
             <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 w-fit">
-              {tabs.map(({ id, label, icon: Icon }) => (
+              {TABS.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => handleTabChange(id)}
@@ -388,67 +625,87 @@ const JobCategory = () => {
               ))}
             </div>
 
-            {/* Content */}
+            {/* Content — fade between skeleton and real, and between tabs */}
             <AnimatePresence mode="wait">
               <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 8 }}
+                key={isLoading ? `skeleton-${activeTab}` : `real-${activeTab}`}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
+                exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.18 }}
                 className="min-h-[300px]"
               >
-                {renderPanel()}
+                {panelContent}
               </motion.div>
             </AnimatePresence>
           </div>
 
           {/* ── Sidebar ─────────────────────────────────── */}
           <div className="bg-white rounded-2xl shadow-xs p-6 border border-gray-100 h-fit lg:sticky lg:top-6">
-            <div className="flex justify-between items-center mb-5">
-              <div>
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <FaStar className="text-yellow-400 text-xs" />
-                  <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
-                    Featured
-                  </span>
-                </div>
-                <h2 className="text-lg font-extrabold text-gray-800">
-                  Top Employers
-                </h2>
-              </div>
-              <Link
-                to="/jobs"
-                className="text-blue-500 hover:text-blue-700 text-xs font-semibold flex items-center gap-0.5 transition-colors"
-              >
-                View All <FaChevronRight className="text-[9px]" />
-              </Link>
-            </div>
-
-            <div className="space-y-2">
-              {topEmployers.map((company, i) => (
-                <EmployerRow
-                  key={company.companyId || company._id}
-                  company={company}
-                  index={i}
-                />
-              ))}
-              {!topEmployers.length && (
-                <p className="text-sm text-gray-400 text-center py-6">
-                  No employers found.
-                </p>
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <motion.div
+                  key="sidebar-skeleton"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <SkeletonSidebar />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="sidebar-real"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="flex justify-between items-center mb-5">
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <FaStar className="text-yellow-400 text-xs" />
+                        <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
+                          Featured
+                        </span>
+                      </div>
+                      <h2 className="text-lg font-extrabold text-gray-800">
+                        Top Employers
+                      </h2>
+                    </div>
+                    <Link
+                      to="/jobs"
+                      className="text-blue-500 hover:text-blue-700 text-xs font-semibold flex items-center gap-0.5 transition-colors"
+                    >
+                      View All <FaChevronRight className="text-[9px]" />
+                    </Link>
+                  </div>
+                  <div className="space-y-2">
+                    {topEmployers.map((company, i) => (
+                      <EmployerRow
+                        key={company.companyId || company._id}
+                        company={company}
+                        index={i}
+                      />
+                    ))}
+                    {!topEmployers.length && (
+                      <p className="text-sm text-gray-400 text-center py-6">
+                        No employers found.
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-5 pt-4 border-t border-gray-100">
+                    <Link
+                      to="/jobs"
+                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-[#1e2558] to-[#4eb956] text-white text-sm font-semibold hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <FaBriefcase className="text-xs" />
+                      Browse All Jobs
+                    </Link>
+                  </div>
+                </motion.div>
               )}
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-gray-100">
-              <Link
-                to="/jobs"
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-[#1e2558] to-[#4eb956] text-white text-sm font-semibold hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md"
-              >
-                <FaBriefcase className="text-xs" />
-                Browse All Jobs
-              </Link>
-            </div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
