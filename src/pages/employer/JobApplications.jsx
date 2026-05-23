@@ -843,28 +843,30 @@ const ActionDropdown = ({ application, onAction }) => {
 
       {open && (
         <div
-          className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 z-30 py-1.5 overflow-hidden"
+          className="absolute right-0 top-0 w-56 md:w-160 bg-white rounded-2xl shadow-2xl border border-gray-100 z-99 py-1.5 overflow-visible"
           style={{ animation: "dropIn .15s cubic-bezier(.16,1,.3,1)" }}
         >
-          {actions.map((action, i) =>
-            action.divider ? (
-              <div key={i} className="my-1.5 border-t border-gray-50 mx-2" />
-            ) : (
-              <button
-                key={action.key}
-                onClick={() => {
-                  onAction(action.key, application);
-                  setOpen(false);
-                }}
-                className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-all ${action.color} ${action.hover}`}
-              >
-                <span className="w-5 h-5 rounded-md bg-current/10 flex items-center justify-center flex-shrink-0">
-                  {action.icon}
-                </span>
-                {action.label}
-              </button>
-            ),
-          )}
+          <div className="md:flex">
+            {actions.map((action, i) =>
+              action.divider ? (
+                <div key={i} className="my-1.5 border-t border-gray-50 mx-2" />
+              ) : (
+                <button
+                  key={action.key}
+                  onClick={() => {
+                    onAction(action.key, application);
+                    setOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium  ${action.color} ${action.hover}`}
+                >
+                  <span className="w-5 h-5 rounded-md bg-current/10 flex items-center justify-center">
+                    {action.icon}
+                  </span>
+                  {action.label}
+                </button>
+              ),
+            )}
+          </div>
         </div>
       )}
       <style>{`@keyframes dropIn { from { opacity:0; transform:translateY(-6px) scale(.97) } to { opacity:1; transform:none } }`}</style>
@@ -1324,11 +1326,27 @@ const JobApplications = () => {
     }
 
     if (actionKey === "download") {
-      const assets = application?._seekerData?.resumeAssets || [];
+      const seekerData = application?._seekerData;
+      let cvUrl = null;
+
+      const assets = seekerData?.resumeAssets || [];
       const resumeFile = assets.find((a) => a.type === "resume_file" && a.url);
-      const cvUrl = resumeFile?.url || application?.resumeFileUrl;
-      if (cvUrl) window.open(cvUrl, "_blank");
-      else alert("No CV available for this applicant.");
+      cvUrl = resumeFile?.url;
+
+      if (!cvUrl && seekerData?.resumeFileUrl) {
+        cvUrl = seekerData.resumeFileUrl;
+      }
+
+      if (!cvUrl && application?.resumeFileUrl) {
+        cvUrl = application.resumeFileUrl;
+      }
+      console.log("CV URL found:", cvUrl);
+
+      if (cvUrl) {
+        window.open(cvUrl, "_blank");
+      } else {
+        alert("No CV available for this applicant.");
+      }
       return;
     }
 

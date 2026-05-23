@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   FaBusinessTime,
   FaLaptopCode,
@@ -32,9 +32,9 @@ import {
   FaSignInAlt,
   FaUserPlus,
   FaChevronRight,
-  FaPlusCircle,
   FaUser,
   FaUserTie,
+  FaSpinner,
 } from "react-icons/fa";
 import { MdOutlineDesignServices } from "react-icons/md";
 import { GrDatabase } from "react-icons/gr";
@@ -42,318 +42,150 @@ import { AiFillNotification } from "react-icons/ai";
 import ReactCountryFlag from "react-country-flag";
 import logo from "/logo.png";
 import { Link } from "react-router-dom";
-import jobData from "../data/jobData.json";
+import useJobStore from "../store/jobStore";
+
+// ─── Category icon map ────────────────────────────────────────────────────────
+const CATEGORY_ICON_MAP = {
+  "Accounting/Finance": <FaMoneyBill />,
+  "Business Development": <FaBusinessTime />,
+  "Sales/Marketing": <AiFillNotification />,
+  "IT/Telecommunication": <FaCode />,
+  "Information Technology": <FaLaptopCode />,
+  Engineering: <FaTools />,
+  Manufacturing: <FaIndustry />,
+  Services: <FaServicestack />,
+  "Recruitment/Employment Firms": <FaUsers />,
+  "Data Entry/Office Support": <GrDatabase />,
+  "Hospitality/Travel/Tourism": <FaPlane />,
+  "Education/Training": <FaGraduationCap />,
+  "Customer/Service/Call Centre": <FaPhone />,
+  Consultants: <FaBriefcase />,
+  "Banking/Financial Services": <FaBuilding />,
+  "N.G.O./Social Services": <FaHandHoldingHeart />,
+  "E-Commerce/E-Business": <FaShoppingCart />,
+  "Real Estate/Property": <FaHome />,
+  "Healthcare/Hospital/Medical": <FaHospital />,
+  BPO: <FaHeadset />,
+  "Construction/Cement/Metals": <FaHardHat />,
+  "Architect/Interior Design": <MdOutlineDesignServices />,
+  "Importers/ Distributors/Exporters": <FaShippingFast />,
+};
+
+const getIcon = (title) => CATEGORY_ICON_MAP[title] || <FaBriefcase />;
+
+// ─── Skeleton for category dropdown items ────────────────────────────────────
+const CategorySkeleton = () => (
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+    {Array.from({ length: 10 }).map((_, i) => (
+      <div
+        key={i}
+        className="flex items-center gap-3 p-3 rounded"
+        style={{
+          background:
+            "linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%)",
+          backgroundSize: "600px 100%",
+          animation: "shimmer 1.5s infinite linear",
+          height: 62,
+          borderRadius: 8,
+        }}
+      />
+    ))}
+  </div>
+);
 
 const RootHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [scrolled, setScrolled] = useState(false);
-  const dropdownRef = useRef(null);
-  const loginDropdownRef = useRef(null);
-  const signupDropdownRef = useRef(null);
-  const [jobCategories, setJobCategories] = useState([]);
   const [showLoginSubNav, setShowLoginSubNav] = useState(false);
   const [showSignupSubNav, setShowSignupSubNav] = useState(false);
 
-  // Calculate total vacancies for a category
-  const calculateVacancyCount = (categoryName) => {
-    const categoryMapping = {
-      "Accounting/Finance": "Accounting/Finance",
-      "Business Development": "Business Development",
-      "Sales/Marketing": "Sales/Marketing",
-      "IT/Telecommunication": "IT/Telecommunication",
-      "Information Technology": "Information Technology",
-      Engineering: "Engineering",
-      Manufacturing: "Manufacturing",
-      Services: "Services",
-      "Recruitment/Employment Firms": "Recruitment/Employment Firms",
-      "Data Entry/Office Support": "Data Entry/Office Support",
-      "Hospitality/Travel/Tourism": "Hospitality/Travel/Tourism",
-      "Education/Training": "Education/Training",
-      "Customer/Service/Call Centre": "Customer/Service/Call Centre",
-      Consultants: "Consultants",
-      "Banking/Financial Services": "Banking/Financial Services",
-      "N.G.O./Social Services": "N.G.O./Social Services",
-      "E-Commerce/E-Business": "E-Commerce/E-Business",
-      "Real Estate/Property": "Real Estate/Property",
-      "Healthcare/Hospital/Medical": "Healthcare/Hospital/Medical",
-      BPO: "BPO",
-      "Construction/Cement/Metals": "Construction/Cement/Metals",
-      "Architect/Interior Design": "Architect/Interior Design",
-      "Importers/ Distributors/Exporters": "Importers/ Distributors/Exporters",
-    };
+  const dropdownRef = useRef(null);
+  const loginDropdownRef = useRef(null);
+  const signupDropdownRef = useRef(null);
 
-    const mappedCategory = categoryMapping[categoryName];
-    if (!mappedCategory) return 0;
+  // ── Job store ──────────────────────────────────────────────────────────────
+  const {
+    categories: storeCategories,
+    fetchCategories,
+    isLoading: categoriesLoading,
+  } = useJobStore();
 
-    const totalVacancies = jobData
-      .filter((job) => job.category === mappedCategory)
-      .reduce((sum, job) => sum + (Number(job.vacancy) || 0), 0);
-
-    return totalVacancies;
-  };
-
-  // Calculate total jobs for a category
-  const calculateJobCount = (categoryName) => {
-    const categoryMapping = {
-      "Accounting/Finance": "Accounting/Finance",
-      "Business Development": "Business Development",
-      "Sales/Marketing": "Sales/Marketing",
-      "IT/Telecommunication": "IT/Telecommunication",
-      "Information Technology": "Information Technology",
-      Engineering: "Engineering",
-      Manufacturing: "Manufacturing",
-      Services: "Services",
-      "Recruitment/Employment Firms": "Recruitment/Employment Firms",
-      "Data Entry/Office Support": "Data Entry/Office Support",
-      "Hospitality/Travel/Tourism": "Hospitality/Travel/Tourism",
-      "Education/Training": "Education/Training",
-      "Customer/Service/Call Centre": "Customer/Service/Call Centre",
-      Consultants: "Consultants",
-      "Banking/Financial Services": "Banking/Financial Services",
-      "N.G.O./Social Services": "N.G.O./Social Services",
-      "E-Commerce/E-Business": "E-Commerce/E-Business",
-      "Real Estate/Property": "Real Estate/Property",
-      "Healthcare/Hospital/Medical": "Healthcare/Hospital/Medical",
-      BPO: "BPO",
-      "Construction/Cement/Metals": "Construction/Cement/Metals",
-      "Architect/Interior Design": "Architect/Interior Design",
-      "Importers/ Distributors/Exporters": "Importers/ Distributors/Exporters",
-    };
-
-    const mappedCategory = categoryMapping[categoryName];
-    if (!mappedCategory) return 0;
-
-    return jobData.filter((job) => job.category === mappedCategory).length;
-  };
-
+  // ── Fetch categories on mount ──────────────────────────────────────────────
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
+    fetchCategories();
+  }, []);
+
+  // ── Build dynamic category list from API ──────────────────────────────────
+  const jobCategories = useMemo(() => {
+    const list = Array.isArray(storeCategories) ? storeCategories : [];
+    return list
+      .filter((c) => c.isActive !== false)
+      .map((c) => ({
+        name: c.title || c.nameCategory || "",
+        icon: getIcon(c.title || c.nameCategory),
+        path: `/jobs?jobCategoryId=${c.jobCategoryId || c._id}`,
+        jobCount: c.totalJobs || 0,
+        vacancyCount: c.totalVacancies || 0,
+        categoryId: c.jobCategoryId || c._id,
+      }));
+  }, [storeCategories]);
+
+  // ── Scroll + click-outside ─────────────────────────────────────────────────
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
 
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target))
         setActiveNav(null);
-      }
       if (
         loginDropdownRef.current &&
         !loginDropdownRef.current.contains(event.target)
-      ) {
+      )
         setShowLoginSubNav(false);
-      }
       if (
         signupDropdownRef.current &&
         !signupDropdownRef.current.contains(event.target)
-      ) {
+      )
         setShowSignupSubNav(false);
-      }
     };
 
     window.addEventListener("scroll", handleScroll);
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Initialize job categories
-    const categories = [
-      {
-        name: "Accounting/Finance",
-        vacancyCount: calculateVacancyCount("Accounting/Finance"),
-        jobCount: calculateJobCount("Accounting/Finance"),
-        icon: <FaMoneyBill />,
-        path: "accounting-finance",
-      },
-      {
-        name: "Business Development",
-        vacancyCount: calculateVacancyCount("Business Development"),
-        jobCount: calculateJobCount("Business Development"),
-        icon: <FaBusinessTime />,
-        path: "business-development",
-      },
-      {
-        name: "Sales/Marketing",
-        vacancyCount: calculateVacancyCount("Sales/Marketing"),
-        jobCount: calculateJobCount("Sales/Marketing"),
-        icon: <AiFillNotification />,
-        path: "sales-marketing",
-      },
-      {
-        name: "IT/Telecommunication",
-        vacancyCount: calculateVacancyCount("IT/Telecommunication"),
-        jobCount: calculateJobCount("IT/Telecommunication"),
-        icon: <FaCode />,
-        path: "it-telecommunication",
-      },
-      {
-        name: "Information Technology",
-        vacancyCount: calculateVacancyCount("Information Technology"),
-        jobCount: calculateJobCount("Information Technology"),
-        icon: <FaLaptopCode />,
-        path: "information-technology",
-      },
-      {
-        name: "Engineering",
-        vacancyCount: calculateVacancyCount("Engineering"),
-        jobCount: calculateJobCount("Engineering"),
-        icon: <FaTools />,
-        path: "engineering",
-      },
-      {
-        name: "Manufacturing",
-        vacancyCount: calculateVacancyCount("Manufacturing"),
-        jobCount: calculateJobCount("Manufacturing"),
-        icon: <FaIndustry />,
-        path: "manufacturing",
-      },
-      {
-        name: "Services",
-        vacancyCount: calculateVacancyCount("Services"),
-        jobCount: calculateJobCount("Services"),
-        icon: <FaServicestack />,
-        path: "services",
-      },
-      {
-        name: "Recruitment/Employment Firms",
-        vacancyCount: calculateVacancyCount("Recruitment/Employment Firms"),
-        jobCount: calculateJobCount("Recruitment/Employment Firms"),
-        icon: <FaUsers />,
-        path: "recruitment-employment",
-      },
-      {
-        name: "Data Entry/Office Support",
-        vacancyCount: calculateVacancyCount("Data Entry/Office Support"),
-        jobCount: calculateJobCount("Data Entry/Office Support"),
-        icon: <GrDatabase />,
-        path: "data-entry-office-support",
-      },
-      {
-        name: "Hospitality/Travel/Tourism",
-        vacancyCount: calculateVacancyCount("Hospitality/Travel/Tourism"),
-        jobCount: calculateJobCount("Hospitality/Travel/Tourism"),
-        icon: <FaPlane />,
-        path: "hospitality-travel-tourism",
-      },
-      {
-        name: "Education/Training",
-        vacancyCount: calculateVacancyCount("Education/Training"),
-        jobCount: calculateJobCount("Education/Training"),
-        icon: <FaGraduationCap />,
-        path: "education-training",
-      },
-      {
-        name: "Customer/Service/Call Centre",
-        vacancyCount: calculateVacancyCount("Customer/Service/Call Centre"),
-        jobCount: calculateJobCount("Customer/Service/Call Centre"),
-        icon: <FaPhone />,
-        path: "customer-service-call-centre",
-      },
-      {
-        name: "Consultants",
-        vacancyCount: calculateVacancyCount("Consultants"),
-        jobCount: calculateJobCount("Consultants"),
-        icon: <FaBriefcase />,
-        path: "consultants",
-      },
-      {
-        name: "Banking/Financial Services",
-        vacancyCount: calculateVacancyCount("Banking/Financial Services"),
-        jobCount: calculateJobCount("Banking/Financial Services"),
-        icon: <FaBuilding />,
-        path: "banking-financial-services",
-      },
-      {
-        name: "N.G.O./Social Services",
-        vacancyCount: calculateVacancyCount("N.G.O./Social Services"),
-        jobCount: calculateJobCount("N.G.O./Social Services"),
-        icon: <FaHandHoldingHeart />,
-        path: "ngo-social-services",
-      },
-      {
-        name: "E-Commerce/E-Business",
-        vacancyCount: calculateVacancyCount("E-Commerce/E-Business"),
-        jobCount: calculateJobCount("E-Commerce/E-Business"),
-        icon: <FaShoppingCart />,
-        path: "ecommerce-ebusiness",
-      },
-      {
-        name: "Real Estate/Property",
-        vacancyCount: calculateVacancyCount("Real Estate/Property"),
-        jobCount: calculateJobCount("Real Estate/Property"),
-        icon: <FaHome />,
-        path: "real-estate-property",
-      },
-      {
-        name: "Healthcare/Hospital/Medical",
-        vacancyCount: calculateVacancyCount("Healthcare/Hospital/Medical"),
-        jobCount: calculateJobCount("Healthcare/Hospital/Medical"),
-        icon: <FaHospital />,
-        path: "healthcare-hospital-medical",
-      },
-      {
-        name: "BPO",
-        vacancyCount: calculateVacancyCount("BPO"),
-        jobCount: calculateJobCount("BPO"),
-        icon: <FaHeadset />,
-        path: "bpo",
-      },
-      {
-        name: "Construction/Cement/Metals",
-        vacancyCount: calculateVacancyCount("Construction/Cement/Metals"),
-        jobCount: calculateJobCount("Construction/Cement/Metals"),
-        icon: <FaHardHat />,
-        path: "construction-cement-metals",
-      },
-      {
-        name: "Architect/Interior Design",
-        vacancyCount: calculateVacancyCount("Architect/Interior Design"),
-        jobCount: calculateJobCount("Architect/Interior Design"),
-        icon: <MdOutlineDesignServices />,
-        path: "architect-interior-design",
-      },
-      {
-        name: "Importers/ Distributors/Exporters",
-        vacancyCount: calculateVacancyCount(
-          "Importers/ Distributors/Exporters",
-        ),
-        jobCount: calculateJobCount("Importers/ Distributors/Exporters"),
-        icon: <FaShippingFast />,
-        path: "importers-distributors-exporters",
-      },
-    ];
-    setJobCategories(categories);
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
+  // ── Nav items — subNav built from live categories ─────────────────────────
+  const browseJobSubNav = useMemo(
+    () => [
+      {
+        name: "All Industry",
+        path: "/jobs",
+        icon: <FaIndustry />,
+        isAllIndustry: true,
+      },
+      ...jobCategories.map((c) => ({
+        name: c.name,
+        path: c.path,
+        icon: c.icon,
+        jobCount: c.jobCount,
+        vacancyCount: c.vacancyCount,
+      })),
+    ],
+    [jobCategories],
+  );
+
   const navItems = [
     {
       label: "Browse Job",
       icon: <FaSearch className="text-xs" />,
-      subNav: [
-        {
-          name: "All Industry",
-          path: "/jobs",
-          count: "View All",
-          icon: <FaIndustry />,
-          isAllIndustry: true,
-        },
-        ...jobCategories.map((category) => ({
-          name: category.name,
-          path: `/jobs/${category.path}`,
-          count: category?.jobCount,
-          icon: category.icon,
-          vacancyCount: category?.vacancyCount,
-        })),
-      ],
+      subNav: browseJobSubNav,
     },
-    {
-      label: "Community",
-      path: "",
-      icon: <FaComments className="text-xs" />,
-    },
+    { label: "Community", path: "", icon: <FaComments className="text-xs" /> },
     {
       label: "Free CV Review",
       path: "",
@@ -418,13 +250,7 @@ const RootHeader = () => {
     },
   ];
 
-  const languages = [
-    {
-      name: "English",
-      code: "US",
-      countryCode: "US",
-    },
-  ];
+  const languages = [{ name: "English", code: "US", countryCode: "US" }];
 
   const actionButtons = [
     {
@@ -447,52 +273,44 @@ const RootHeader = () => {
     },
   ];
 
+  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleBrowseJobClick = () => {
-    if (activeNav === "Browse Job") {
-      setActiveNav(null);
-    } else {
-      setActiveNav("Browse Job");
-      setShowLoginSubNav(false);
-      setShowSignupSubNav(false);
-    }
-  };
-
-  const handleNavItemClick = (label) => {
-    if (label === "Browse Job") {
-      handleBrowseJobClick();
-    } else {
-      setActiveNav(null);
-    }
+    setActiveNav((prev) => (prev === "Browse Job" ? null : "Browse Job"));
+    setShowLoginSubNav(false);
+    setShowSignupSubNav(false);
   };
 
   const handleLoginClick = () => {
-    setShowLoginSubNav(!showLoginSubNav);
+    setShowLoginSubNav((v) => !v);
     setShowSignupSubNav(false);
     setActiveNav(null);
   };
 
   const handleSignupClick = () => {
-    setShowSignupSubNav(!showSignupSubNav);
+    setShowSignupSubNav((v) => !v);
     setShowLoginSubNav(false);
     setActiveNav(null);
   };
 
-  const AuthDropdown = ({ showDropdown, dropdownRef, type }) => (
+  const closeAll = () => {
+    setActiveNav(null);
+    setShowLoginSubNav(false);
+    setShowSignupSubNav(false);
+    setIsMenuOpen(false);
+  };
+
+  // ── Auth dropdown ──────────────────────────────────────────────────────────
+  const AuthDropdown = ({ showDropdown, dropdownRef: ref, type }) => (
     <div
-      ref={dropdownRef}
-      className={`absolute left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 transition-all duration-300 ${
+      ref={ref}
+      className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 transition-all duration-300 ${
         showDropdown
           ? "opacity-100 scale-100 translate-y-0"
           : "opacity-0 scale-95 -translate-y-4 pointer-events-none"
       }`}
-      style={{
-        top: "calc(100% + 10px)",
-        width: "800px",
-        minHeight: "260px",
-      }}
+      style={{ top: "calc(100% + 10px)", width: 800 }}
     >
-      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white"></div>
-
+      <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white" />
       <div className="p-6">
         <div className="grid grid-cols-2 gap-6">
           {accountTypes.map((accountType, index) => (
@@ -502,7 +320,7 @@ const RootHeader = () => {
             >
               <div className="flex items-center space-x-3 mb-4">
                 <div
-                  className={`bg-linear-to-r ${accountType.color} p-2.5 rounded-lg`}
+                  className={`bg-gradient-to-r ${accountType.color} p-2.5 rounded-lg`}
                 >
                   <div className="text-white text-lg">{accountType.icon}</div>
                 </div>
@@ -515,21 +333,16 @@ const RootHeader = () => {
                   </p>
                 </div>
               </div>
-
-              {/* Options Grid - Side by Side */}
               <div className="grid grid-cols-2 gap-3">
                 {accountType.options.map((option, idx) => (
                   <Link
                     key={idx}
                     to={option.path}
-                    className={`flex flex-col items-center justify-center p-4 rounded-lg bg-white border border-gray-100 transition-all duration-300 hover:shadow-md hover:scale-[1.02] group`}
-                    onClick={() => {
-                      setShowLoginSubNav(false);
-                      setShowSignupSubNav(false);
-                    }}
+                    onClick={closeAll}
+                    className="flex flex-col items-center justify-center p-4 rounded-lg bg-white border border-gray-100 transition-all duration-300 hover:shadow-md hover:scale-[1.02] group"
                   >
                     <div
-                      className={`bg-linear-to-r ${accountType.color} p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300`}
+                      className={`bg-gradient-to-r ${accountType.color} p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300`}
                     >
                       <div className="text-white text-sm">{option.icon}</div>
                     </div>
@@ -544,33 +357,25 @@ const RootHeader = () => {
                   </Link>
                 ))}
               </div>
-
-              {/* Quick Link */}
               <div className="mt-4 pt-4 border-t border-gray-200">
-                <Link
-                  // to={type === "login" ? "/forgot-password" : "/learn-more"}
-                  className={`text-xs font-medium ${accountType.textColor} hover:underline flex items-center justify-center`}
+                <span
+                  className={`text-xs font-medium ${accountType.textColor} flex items-center justify-center cursor-pointer hover:underline`}
                 >
                   {type === "login"
                     ? "Forgot Password?"
                     : "Learn more about this account"}
                   <FaChevronRight className="ml-1 text-[10px]" />
-                </Link>
+                </span>
               </div>
             </div>
           ))}
         </div>
-
-        {/* Footer */}
         <div className="mt-6 pt-4 border-t border-gray-100 text-center">
           <p className="text-xs text-gray-500">
             Need help choosing?{" "}
-            <Link
-              // to="/help"
-              className="text-blue-600 hover:underline font-medium"
-            >
+            <span className="text-blue-600 hover:underline font-medium cursor-pointer">
               Contact Support
-            </Link>
+            </span>
           </p>
         </div>
       </div>
@@ -579,6 +384,20 @@ const RootHeader = () => {
 
   return (
     <>
+      {/* Shimmer keyframe */}
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position:  600px 0; }
+        }
+        @keyframes fadeSlideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .browse-dropdown { animation: fadeSlideDown 0.25s cubic-bezier(0.4,0,0.2,1) both; }
+        .category-grid-enter { animation: fadeSlideDown 0.2s ease both; }
+      `}</style>
+
       <nav
         className={`bg-white sticky top-0 z-50 transition-all duration-300 font-ubuntu ${
           scrolled ? "shadow-md" : "shadow-sm"
@@ -586,8 +405,9 @@ const RootHeader = () => {
       >
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <div className="flex items-center space-x-2">
-              <Link to={"/"}>
+              <Link to="/">
                 <img
                   src={logo}
                   alt="Logo"
@@ -596,6 +416,7 @@ const RootHeader = () => {
               </Link>
             </div>
 
+            {/* Desktop nav */}
             <div className="hidden lg:flex items-center justify-center space-x-8">
               {navItems.map((item, index) => (
                 <div
@@ -611,164 +432,179 @@ const RootHeader = () => {
                           : null
                   }
                 >
+                  {/* Browse Job */}
                   {item.subNav ? (
                     <button
-                      onClick={() => handleNavItemClick(item.label)}
-                      className={`flex flex-col items-center space-y-1 group cursor-pointer ${
-                        activeNav === item.label ? "text-[#4EB956]" : ""
+                      onClick={handleBrowseJobClick}
+                      className={`flex flex-col items-center space-y-1 group cursor-pointer transition-colors duration-200 ${
+                        activeNav === "Browse Job"
+                          ? "text-[#4EB956]"
+                          : "text-gray-600 hover:text-[#4EB956]"
                       }`}
                     >
-                      <div
-                        className={`${
-                          activeNav === item.label
-                            ? "text-[#4EB956]"
-                            : "text-gray-500"
-                        } transition-colors duration-200`}
-                      >
-                        {item.icon}
-                      </div>
-                      <span
-                        className={`text-[10px] font-medium uppercase tracking-wider transition-colors duration-200 ${
-                          activeNav === item.label
-                            ? "text-[#4EB956]"
-                            : "text-gray-600"
-                        }`}
-                      >
+                      <div className="text-xs">{item.icon}</div>
+                      <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
                         {item.label}
+                        {categoriesLoading && (
+                          <FaSpinner className="text-[8px] animate-spin text-[#4EB956]" />
+                        )}
                       </span>
                     </button>
-                  ) : item.isLogin || item.isSignup ? (
+                  ) : /* Login / Signup */
+                  item.isLogin || item.isSignup ? (
                     <>
                       <button
                         onClick={
                           item.isLogin ? handleLoginClick : handleSignupClick
                         }
-                        className={`flex flex-col items-center space-y-1 group cursor-pointer ${
+                        className={`flex flex-col items-center space-y-1 group cursor-pointer transition-colors duration-200 ${
                           (item.isLogin && showLoginSubNav) ||
                           (item.isSignup && showSignupSubNav)
                             ? "text-[#4EB956]"
-                            : ""
+                            : "text-gray-600 hover:text-[#4EB956]"
                         }`}
                       >
-                        <div
-                          className={`${
-                            (item.isLogin && showLoginSubNav) ||
-                            (item.isSignup && showSignupSubNav)
-                              ? "text-[#4EB956]"
-                              : "text-gray-500"
-                          } transition-colors duration-200`}
-                        >
-                          {item.icon}
-                        </div>
-                        <span
-                          className={`text-[10px] font-medium uppercase tracking-wider transition-colors duration-200 ${
-                            (item.isLogin && showLoginSubNav) ||
-                            (item.isSignup && showSignupSubNav)
-                              ? "text-[#4EB956]"
-                              : "text-gray-600"
-                          }`}
-                        >
+                        <div className="text-xs">{item.icon}</div>
+                        <span className="text-[10px] font-medium uppercase tracking-wider">
                           {item.label}
                         </span>
                       </button>
-
-                      {/* Auth Dropdown */}
-                      {(item.isLogin && showLoginSubNav) ||
-                      (item.isSignup && showSignupSubNav) ? (
+                      {((item.isLogin && showLoginSubNav) ||
+                        (item.isSignup && showSignupSubNav)) && (
                         <AuthDropdown
-                          showDropdown={true}
+                          showDropdown
                           dropdownRef={
                             item.isLogin ? loginDropdownRef : signupDropdownRef
                           }
                           type={item.isLogin ? "login" : "signup"}
                         />
-                      ) : null}
+                      )}
                     </>
                   ) : (
+                    /* Regular link */
                     <Link
                       to={item.path}
-                      className="flex flex-col items-center space-y-1 group"
                       onClick={() => setActiveNav(null)}
+                      className="flex flex-col items-center space-y-1 group text-gray-600 hover:text-[#4EB956] transition-colors duration-200"
                     >
-                      <div className="text-gray-500 group-hover:text-[#4EB956] transition-colors duration-200">
-                        {item.icon}
-                      </div>
-                      <span className="text-[10px] font-medium text-gray-600 group-hover:text-[#4EB956] uppercase tracking-wider transition-colors duration-200">
+                      <div className="text-xs">{item.icon}</div>
+                      <span className="text-[10px] font-medium uppercase tracking-wider">
                         {item.label}
                       </span>
                     </Link>
                   )}
 
-                  {item.subNav && activeNav === item.label && (
+                  {/* Browse Job mega-dropdown — 60vh, grid scrolls inside */}
+                  {item.subNav && activeNav === "Browse Job" && (
                     <div
-                      className="fixed left-0 right-0 bg-white shadow-xl border-t border-gray-100 z-40"
-                      style={{ top: "64px" }}
+                      className="browse-dropdown fixed left-0 right-0 bg-white shadow-xl border-t border-gray-100 z-40 flex flex-col"
+                      style={{ top: 64, maxHeight: "60vh" }}
                     >
-                      <div className="container mx-auto px-4 py-6">
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                          {item.subNav.map((subItem, subIndex) => (
-                            <Link
-                              key={subIndex}
-                              to={subItem.path}
-                              className={`flex items-center justify-between p-3 hover:bg-gray-50 rounded transition-colors duration-200 group/sub ${
-                                subItem.isAllIndustry
-                                  ? "border-2 border-[#4EB956] bg-[#4EB956]/5"
-                                  : ""
-                              }`}
-                              onClick={() => setActiveNav(null)}
-                            >
-                              <div className="flex items-center space-x-3">
-                                <div
-                                  className={`transition-colors duration-200 ${
+                      {/* ── Sticky header (never scrolls) ── */}
+                      <div className="container mx-auto px-4 pt-5 pb-3 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            Browse by Industry
+                          </span>
+                          {!categoriesLoading && jobCategories.length > 0 && (
+                            <span className="text-[10px] px-2 py-0.5 bg-[#4EB956]/10 text-[#4EB956] rounded-full font-bold border border-[#4EB956]/20">
+                              {jobCategories.length} categories
+                            </span>
+                          )}
+                        </div>
+                        <Link
+                          to="/jobs"
+                          onClick={() => setActiveNav(null)}
+                          className="text-xs text-[#4EB956] hover:text-[#3da345] font-semibold flex items-center gap-1"
+                        >
+                          View all <FaChevronRight className="text-[8px]" />
+                        </Link>
+                      </div>
+
+                      {/* ── Scrollable category grid ── */}
+                      <div
+                        className="flex-1 overflow-y-auto"
+                        style={{
+                          scrollbarWidth: "thin",
+                          scrollbarColor: "#d1fae5 transparent",
+                        }}
+                      >
+                        <div className="container mx-auto px-4 pb-3">
+                          {categoriesLoading ? (
+                            <CategorySkeleton />
+                          ) : (
+                            <div className="category-grid-enter grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                              {item.subNav.map((subItem, si) => (
+                                <Link
+                                  key={si}
+                                  to={subItem.path}
+                                  onClick={() => setActiveNav(null)}
+                                  className={`flex items-center justify-between p-3 rounded transition-all duration-200 group/sub ${
                                     subItem.isAllIndustry
-                                      ? "text-[#4EB956]"
-                                      : "text-gray-400 group-hover/sub:text-[#4EB956]"
+                                      ? "border-2 border-[#4EB956] bg-[#4EB956]/5"
+                                      : "hover:bg-gray-50 border border-transparent hover:border-gray-100"
                                   }`}
                                 >
-                                  {subItem.icon}
-                                </div>
-                                <div>
-                                  <p
-                                    className={`text-xs font-medium ${
+                                  <div className="flex items-center space-x-3">
+                                    <span
+                                      className={`transition-colors duration-200 ${
+                                        subItem.isAllIndustry
+                                          ? "text-[#4EB956]"
+                                          : "text-gray-400 group-hover/sub:text-[#4EB956]"
+                                      }`}
+                                    >
+                                      {subItem.icon}
+                                    </span>
+                                    <div>
+                                      <p
+                                        className={`text-xs font-medium ${
+                                          subItem.isAllIndustry
+                                            ? "text-[#1E2558] font-bold"
+                                            : "text-gray-700 group-hover/sub:text-[#1E2558]"
+                                        }`}
+                                      >
+                                        {subItem.name}
+                                      </p>
+                                      {subItem.isAllIndustry ? (
+                                        <p className="text-[10px] text-[#4EB956] mt-0.5 font-medium">
+                                          Browse all categories
+                                        </p>
+                                      ) : (
+                                        <p className="text-[10px] text-gray-400 mt-0.5">
+                                          {subItem.jobCount > 0
+                                            ? `${subItem.jobCount} jobs`
+                                            : "View jobs"}
+                                          {subItem.vacancyCount > 0
+                                            ? ` · ${subItem.vacancyCount} vacancies`
+                                            : ""}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <FaChevronRight
+                                    className={`text-[8px] shrink-0 ${
                                       subItem.isAllIndustry
-                                        ? "text-[#1E2558] font-bold"
-                                        : "text-gray-700 group-hover/sub:text-[#1E2558]"
+                                        ? "text-[#4EB956]"
+                                        : "text-gray-300 group-hover/sub:text-[#4EB956]"
                                     }`}
-                                  >
-                                    {subItem.name}
-                                  </p>
-                                  {subItem.isAllIndustry ? (
-                                    <p className="text-[10px] text-[#4EB956] mt-0.5 font-medium">
-                                      Browse all categories
-                                    </p>
-                                  ) : (
-                                    <p className="text-[10px] text-gray-400 mt-0.5">
-                                      {subItem.jobCount} jobs •{" "}
-                                      {subItem.vacancyCount} vacancies
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                              <FaChevronRight
-                                className={`text-[8px] ${
-                                  subItem.isAllIndustry
-                                    ? "text-[#4EB956]"
-                                    : "text-gray-300 group-hover/sub:text-[#4EB956]"
-                                }`}
-                              />
-                            </Link>
-                          ))}
+                                  />
+                                </Link>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                          <Link
-                            to="/jobs"
-                            className="text-xs text-primary hover:text-secondary font-medium hover:underline flex items-center space-x-1 cursor-pointer"
-                            onClick={() => setActiveNav(null)}
-                          >
-                            <span>View all job categories</span>
-                            <FaChevronRight className="text-[8px]" />
-                          </Link>
-                        </div>
+                      </div>
+
+                      {/* ── Sticky footer (never scrolls) ── */}
+                      <div className="container mx-auto px-4 py-3 border-t border-gray-100 shrink-0 bg-white">
+                        <Link
+                          to="/jobs"
+                          onClick={() => setActiveNav(null)}
+                          className="text-xs text-[#4EB956] hover:text-[#3da345] font-medium hover:underline flex items-center space-x-1"
+                        >
+                          <span>View all job categories</span>
+                          <FaChevronRight className="text-[8px]" />
+                        </Link>
                       </div>
                     </div>
                   )}
@@ -776,12 +612,14 @@ const RootHeader = () => {
               ))}
             </div>
 
+            {/* Right: language + action buttons + hamburger */}
             <div className="flex items-center space-x-4">
+              {/* Language selector */}
               <div className="hidden md:block relative group">
                 <button className="flex items-center space-x-1.5 text-gray-600 hover:text-[#4EB956] transition-colors duration-200 cursor-pointer">
                   <ReactCountryFlag
                     countryCode={
-                      languages.find((lang) => lang.name === selectedLanguage)
+                      languages.find((l) => l.name === selectedLanguage)
                         ?.countryCode || "US"
                     }
                     svg
@@ -797,11 +635,10 @@ const RootHeader = () => {
                   </span>
                   <FaChevronDown className="text-[8px]" />
                 </button>
-
                 <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg border border-gray-100 p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  {languages.map((lang, index) => (
+                  {languages.map((lang, i) => (
                     <button
-                      key={index}
+                      key={i}
                       onClick={() => setSelectedLanguage(lang.name)}
                       className={`flex items-center space-x-2 w-full p-2 rounded transition-colors duration-200 cursor-pointer ${
                         selectedLanguage === lang.name
@@ -825,15 +662,16 @@ const RootHeader = () => {
                 </div>
               </div>
 
+              {/* Action buttons */}
               <div className="hidden lg:flex items-center space-x-2">
-                {actionButtons.map((button, index) => (
+                {actionButtons.map((button, i) => (
                   <Link
                     to={button.path}
-                    key={index}
+                    key={i}
                     className={`flex items-center space-x-1.5 px-3 py-1.5 ${
                       button.outline
                         ? "border border-[#1E2558] text-[#1E2558] hover:bg-[#1E2558] hover:text-white"
-                        : `bg-linear-to-r ${button.color} text-white`
+                        : `bg-gradient-to-r ${button.color} text-white`
                     } rounded text-[10px] font-medium uppercase tracking-wider transition-all duration-200 hover:shadow-md cursor-pointer`}
                   >
                     {button.icon}
@@ -842,6 +680,7 @@ const RootHeader = () => {
                 ))}
               </div>
 
+              {/* Hamburger */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="lg:hidden cursor-pointer text-gray-600 hover:text-[#4EB956] transition-colors duration-200"
@@ -855,15 +694,16 @@ const RootHeader = () => {
             </div>
           </div>
 
+          {/* Tablet nav strip */}
           <div className="hidden md:flex lg:hidden justify-center border-t border-gray-100 pt-3 pb-2">
             <div className="flex items-center justify-center space-x-6">
-              {navItems.map((item, index) => (
+              {navItems.map((item, i) => (
                 <Link
-                  key={index}
-                  to={item.path}
+                  key={i}
+                  to={item.path || "#"}
                   className="flex flex-col items-center space-y-1 group cursor-pointer"
                 >
-                  <div className="text-gray-500 group-hover:text-[#4EB956] transition-colors duration-200">
+                  <div className="text-gray-500 group-hover:text-[#4EB956] transition-colors duration-200 text-xs">
                     {item.icon}
                   </div>
                   <span className="text-[10px] font-medium text-gray-600 group-hover:text-[#4EB956] uppercase tracking-wider transition-colors duration-200">
@@ -876,16 +716,15 @@ const RootHeader = () => {
         </div>
       </nav>
 
-      {/* Mobile */}
+      {/* ── Mobile menu ─────────────────────────────────────────────────────── */}
       {isMenuOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 lg:hidden">
           <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
+            {/* Mobile header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
-              <div className="flex items-center space-x-2">
-                <Link to={"/"}>
-                  <img src={logo} alt="Logo" className="h-6 w-auto" />
-                </Link>
-              </div>
+              <Link to="/">
+                <img src={logo} alt="Logo" className="h-6 w-auto" />
+              </Link>
               <button
                 onClick={() => setIsMenuOpen(false)}
                 className="text-gray-500 hover:text-[#4EB956] cursor-pointer"
@@ -895,45 +734,43 @@ const RootHeader = () => {
             </div>
 
             <div className="h-[calc(100%-60px)] overflow-y-auto">
+              {/* Language */}
               <div className="p-4 border-b border-gray-100">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Select Language
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {languages.map((lang, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setSelectedLanguage(lang.name);
-                        setIsMenuOpen(false);
+                <span className="text-xs font-medium text-gray-700 uppercase tracking-wider block mb-3">
+                  Select Language
+                </span>
+                {languages.map((lang, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setSelectedLanguage(lang.name);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`flex items-center cursor-pointer space-x-3 w-full p-3 rounded transition-colors duration-200 ${
+                      selectedLanguage === lang.name
+                        ? "bg-gradient-to-r from-[#1E2558]/10 to-[#4EB956]/10"
+                        : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <ReactCountryFlag
+                      countryCode={lang.countryCode}
+                      svg
+                      style={{
+                        width: "1.5em",
+                        height: "1.5em",
+                        borderRadius: "50%",
                       }}
-                      className={`flex items-center cursor-pointer space-x-3 w-full p-3 rounded transition-colors duration-200 ${
-                        selectedLanguage === lang.name
-                          ? "bg-linear-to-r from-[#1E2558]/10 to-[#4EB956]/10"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <ReactCountryFlag
-                        countryCode={lang.countryCode}
-                        svg
-                        style={{
-                          width: "1.5em",
-                          height: "1.5em",
-                          borderRadius: "50%",
-                        }}
-                        title={lang.name}
-                      />
-                      <span className="text-sm font-medium">{lang.name}</span>
-                      {selectedLanguage === lang.name && (
-                        <div className="ml-auto w-2 h-2 rounded-full bg-[#4EB956]"></div>
-                      )}
-                    </button>
-                  ))}
-                </div>
+                      title={lang.name}
+                    />
+                    <span className="text-sm font-medium">{lang.name}</span>
+                    {selectedLanguage === lang.name && (
+                      <div className="ml-auto w-2 h-2 rounded-full bg-[#4EB956]" />
+                    )}
+                  </button>
+                ))}
               </div>
 
+              {/* Nav items */}
               <div className="p-4">
                 <div className="space-y-1">
                   {navItems.map((item, index) => (
@@ -941,166 +778,205 @@ const RootHeader = () => {
                       key={index}
                       className="border-b border-gray-50 last:border-0"
                     >
+                      {/* Browse Job */}
                       {item.subNav ? (
                         <div>
                           <button
                             onClick={() =>
-                              setActiveNav(
-                                activeNav === item.label ? null : item.label,
+                              setActiveNav((p) =>
+                                p === item.label ? null : item.label,
                               )
                             }
                             className="flex items-center justify-between w-full py-3 text-gray-700 hover:text-[#4EB956] transition-colors duration-200 cursor-pointer"
                           >
                             <div className="flex items-center space-x-3">
-                              <div className="text-gray-500">{item.icon}</div>
+                              <div className="text-gray-500 text-xs">
+                                {item.icon}
+                              </div>
                               <span className="text-sm font-medium">
                                 {item.label}
                               </span>
+                              {/* Live count badge */}
+                              {!categoriesLoading &&
+                                jobCategories.length > 0 && (
+                                  <span className="text-[10px] px-1.5 py-0.5 bg-[#4EB956]/10 text-[#4EB956] rounded-full font-bold">
+                                    {jobCategories.length}
+                                  </span>
+                                )}
                             </div>
-                            <FaChevronDown
-                              className={`text-xs transition-transform duration-200 ${
-                                activeNav === item.label ? "rotate-180" : ""
-                              }`}
-                            />
+                            {categoriesLoading ? (
+                              <FaSpinner className="text-xs text-[#4EB956] animate-spin" />
+                            ) : (
+                              <FaChevronDown
+                                className={`text-xs transition-transform duration-200 ${
+                                  activeNav === item.label ? "rotate-180" : ""
+                                }`}
+                              />
+                            )}
                           </button>
+
                           {activeNav === item.label && (
                             <div className="pl-8 pb-3">
-                              <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                                {item.subNav.map((subItem, subIndex) => (
-                                  <Link
-                                    key={subIndex}
-                                    to={subItem.path}
-                                    className={`flex items-center justify-between py-2 text-gray-600 hover:text-[#4EB956] transition-colors duration-200 group ${
-                                      subItem.isAllIndustry
-                                        ? "border-l-2 border-[#4EB956] pl-2 bg-[#4EB956]/5"
-                                        : ""
-                                    }`}
-                                    onClick={() => setIsMenuOpen(false)}
-                                  >
-                                    <div className="flex items-center space-x-2">
-                                      <div
-                                        className={`${
-                                          subItem.isAllIndustry
-                                            ? "text-[#4EB956]"
-                                            : "text-gray-400 group-hover:text-[#4EB956]"
-                                        }`}
-                                      >
-                                        {subItem.icon}
-                                      </div>
-                                      <div>
+                              {categoriesLoading ? (
+                                <div className="space-y-2">
+                                  {Array.from({ length: 5 }).map((_, i) => (
+                                    <div
+                                      key={i}
+                                      style={{
+                                        height: 36,
+                                        borderRadius: 8,
+                                        background:
+                                          "linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%)",
+                                        backgroundSize: "600px 100%",
+                                        animation:
+                                          "shimmer 1.5s infinite linear",
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
+                                  {item.subNav.map((subItem, si) => (
+                                    <Link
+                                      key={si}
+                                      to={subItem.path}
+                                      onClick={closeAll}
+                                      className={`flex items-center justify-between py-2 text-gray-600 hover:text-[#4EB956] transition-colors duration-200 group ${
+                                        subItem.isAllIndustry
+                                          ? "border-l-2 border-[#4EB956] pl-2 bg-[#4EB956]/5"
+                                          : ""
+                                      }`}
+                                    >
+                                      <div className="flex items-center space-x-2">
                                         <span
                                           className={`text-xs ${
                                             subItem.isAllIndustry
-                                              ? "font-bold text-[#1E2558]"
-                                              : ""
+                                              ? "text-[#4EB956]"
+                                              : "text-gray-400 group-hover:text-[#4EB956]"
                                           }`}
                                         >
-                                          {subItem.name}
+                                          {subItem.icon}
                                         </span>
-                                        {!subItem.isAllIndustry && (
-                                          <p className="text-[10px] text-gray-400">
-                                            {subItem.jobCount} jobs
-                                          </p>
-                                        )}
+                                        <div>
+                                          <span
+                                            className={`text-xs ${
+                                              subItem.isAllIndustry
+                                                ? "font-bold text-[#1E2558]"
+                                                : ""
+                                            }`}
+                                          >
+                                            {subItem.name}
+                                          </span>
+                                          {!subItem.isAllIndustry &&
+                                            subItem.jobCount > 0 && (
+                                              <p className="text-[10px] text-gray-400">
+                                                {subItem.jobCount} jobs
+                                              </p>
+                                            )}
+                                        </div>
                                       </div>
-                                    </div>
-                                    {subItem.isAllIndustry ? (
-                                      <span className="text-[10px] px-1.5 py-0.5 bg-[#4EB956] text-white rounded">
-                                        View All
+                                      <span
+                                        className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                                          subItem.isAllIndustry
+                                            ? "bg-[#4EB956] text-white"
+                                            : "bg-gray-100 text-gray-500"
+                                        }`}
+                                      >
+                                        {subItem.isAllIndustry
+                                          ? "All"
+                                          : subItem.jobCount || "—"}
                                       </span>
-                                    ) : (
-                                      <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 rounded">
-                                        {subItem.jobCount}
-                                      </span>
-                                    )}
-                                  </Link>
-                                ))}
-                              </div>
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
                               <Link
-                                href="/jobs"
-                                className="block mt-2 text-xs text-primary hover:text-secondary font-medium hover:underline"
-                                onClick={() => setIsMenuOpen(false)}
+                                to="/jobs"
+                                onClick={closeAll}
+                                className="block mt-2 text-xs text-[#4EB956] hover:text-[#3da345] font-medium hover:underline"
                               >
                                 View all categories →
                               </Link>
                             </div>
                           )}
                         </div>
-                      ) : item.isLogin || item.isSignup ? (
+                      ) : /* Login / Signup */
+                      item.isLogin || item.isSignup ? (
                         <div>
                           <button
                             onClick={() =>
-                              setActiveNav(
-                                activeNav === item.label ? null : item.label,
+                              setActiveNav((p) =>
+                                p === item.label ? null : item.label,
                               )
                             }
                             className="flex items-center justify-between w-full py-3 text-gray-700 hover:text-[#4EB956] transition-colors duration-200 cursor-pointer"
                           >
                             <div className="flex items-center space-x-3">
-                              <div className="text-gray-500">{item.icon}</div>
+                              <div className="text-gray-500 text-xs">
+                                {item.icon}
+                              </div>
                               <span className="text-sm font-medium">
                                 {item.label}
                               </span>
                             </div>
                             <FaChevronDown
-                              className={`text-xs transition-transform duration-200 ${
-                                activeNav === item.label ? "rotate-180" : ""
-                              }`}
+                              className={`text-xs transition-transform duration-200 ${activeNav === item.label ? "rotate-180" : ""}`}
                             />
                           </button>
                           {activeNav === item.label && (
-                            <div className="pl-8 pb-3">
-                              <div className="space-y-4">
-                                {accountTypes.map((type, index) => (
-                                  <div key={index} className="space-y-2">
-                                    <div className="flex items-center space-x-2 mb-2">
-                                      <div
-                                        className={`bg-gradient-to-r ${type.color} p-2 rounded-lg`}
-                                      >
-                                        <div className="text-white">
-                                          {type.icon}
-                                        </div>
+                            <div className="pl-8 pb-3 space-y-4">
+                              {accountTypes.map((type, i) => (
+                                <div key={i} className="space-y-2">
+                                  <div className="flex items-center space-x-2 mb-2">
+                                    <div
+                                      className={`bg-gradient-to-r ${type.color} p-2 rounded-lg`}
+                                    >
+                                      <div className="text-white">
+                                        {type.icon}
                                       </div>
-                                      <h4
-                                        className={`font-semibold ${type.textColor}`}
-                                      >
-                                        {type.name}
-                                      </h4>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {type.options.map((option, idx) => (
-                                        <Link
-                                          key={idx}
-                                          to={option.path}
-                                          className={`flex flex-col items-center justify-center p-3 rounded-lg ${type.bgColor} border ${type.borderColor} transition-all duration-300`}
-                                          onClick={() => setIsMenuOpen(false)}
-                                        >
-                                          <div
-                                            className={`text-lg ${type.textColor} mb-1`}
-                                          >
-                                            {option.icon}
-                                          </div>
-                                          <span
-                                            className={`text-xs font-medium ${type.textColor}`}
-                                          >
-                                            {option.label}
-                                          </span>
-                                        </Link>
-                                      ))}
-                                    </div>
+                                    <h4
+                                      className={`font-semibold ${type.textColor}`}
+                                    >
+                                      {type.name}
+                                    </h4>
                                   </div>
-                                ))}
-                              </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {type.options.map((option, idx) => (
+                                      <Link
+                                        key={idx}
+                                        to={option.path}
+                                        onClick={closeAll}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-lg ${type.bgColor} border ${type.borderColor} transition-all duration-300`}
+                                      >
+                                        <div
+                                          className={`text-lg ${type.textColor} mb-1`}
+                                        >
+                                          {option.icon}
+                                        </div>
+                                        <span
+                                          className={`text-xs font-medium ${type.textColor}`}
+                                        >
+                                          {option.label}
+                                        </span>
+                                      </Link>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
                       ) : (
+                        /* Regular link */
                         <Link
-                          to={item.path}
+                          to={item.path || "#"}
+                          onClick={closeAll}
                           className="flex items-center space-x-3 py-3 text-gray-700 hover:text-[#4EB956] transition-colors duration-200"
-                          onClick={() => setIsMenuOpen(false)}
                         >
-                          <div className="text-gray-500">{item.icon}</div>
+                          <div className="text-gray-500 text-xs">
+                            {item.icon}
+                          </div>
                           <span className="text-sm font-medium">
                             {item.label}
                           </span>
@@ -1111,21 +987,23 @@ const RootHeader = () => {
                 </div>
               </div>
 
+              {/* Action buttons */}
               <div className="p-4 border-t border-gray-100">
                 <div className="space-y-3">
-                  {actionButtons.map((button, index) => (
-                    <button
-                      key={index}
+                  {actionButtons.map((button, i) => (
+                    <Link
+                      to={button.path}
+                      key={i}
+                      onClick={closeAll}
                       className={`w-full flex items-center justify-center space-x-2 py-3 ${
                         button.outline
                           ? "border border-[#1E2558] text-[#1E2558] hover:bg-[#1E2558] hover:text-white"
-                          : `bg-linear-to-r ${button.color} text-white`
+                          : `bg-gradient-to-r ${button.color} text-white`
                       } rounded text-sm font-medium transition-all duration-200 cursor-pointer`}
-                      onClick={() => setIsMenuOpen(false)}
                     >
                       {button.icon}
                       <span>{button.label}</span>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -1133,24 +1011,6 @@ const RootHeader = () => {
           </div>
         </div>
       )}
-
-      <style jsx="true">{`
-        @media (min-width: 1024px) {
-          .fixed {
-            animation: slideDown 0.3s ease-out;
-          }
-        }
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </>
   );
 };

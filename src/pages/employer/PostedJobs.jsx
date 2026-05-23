@@ -492,9 +492,12 @@ const PostedJobs = () => {
                             {job.jobTitle?.charAt(0) || "J"}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-gray-800 text-sm truncate">
+                            <Link
+                              to={`/employer/jobs/${jobId}/applications`}
+                              className="text-sm font-semibold text-gray-800 hover:text-[#4EB956] truncate block transition-colors"
+                            >
                               {job.jobTitle}
-                            </p>
+                            </Link>
                             {job.salaryMin || job.salaryMax ? (
                               <p className="text-xs text-[#4EB956] font-medium mt-0.5">
                                 {job.salaryMin && job.salaryMax
